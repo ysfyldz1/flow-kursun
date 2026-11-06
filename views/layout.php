@@ -12,6 +12,7 @@ $nav = [
     ['/',          'home',    'nav.dashboard', null],
     ['/clients',   'users',   'nav.clients',   'clients.view'],
     ['/projects',  'folder',  'nav.projects',  'projects.view'],
+    ['/calendar',  'calendar','nav.calendar',  'calendar.view'],
     ['/time',      'clock',   'nav.time',      ['time.own', 'time.all']],
     ['/expenses',  'wallet',  'nav.expenses',  ['expenses.own', 'expenses.all']],
     ['/billing',   'receipt', 'nav.billing',   ['statements.manage', 'payments.manage']],

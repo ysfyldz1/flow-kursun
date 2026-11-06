@@ -21,6 +21,23 @@
 </div>
 
 <div class="grid grid-3">
+    <?php if ($upcoming !== null): ?>
+        <section class="card widget">
+            <header class="widget-head">
+                <span class="widget-icon"><?= icon('calendar') ?></span>
+                <h2><?= e(__('cal.upcoming')) ?></h2>
+                <a href="/calendar" class="widget-link"><?= e(__('app.all')) ?> →</a>
+            </header>
+            <?php if (!$upcoming): ?>
+                <div class="empty"><?= e(__('cal.upcoming_empty')) ?></div>
+            <?php else: ?>
+                <?php foreach (array_slice($upcoming, 0, 7) as $ev): ?>
+                    <?= \App\Core\View::partial('Calendar::_row', ['e' => $ev, 'showDate' => true]) ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </section>
+    <?php endif; ?>
+
     <section class="card widget">
         <header class="widget-head">
             <span class="widget-icon"><?= icon('clock') ?></span>

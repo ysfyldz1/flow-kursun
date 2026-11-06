@@ -116,6 +116,15 @@ final class MicrosoftController
         redirect('/settings/microsoft');
     }
 
+    public function calendar(): void
+    {
+        $on = !empty($_POST['calendar_outlook']);
+        Settings::set(['calendar.outlook' => $on ? '1' : '0']);
+        Audit::log('settings.calendar', 'settings', null, ['outlook' => $on]);
+        flash('success', __('app.saved'));
+        redirect('/settings/microsoft');
+    }
+
     public function reset(): void
     {
         Microsoft::reset();

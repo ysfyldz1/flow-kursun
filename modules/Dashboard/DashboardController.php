@@ -27,6 +27,13 @@ final class DashboardController
             'stats'      => $stats,
             'recentTime' => TimeService::recent(Auth::id()),
             'unpaid'     => can('statements.manage') || can('payments.manage') ? StatementService::list(['status' => 'open']) : [],
+            // Yaklaşanlar: önümüzdeki 7 gün + gecikmiş süreler (yalnızca kişinin kendi kayıtları)
+            'upcoming'   => can('calendar.view')
+                ? array_merge(
+                    \App\Services\CalendarService::overdue(Auth::id()),
+                    \App\Services\CalendarService::range(date('Y-m-d'), date('Y-m-d', strtotime('+6 days')), Auth::id())
+                )
+                : null,
             'myProjects' => can('projects.view') ? ProjectService::list(['mine' => true, 'status' => 'open']) : [],
         ]);
     }

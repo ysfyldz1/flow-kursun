@@ -96,6 +96,25 @@ $billingValue = match ($p['billing_type']) {
             <?php endif; ?>
         </section>
 
+        <?php if (can('calendar.view')): $events = \App\Services\CalendarService::forProject((int) $p['id']); ?>
+            <section class="card widget widget-auto">
+                <header class="widget-head">
+                    <span class="widget-icon"><?= icon('calendar') ?></span>
+                    <h2><?= e(__('cal.title')) ?></h2>
+                    <?php if (can('calendar.edit') && $p['status'] !== 'closed'): ?>
+                        <a href="/calendar/new?project_id=<?= $p['id'] ?>&type=<?= $p['type'] === 'litigation' ? 'hearing' : 'meeting' ?>" class="btn btn-sm btn-outline head-right"><?= icon('plus', 'icon icon-sm') ?><?= e(__('cal.add')) ?></a>
+                    <?php endif; ?>
+                </header>
+                <?php if (!$events): ?>
+                    <div class="empty"><?= e(__('cal.none_for_project')) ?></div>
+                <?php else: ?>
+                    <?php foreach ($events as $ev): ?>
+                        <?= View::partial('Calendar::_row', ['e' => $ev, 'showDate' => true, 'hideProject' => true]) ?>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </section>
+        <?php endif; ?>
+
         <?php if (\App\Services\DocumentService::enabled()): ?>
             <section class="card widget widget-auto" id="documents">
                 <header class="widget-head">

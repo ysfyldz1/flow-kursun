@@ -88,6 +88,18 @@
                     <button class="btn btn-primary"><?= e(__('app.save')) ?></button>
                 </div>
             </form>
+            <form method="post" action="/settings/microsoft/calendar" class="card form-card">
+                <?= csrf_field() ?>
+                <h3 class="section-title"><?= e(__('cal.settings_title')) ?></h3>
+                <label class="check">
+                    <input type="checkbox" name="calendar_outlook" value="1" <?= Settings::get('calendar.outlook') === '1' ? 'checked' : '' ?>>
+                    <span><?= e(__('cal.settings_outlook')) ?> <span class="muted small">— <?= e(__('cal.settings_outlook_hint')) ?></span></span>
+                </label>
+                <div class="form-actions">
+                    <button class="btn btn-primary"><?= e(__('app.save')) ?></button>
+                </div>
+            </form>
+
             <script>
             (() => {
                 const sel = document.getElementById('docs-provider');
