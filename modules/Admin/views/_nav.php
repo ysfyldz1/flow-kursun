@@ -3,6 +3,8 @@ $items = [
     ['/settings/users',        'users',    'users.title', 'users.manage'],
     ['/settings/roles',        'shield',   'roles.title', 'roles.manage'],
     ['/settings/organization', 'building', 'org.title',   'settings.manage'],
+    ['/settings/microsoft',    'globe',    'ms.title',    'settings.manage'],
+    ['/settings/mail',         'bell',     'mail.title',  'settings.manage'],
 ];
 ?>
 <aside class="subnav card">

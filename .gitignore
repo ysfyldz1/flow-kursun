@@ -4,3 +4,4 @@
 !/storage/uploads/.gitkeep
 !/storage/logs/.gitkeep
 /vendor/
+/storage/app.key

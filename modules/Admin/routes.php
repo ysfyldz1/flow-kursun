@@ -1,5 +1,7 @@
 <?php
 
+use Modules\Admin\MailController;
+use Modules\Admin\MicrosoftController;
 use Modules\Admin\OrganizationController;
 use Modules\Admin\RoleController;
 use Modules\Admin\UserController;
@@ -23,3 +25,12 @@ $router->post('/settings/roles/{id}/delete', [RoleController::class, 'delete'], 
 $router->get('/settings/organization', [OrganizationController::class, 'edit'], ['can' => 'settings.manage']);
 $router->post('/settings/organization', [OrganizationController::class, 'update'], ['can' => 'settings.manage']);
 $router->get('/logo', [OrganizationController::class, 'logo'], ['auth' => false]);
+
+$router->get('/settings/microsoft', [MicrosoftController::class, 'edit'], ['can' => 'settings.manage']);
+$router->post('/settings/microsoft', [MicrosoftController::class, 'update'], ['can' => 'settings.manage']);
+$router->post('/settings/microsoft/test', [MicrosoftController::class, 'test'], ['can' => 'settings.manage']);
+$router->post('/settings/microsoft/reset', [MicrosoftController::class, 'reset'], ['can' => 'settings.manage']);
+
+$router->get('/settings/mail', [MailController::class, 'edit'], ['can' => 'settings.manage']);
+$router->post('/settings/mail', [MailController::class, 'update'], ['can' => 'settings.manage']);
+$router->post('/settings/mail/test', [MailController::class, 'test'], ['can' => 'settings.manage']);
