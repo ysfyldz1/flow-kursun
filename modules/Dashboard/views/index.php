@@ -1,3 +1,4 @@
+<?php use App\Services\TimeService; ?>
 <div class="page-head">
     <div>
         <h1><?= e(__('dash.hello', ['name' => explode(' ', auth()['name'])[0]])) ?></h1>
@@ -20,14 +21,55 @@
 </div>
 
 <div class="grid grid-3">
-    <?php foreach ([['clock', 'dash.recent_time'], ['folder', 'dash.my_projects'], ['receipt', 'dash.unpaid_list']] as [$ico, $label]): ?>
-        <section class="card widget">
-            <header class="widget-head">
-                <span class="widget-icon"><?= icon($ico) ?></span>
-                <h2><?= e(__($label)) ?></h2>
-                <button class="icon-btn icon-btn-sm"><?= icon('more') ?></button>
-            </header>
+    <section class="card widget">
+        <header class="widget-head">
+            <span class="widget-icon"><?= icon('clock') ?></span>
+            <h2><?= e(__('dash.recent_time')) ?></h2>
+            <a href="/time" class="widget-link"><?= e(__('app.all')) ?> →</a>
+        </header>
+        <?php if (!$recentTime): ?>
             <div class="empty"><?= e(__('dash.empty')) ?></div>
-        </section>
-    <?php endforeach; ?>
+        <?php else: ?>
+            <?php foreach ($recentTime as $t): ?>
+                <a href="/projects/<?= $t['project_id'] ?>" class="widget-row">
+                    <div class="cell-main">
+                        <strong><?= e($t['project_name']) ?></strong>
+                        <span><?= e(mb_strimwidth($t['description'], 0, 60, '…')) ?></span>
+                    </div>
+                    <div class="cell-main align-right">
+                        <strong><?= TimeService::formatMinutes((int) $t['minutes']) ?></strong>
+                        <span><?= e(format_date($t['work_date'])) ?></span>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </section>
+
+    <section class="card widget">
+        <header class="widget-head">
+            <span class="widget-icon"><?= icon('folder') ?></span>
+            <h2><?= e(__('dash.my_projects')) ?></h2>
+            <a href="/projects?mine=1" class="widget-link"><?= e(__('app.all')) ?> →</a>
+        </header>
+        <?php if (!$myProjects): ?>
+            <div class="empty"><?= e(__('dash.empty')) ?></div>
+        <?php else: ?>
+            <?php foreach (array_slice($myProjects, 0, 6) as $p): ?>
+                <a href="/projects/<?= $p['id'] ?>" class="widget-row">
+                    <div class="cell-main">
+                        <strong><?= e($p['name']) ?></strong>
+                        <span><?= e($p['number']) ?> · <?= e($p['client_name']) ?></span>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </section>
+
+    <section class="card widget">
+        <header class="widget-head">
+            <span class="widget-icon"><?= icon('receipt') ?></span>
+            <h2><?= e(__('dash.unpaid_list')) ?></h2>
+        </header>
+        <div class="empty"><?= e(__('dash.empty')) ?></div>
+    </section>
 </div>

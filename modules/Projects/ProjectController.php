@@ -38,7 +38,13 @@ final class ProjectController
                 $rates[$m['user_id']] = RateService::resolve((int) $project['id'], (int) $m['user_id']);
             }
         }
-        View::render('Projects::show', ['title' => $project['name'], 'project' => $project, 'rates' => $rates]);
+        View::render('Projects::show', [
+            'title'   => $project['name'],
+            'project' => $project,
+            'rates'   => $rates,
+            'entries' => \App\Services\TimeService::forProject((int) $project['id']),
+            'totals'  => \App\Services\TimeService::projectTotals((int) $project['id']),
+        ]);
     }
 
     public function create(): void

@@ -4,23 +4,29 @@ declare(strict_types=1);
 
 namespace Modules\Dashboard;
 
+use App\Core\Auth;
 use App\Core\View;
+use App\Services\ClientService;
+use App\Services\ProjectService;
+use App\Services\TimeService;
 
 final class DashboardController
 {
     public function index(): void
     {
-        // Müvekkil, proje ve zaman modülleri gelene kadar sayaçlar 0.
+        // Döküm modülü gelene kadar "bekleyen döküm" 0.
         $stats = [
-            ['icon' => 'users',   'label' => __('dash.active_clients'),  'hint' => __('dash.hint_clients'),  'value' => \App\Services\ClientService::countActive(), 'tone' => 'blue'],
-            ['icon' => 'folder',  'label' => __('dash.open_projects'),   'hint' => __('dash.hint_projects'), 'value' => \App\Services\ProjectService::countOpen(), 'tone' => 'green'],
-            ['icon' => 'clock',   'label' => __('dash.hours_month'),     'hint' => __('dash.hint_hours'),    'value' => 0, 'tone' => 'amber'],
-            ['icon' => 'receipt', 'label' => __('dash.unpaid'),          'hint' => __('dash.hint_unpaid'),   'value' => 0, 'tone' => 'red'],
+            ['icon' => 'users',   'label' => __('dash.active_clients'), 'hint' => __('dash.hint_clients'),  'value' => ClientService::countActive(), 'tone' => 'blue'],
+            ['icon' => 'folder',  'label' => __('dash.open_projects'),  'hint' => __('dash.hint_projects'), 'value' => ProjectService::countOpen(), 'tone' => 'green'],
+            ['icon' => 'clock',   'label' => __('dash.hours_month'),    'hint' => __('dash.hint_hours'),    'value' => TimeService::hours(TimeService::minutesInMonth(Auth::id())), 'tone' => 'amber'],
+            ['icon' => 'receipt', 'label' => __('dash.unpaid'),         'hint' => __('dash.hint_unpaid'),   'value' => 0, 'tone' => 'red'],
         ];
 
         View::render('Dashboard::index', [
-            'title' => __('nav.dashboard'),
-            'stats' => $stats,
+            'title'      => __('nav.dashboard'),
+            'stats'      => $stats,
+            'recentTime' => TimeService::recent(Auth::id()),
+            'myProjects' => can('projects.view') ? ProjectService::list(['mine' => true, 'status' => 'open']) : [],
         ]);
     }
 }

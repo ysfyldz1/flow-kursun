@@ -1,5 +1,6 @@
 <?php
 use App\Core\View;
+use App\Services\TimeService;
 
 $p = $project;
 $row = fn (string $label, ?string $value) => $value
@@ -36,8 +37,36 @@ $billingValue = match ($p['billing_type']) {
             <header class="widget-head">
                 <span class="widget-icon"><?= icon('clock') ?></span>
                 <h2><?= e(__('dash.recent_time')) ?></h2>
+                <?php if ($p['status'] === 'open' && (can('time.own') || can('time.all'))): ?>
+                    <a href="/time" class="btn btn-sm btn-outline head-right"><?= icon('plus', 'icon icon-sm') ?><?= e(__('time.add')) ?></a>
+                <?php endif; ?>
             </header>
-            <div class="empty"><?= e(__('projects.no_time')) ?></div>
+            <div class="totals-row">
+                <div><span><?= e(__('time.total')) ?></span><strong><?= TimeService::hours((int) $totals['minutes']) ?> <?= e(__('projects.hours')) ?></strong></div>
+                <div><span><?= e(__('time.billable')) ?></span><strong><?= TimeService::hours((int) $totals['billable_minutes']) ?> <?= e(__('projects.hours')) ?></strong></div>
+                <?php if ($p['budget_hours'] !== null): $pct = min(100, round($totals['minutes'] / 60 / max((float) $p['budget_hours'], 0.1) * 100)); ?>
+                    <div><span><?= e(__('projects.budget_hours')) ?></span><strong>%<?= $pct ?></strong><span class="meter"><span style="width: <?= $pct ?>%" class="<?= $pct >= 90 ? 'meter-warn' : '' ?>"></span></span></div>
+                <?php endif; ?>
+                <?php if (can('rates.view') && $p['billing_type'] === 'hourly'): ?>
+                    <div><span><?= e(__('time.amount')) ?></span><strong><?= e(format_money((float) $totals['amount'], $p['currency'])) ?></strong></div>
+                <?php endif; ?>
+            </div>
+            <?php if (!$entries): ?>
+                <div class="empty"><?= e(__('projects.no_time')) ?></div>
+            <?php else: ?>
+                <table class="table">
+                    <?php foreach ($entries as $t): ?>
+                        <tr>
+                            <td class="muted nowrap"><?= e(format_date($t['work_date'])) ?></td>
+                            <td class="cell-main"><strong><?= e($t['user_name']) ?></strong><span><?= e(mb_strimwidth($t['description'], 0, 120, '…')) ?></span></td>
+                            <td class="cell-actions">
+                                <strong><?= TimeService::formatMinutes((int) $t['minutes']) ?></strong>
+                                <?php if (!$t['is_billable']): ?><br><span class="muted small"><?= e(__('time.non_billable')) ?></span><?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+            <?php endif; ?>
         </section>
 
         <?php if ($p['description']): ?>
