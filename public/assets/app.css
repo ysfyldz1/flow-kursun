@@ -385,3 +385,28 @@ a.cell-main:hover strong { color: var(--primary); }
 .payment-amount form { display: inline; }
 .payment-form { border-top: 1px solid var(--border); }
 .steps { margin: 0; padding: 14px 16px 14px 34px; display: flex; flex-direction: column; gap: 10px; line-height: 1.5; color: #334155; }
+
+/* Portal */
+.page-narrow { max-width: 1100px; }
+.portal-tag { font-size: 12px; font-weight: 600; color: var(--muted); background: var(--bg); padding: 4px 10px; border-radius: 99px; }
+.portal-user strong { font-size: 13px; }
+.portal-user span { font-size: 12px; color: var(--muted); }
+.portal-balances { margin-bottom: 16px; }
+.stat-money { font-size: 22px; white-space: nowrap; }
+.text-danger { color: var(--red); }
+.portal-summary { padding: 8px 20px 14px; display: table; }
+.portal-summary td { padding: 9px 0; }
+.bank-text { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+.invite-box { background: var(--green-bg); border-bottom: 1px solid var(--border); }
+.invite-box p { margin: 4px 0 10px; }
+.copy-row { display: flex; gap: 8px; }
+.portal-invite { border-top: 1px solid var(--border); }
+.portal-invite-row { grid-template-columns: 1fr 1fr 1.3fr auto; }
+.notice-card { border-color: var(--blue); }
+.notice { border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+.notice:last-of-type { border-bottom: 0; }
+.notice-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 16px; }
+.notice-actions { display: flex; gap: 8px; margin-top: 6px; }
+.notice-actions .input-group { flex: 1; }
+.reject-box summary { cursor: pointer; color: var(--red); }
+.reject-box .form { margin-top: 8px; gap: 8px; }

@@ -17,7 +17,7 @@ foreach ($s['lines'] as $l) {
     $groups[$key]['title'] ??= $l['project_id'] ? $l['project_number'] . ' · ' . $l['project_name'] : __('billing.other_items');
     $groups[$key]['lines'][] = $l;
 }
-$generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['issue', 'statement', 'invoice', 'payment']));
+$generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['issue', 'statement', 'invoice', 'payment', 'notice']));
 ?>
 <div class="page-head">
     <div>
@@ -209,6 +209,51 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                     <?php endif; ?>
                 </div>
             </section>
+
+            <?php $pendingNotices = array_filter($notices, fn ($n) => $n['status'] === 'pending'); ?>
+            <?php if ($pendingNotices): ?>
+                <section class="card widget widget-auto notice-card">
+                    <header class="widget-head">
+                        <span class="widget-icon"><?= icon('bell') ?></span>
+                        <h2><?= e(__('portal.pending_notices')) ?></h2>
+                    </header>
+                    <?php foreach ($pendingNotices as $n): ?>
+                        <div class="card-body notice">
+                            <div class="notice-head">
+                                <strong><?= e($money($n['amount'])) ?></strong>
+                                <span class="muted small"><?= e(format_date($n['paid_at'])) ?></span>
+                            </div>
+                            <div class="muted small">
+                                <?= e($n['portal_user_name'] ?? '—') ?> · <?= e(format_date($n['created_at'], true)) ?>
+                                <?= $n['reference'] ? '<br>' . e(__('billing.reference')) . ': ' . e($n['reference']) : '' ?>
+                                <?= $n['notes'] ? '<br>' . nl2br(e($n['notes'])) : '' ?>
+                            </div>
+                            <?php if ($n['receipt_file']): ?>
+                                <a href="/billing/<?= $s['id'] ?>/notices/<?= $n['id'] ?>/receipt" target="_blank" class="link small"><?= e(__('portal.view_receipt')) ?> ↗</a>
+                            <?php endif; ?>
+                            <?php if (can('payments.manage') && $issued): ?>
+                                <form method="post" action="/billing/<?= $s['id'] ?>/notices/<?= $n['id'] ?>/approve" class="notice-actions">
+                                    <?= csrf_field() ?>
+                                    <div class="input-group">
+                                        <input name="amount" inputmode="decimal" value="<?= e(money_input($n['amount'])) ?>">
+                                        <span class="input-addon"><?= e($cur) ?></span>
+                                    </div>
+                                    <button class="btn btn-primary"><?= e(__('portal.approve')) ?></button>
+                                </form>
+                                <details class="reject-box">
+                                    <summary class="link small"><?= e(__('portal.reject')) ?></summary>
+                                    <form method="post" action="/billing/<?= $s['id'] ?>/notices/<?= $n['id'] ?>/reject" class="form">
+                                        <?= csrf_field() ?>
+                                        <input name="reject_reason" class="input-plain" placeholder="<?= e(__('portal.reject_reason')) ?>" required>
+                                        <button class="btn btn-sm btn-outline btn-danger"><?= e(__('portal.reject')) ?></button>
+                                    </form>
+                                </details>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                    <?= error_for('pay_amount') ?> <?= error_for('reject_reason') ?>
+                </section>
+            <?php endif; ?>
 
             <section class="card widget widget-auto">
                 <header class="widget-head">

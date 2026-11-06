@@ -43,10 +43,11 @@ final class StatementService
             array_push($params, "%$q%", "%$q%", "%$q%");
         }
         return DB::all(
-            'SELECT s.*, c.name AS client_name, c.code AS client_code
+            "SELECT s.*, c.name AS client_name, c.code AS client_code,
+                    (SELECT COUNT(*) FROM payment_notices n WHERE n.statement_id = s.id AND n.status = 'pending') AS pending_notices
              FROM statements s JOIN clients c ON c.id = s.client_id
-             WHERE ' . implode(' AND ', $where) . '
-             ORDER BY COALESCE(s.issue_date, s.created_at) DESC, s.id DESC',
+             WHERE " . implode(' AND ', $where) . "
+             ORDER BY COALESCE(s.issue_date, s.created_at) DESC, s.id DESC",
             $params
         );
     }

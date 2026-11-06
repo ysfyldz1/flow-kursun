@@ -83,7 +83,10 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
                     <td class="num"><strong><?= e(format_money((float) $s['total'], $s['currency'])) ?></strong></td>
                     <td class="num"><?= $s['status'] === 'issued' ? e(format_money(StatementService::balance($s), $s['currency'])) : '—' ?></td>
                     <td><?= $s['invoice_file'] ? '<span class="badge badge-green">' . e($s['invoice_number'] ?: __('billing.uploaded')) . '</span>' : ($s['status'] === 'issued' ? '<span class="muted small">' . e(__('billing.awaiting_invoice')) . '</span>' : '') ?></td>
-                    <td><?= View::partial('Billing::_status', ['s' => $s]) ?></td>
+                    <td>
+                        <?= View::partial('Billing::_status', ['s' => $s]) ?>
+                        <?php if ($s['pending_notices']): ?><span class="badge badge-blue" title="<?= e(__('portal.pending_notices')) ?>">🔔 <?= (int) $s['pending_notices'] ?></span><?php endif; ?>
+                    </td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

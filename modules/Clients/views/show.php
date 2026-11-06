@@ -78,6 +78,78 @@ $row = fn (string $label, ?string $value) => $value
             <?php endif; ?>
         </section>
 
+        <?php if (can('portal.manage')): ?>
+            <?php $inviteLink = $_SESSION['_portal_invite_link'] ?? null; unset($_SESSION['_portal_invite_link']); ?>
+            <section class="card widget widget-auto" id="portal">
+                <header class="widget-head">
+                    <span class="widget-icon"><?= icon('globe') ?></span>
+                    <h2><?= e(__('portal.access')) ?></h2>
+                </header>
+                <?php if ($inviteLink): ?>
+                    <div class="card-body invite-box">
+                        <strong><?= e(__('portal.invite_link')) ?></strong>
+                        <p class="muted small"><?= e(__('portal.invite_link_hint')) ?></p>
+                        <div class="copy-row">
+                            <input class="input-plain" value="<?= e($inviteLink) ?>" readonly onclick="this.select()" id="invite-link">
+                            <button type="button" class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('invite-link').value); this.textContent='✓'"><?= e(__('portal.copy')) ?></button>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                <?php if ($portalUsers): ?>
+                    <table class="table">
+                        <?php foreach ($portalUsers as $pu): ?>
+                            <tr class="<?= $pu['is_active'] ? '' : 'row-muted' ?>">
+                                <td class="cell-main"><strong><?= e($pu['name']) ?></strong><span><?= e($pu['email']) ?></span></td>
+                                <td>
+                                    <?php if (!$pu['is_active']): ?>
+                                        <span class="badge badge-gray"><?= e(__('users.inactive')) ?></span>
+                                    <?php elseif (!$pu['password']): ?>
+                                        <span class="badge badge-amber"><?= e(__('portal.invited')) ?></span>
+                                    <?php else: ?>
+                                        <span class="badge badge-green"><?= e(__('users.active')) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="muted small"><?= $pu['last_login_at'] ? e(__('users.last_login')) . ': ' . e(format_date($pu['last_login_at'], true)) : '' ?></td>
+                                <td class="cell-actions">
+                                    <?php if ($pu['is_active'] && !$pu['password']): ?>
+                                        <form method="post" action="/clients/<?= $c['id'] ?>/portal">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="portal_name" value="<?= e($pu['name']) ?>">
+                                            <input type="hidden" name="portal_email" value="<?= e($pu['email']) ?>">
+                                            <button class="btn btn-sm btn-outline"><?= e(__('portal.new_link')) ?></button>
+                                        </form>
+                                    <?php endif; ?>
+                                    <form method="post" action="/clients/<?= $c['id'] ?>/portal/<?= $pu['id'] ?>/active">
+                                        <?= csrf_field() ?>
+                                        <button class="btn btn-sm btn-outline <?= $pu['is_active'] ? 'btn-danger' : '' ?>"><?= e(__($pu['is_active'] ? 'portal.revoke' : 'users.activate')) ?></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </table>
+                <?php endif; ?>
+                <?php if ($c['is_active']): ?>
+                    <form method="post" action="/clients/<?= $c['id'] ?>/portal" class="card-body portal-invite">
+                        <?= csrf_field() ?>
+                        <p class="muted small" style="margin:0 0 10px"><?= e(__('portal.invite_hint')) ?></p>
+                        <div class="add-line portal-invite-row">
+                            <select class="select-plain" onchange="const o=this.selectedOptions[0]; this.form.portal_name.value=o.dataset.name||''; this.form.portal_email.value=o.dataset.email||''; this.form.contact_id.value=o.value">
+                                <option value=""><?= e(__('portal.pick_contact')) ?></option>
+                                <?php foreach ($c['contacts'] as $p): ?>
+                                    <option value="<?= $p['id'] ?>" data-name="<?= e($p['name']) ?>" data-email="<?= e((string) $p['email']) ?>"><?= e($p['name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <input type="hidden" name="contact_id">
+                            <input name="portal_name" class="input-plain" placeholder="<?= e(__('users.name')) ?>" value="<?= e(old('portal_name')) ?>" required>
+                            <input name="portal_email" type="email" class="input-plain" placeholder="<?= e(__('auth.email')) ?>" value="<?= e(old('portal_email')) ?>" required>
+                            <button class="btn btn-primary"><?= e(__('portal.invite')) ?></button>
+                        </div>
+                        <?= error_for('portal_name') ?> <?= error_for('portal_email') ?>
+                    </form>
+                <?php endif; ?>
+            </section>
+        <?php endif; ?>
+
         <?php if ($c['notes']): ?>
             <section class="card widget widget-auto">
                 <header class="widget-head"><h2><?= e(__('clients.notes')) ?></h2></header>

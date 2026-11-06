@@ -60,6 +60,7 @@ final class BillingController
         View::render('Billing::show', [
             'title'    => $s['number'] ?: __('billing.draft'),
             's'        => $s,
+            'notices'  => \App\Services\PortalService::notices((int) $id),
             'projects' => DB::all('SELECT id, number, name FROM projects WHERE client_id = ? AND currency = ? ORDER BY number', [$s['client_id'], $s['currency']]),
         ]);
     }

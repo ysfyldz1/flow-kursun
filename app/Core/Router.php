@@ -35,6 +35,13 @@ final class Router
             }
 
             $opts = $route['options'];
+            // Portal sayfaları ofis oturumu yerine müvekkil oturumu ister
+            if (!empty($opts['portal'])) {
+                $opts['auth'] = false;
+                if (!PortalAuth::check()) {
+                    redirect('/portal/login');
+                }
+            }
             if (($opts['auth'] ?? true) && !Auth::check()) {
                 redirect('/login');
             }

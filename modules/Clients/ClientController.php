@@ -32,6 +32,7 @@ final class ClientController
             'title'    => $client['name'],
             'client'   => $client,
             'projects' => can('projects.view') ? \App\Services\ProjectService::forClient((int) $id) : [],
+            'portalUsers' => can('portal.manage') ? \App\Services\PortalService::usersFor((int) $id) : [],
         ]);
     }
 

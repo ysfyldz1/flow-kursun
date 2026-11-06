@@ -75,6 +75,9 @@ final class DB
     public static function transaction(callable $fn): mixed
     {
         $pdo = self::pdo();
+        if ($pdo->inTransaction()) {
+            return $fn();   // iç içe çağrı: dıştaki transaction'a katılır
+        }
         $pdo->beginTransaction();
         try {
             $result = $fn();

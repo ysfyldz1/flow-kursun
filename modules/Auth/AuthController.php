@@ -60,6 +60,9 @@ final class AuthController
             if (Auth::check()) {
                 DB::update('users', ['locale' => $locale], 'id = ?', [Auth::id()]);
             }
+            if (\App\Core\PortalAuth::check()) {
+                DB::update('portal_users', ['locale' => $locale], 'id = ?', [\App\Core\PortalAuth::id()]);
+            }
         }
         back();
     }
