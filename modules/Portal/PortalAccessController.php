@@ -6,6 +6,7 @@ namespace Modules\Portal;
 
 use App\Core\DB;
 use App\Core\ValidationException;
+use App\Services\Mailer;
 use App\Services\PortalService;
 
 /** Ofis tarafı: müvekkile portal erişimi verme ve ödeme bildirimlerini işleme. */
@@ -22,9 +23,27 @@ final class PortalAccessController
         } catch (ValidationException $e) {
             fail($e, "/clients/$id#portal");
         }
-        // Davet bağlantısı yalnızca bir kez gösterilir (e-posta gönderimi eklenene kadar elle iletilir)
-        $_SESSION['_portal_invite_link'] = PortalService::inviteUrl($token);
-        flash('success', __('portal.invite_created'));
+        $pu = DB::one(
+            'SELECT pu.name, pu.email, pu.locale, c.name AS client_name
+             FROM portal_users pu JOIN clients c ON c.id = pu.client_id
+             WHERE pu.client_id = ? AND pu.email = ?',
+            [(int) $id, mb_strtolower(trim((string) ($_POST['portal_email'] ?? '')))]
+        );
+        $url = PortalService::inviteUrl($token);
+        $sent = Mailer::delivers() && Mailer::sendView($pu['email'], $pu['locale'], 'portal_invite', [
+            'name'   => $pu['name'],
+            'client' => $pu['client_name'],
+            'url'    => $url,
+            'days'   => PortalService::INVITE_DAYS,
+        ]);
+
+        if ($sent) {
+            flash('success', __('portal.invite_sent', ['email' => $pu['email']]));
+        } else {
+            // E-posta gitmediyse bağlantı bir kez gösterilir, elle iletilir
+            $_SESSION['_portal_invite_link'] = $url;
+            flash('success', __(Mailer::delivers() ? 'portal.invite_mail_failed' : 'portal.invite_created'));
+        }
         redirect("/clients/$id#portal");
     }
 

@@ -12,7 +12,7 @@ use App\Core\ValidationException;
 /** Portal kullanıcıları (davet, erişim) ve müvekkilin ödeme bildirimleri. */
 final class PortalService
 {
-    private const INVITE_DAYS = 7;
+    public const INVITE_DAYS = 7;
 
     // --- Kullanıcılar ---
 

@@ -28,7 +28,8 @@ final class UserService
     public static function create(array $input, string $channel = 'web'): int
     {
         $data = self::validate($input, null);
-        $data['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
+        // Microsoft ile giriş açıkken şifresiz kullanıcı açılabilir; yalnızca Microsoft hesabıyla girer
+        $data['password'] = ($input['password'] ?? '') !== '' ? password_hash($input['password'], PASSWORD_DEFAULT) : null;
         $id = DB::insert('users', $data);
         Audit::log('user.created', 'user', $id, ['email' => $data['email']], $channel);
         return $id;
@@ -106,7 +107,7 @@ final class UserService
             $errors['rate_currency'] = __('validation.required');
         }
         $password = (string) ($in['password'] ?? '');
-        if ($id === null || $password !== '') {
+        if (($id === null && !Microsoft::loginEnabled()) || $password !== '') {
             if (mb_strlen($password) < 8) {
                 $errors['password'] = __('validation.password_min');
             }

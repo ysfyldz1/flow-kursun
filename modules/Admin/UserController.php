@@ -7,6 +7,8 @@ namespace Modules\Admin;
 use App\Core\Auth;
 use App\Core\ValidationException;
 use App\Core\View;
+use App\Services\Mailer;
+use App\Services\Microsoft;
 use App\Services\RoleService;
 use App\Services\UserService;
 
@@ -37,6 +39,18 @@ final class UserController
             $id = UserService::create($_POST);
         } catch (ValidationException $e) {
             fail($e, '/settings/users/new');
+        }
+
+        if (!empty($_POST['send_welcome']) && Mailer::delivers()) {
+            $user = UserService::find($id);
+            $sent = Mailer::sendView($user['email'], $user['locale'], 'welcome', [
+                'name'      => $user['name'],
+                'email'     => $user['email'],
+                'url'       => rtrim((string) config('app.url'), '/') . '/login',
+                'microsoft' => Microsoft::loginEnabled(),
+            ]);
+            flash($sent ? 'success' : 'error', __($sent ? 'users.welcome_sent' : 'users.welcome_failed', ['email' => $user['email']]));
+            redirect("/settings/users/$id");
         }
         flash('success', __('app.saved'));
         redirect("/settings/users/$id");

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\DB;
+use App\Core\Lang;
+use App\Core\View;
 use RuntimeException;
 use Throwable;
 
@@ -43,6 +45,30 @@ final class Mailer
             }
             return false;
         }
+    }
+
+    /**
+     * views/mail/<view>.php şablonunu alıcının dilinde işleyip gönderir; arayüz dili sonra geri alınır.
+     * Konu, lang dosyasındaki "mail.<view>_subject" anahtarından gelir.
+     */
+    public static function sendView(string $to, string $locale, string $view, array $data = []): bool
+    {
+        $previous = Lang::locale();
+        Lang::set($locale);
+        try {
+            $data += ['org' => (string) Settings::get('org.name', config('app.name'))];
+            $subject = __("mail.{$view}_subject", $data);
+            $html = View::partial('mail/layout', ['content' => View::partial("mail/$view", $data)]);
+        } finally {
+            Lang::set($previous);
+        }
+        return self::send($to, $subject, $html);
+    }
+
+    /** Gerçekten dışarı giden bir yol seçili mi (günlüğe yazma değil). */
+    public static function delivers(): bool
+    {
+        return self::driver() !== 'log';
     }
 
     private static function viaGraph(string $to, string $subject, string $html): void

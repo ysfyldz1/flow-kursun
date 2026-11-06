@@ -63,13 +63,23 @@ $v = fn (string $k, $default = '') => old($k, (string) ($user[$k] ?? $default));
                         <?php endforeach; ?>
                     </select>
                 </label>
+                <?php $msLogin = \App\Services\Microsoft::loginEnabled(); $pwRequired = !$user && !$msLogin; ?>
                 <label class="field">
-                    <span><?= e(__('auth.password')) ?><?= $user ? '' : ' *' ?></span>
-                    <input type="password" name="password" autocomplete="new-password" <?= $user ? '' : 'required' ?>
+                    <span><?= e(__('auth.password')) ?><?= $pwRequired ? ' *' : '' ?></span>
+                    <input type="password" name="password" autocomplete="new-password" <?= $pwRequired ? 'required' : '' ?>
                            placeholder="<?= e($user ? __('users.password_keep') : __('validation.password_min')) ?>">
+                    <?php if (!$user && $msLogin): ?>
+                        <small class="muted"><?= e(__('users.password_optional_ms')) ?></small>
+                    <?php endif; ?>
                     <?= error_for('password') ?>
                 </label>
             </div>
+            <?php if (!$user && \App\Services\Mailer::delivers()): ?>
+                <label class="check">
+                    <input type="checkbox" name="send_welcome" value="1" checked>
+                    <span><?= e(__('users.send_welcome')) ?> <span class="muted small">— <?= e(__('users.send_welcome_hint')) ?></span></span>
+                </label>
+            <?php endif; ?>
             <div class="form-actions">
                 <a href="/settings/users" class="btn btn-outline"><?= e(__('app.cancel')) ?></a>
                 <button class="btn btn-primary"><?= e(__('app.save')) ?></button>
