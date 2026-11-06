@@ -1,0 +1,5 @@
+# Web kökü proje klasörüne bakıyorsa (ör. cPanel) her isteği public/ altına yönlendir.
+# Böylece app/, config.php, storage/ dışarıdan erişilemez.
+Options -Indexes
+RewriteEngine On
+RewriteRule ^(.*)$ public/$1 [L]
