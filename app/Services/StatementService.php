@@ -97,18 +97,23 @@ final class StatementService
         return round((float) $s['total'] - (float) $s['paid_amount'], 2);
     }
 
-    /** Dökülmemiş faturalanabilir kayıtları olan müvekkil / para birimi ikilileri */
+    /** Dökülmemiş faturalanabilir zaman kaydı ya da masrafı olan müvekkil / para birimi ikilileri */
     public static function unbilledSummary(): array
     {
         return DB::all(
-            "SELECT c.id AS client_id, c.code, c.name, t.currency,
-                    COUNT(*) AS entries, SUM(t.minutes) AS minutes, SUM(COALESCE(t.amount, 0)) AS amount,
-                    MIN(t.work_date) AS first_date, MAX(t.work_date) AS last_date
-             FROM time_entries t
-             JOIN clients c ON c.id = t.client_id
-             JOIN projects p ON p.id = t.project_id
-             WHERE t.statement_id IS NULL AND t.is_billable = 1 AND p.billing_type <> 'non_billable'
-             GROUP BY c.id, c.code, c.name, t.currency
+            "SELECT c.id AS client_id, c.code, c.name, x.currency,
+                    SUM(x.entries) AS entries, SUM(x.expenses) AS expenses, SUM(x.minutes) AS minutes,
+                    SUM(x.amount) AS amount, MIN(x.d) AS first_date, MAX(x.d) AS last_date
+             FROM (
+                SELECT t.client_id, t.currency, 1 AS entries, 0 AS expenses, t.minutes, COALESCE(t.amount, 0) AS amount, t.work_date AS d
+                FROM time_entries t JOIN projects p ON p.id = t.project_id
+                WHERE t.statement_id IS NULL AND t.is_billable = 1 AND p.billing_type <> 'non_billable'
+                UNION ALL
+                SELECT e.client_id, e.currency, 0, 1, 0, e.amount, e.expense_date
+                FROM expenses e WHERE e.statement_id IS NULL AND e.is_billable = 1
+             ) x
+             JOIN clients c ON c.id = x.client_id
+             GROUP BY c.id, c.code, c.name, x.currency
              ORDER BY c.name"
         );
     }
@@ -211,6 +216,32 @@ final class StatementService
                     DB::update('time_entries', ['statement_id' => $id], 'id = ?', [$t['id']]);
                 }
             }
+
+            // Yansıtılacak masraflar (faturalanmaz projelerin masrafları da dahil)
+            $expenses = DB::all(
+                'SELECT e.*, u.name AS user_name FROM expenses e JOIN users u ON u.id = e.user_id
+                 WHERE e.client_id = ? AND e.currency = ? AND e.statement_id IS NULL AND e.is_billable = 1
+                   AND e.expense_date <= ? ' . ($start ? 'AND e.expense_date >= ?' : '') . '
+                 ORDER BY e.project_id, e.expense_date, e.id',
+                $start ? [$client['id'], $currency, $end, $start] : [$client['id'], $currency, $end]
+            );
+            $previous = \App\Core\Lang::locale();
+            \App\Core\Lang::set($client['locale']);   // kategori adı müvekkilin dilinde yazılsın
+            foreach ($expenses as $ex) {
+                DB::insert('statement_lines', [
+                    'statement_id' => $id,
+                    'type'         => 'expense',
+                    'project_id'   => $ex['project_id'],
+                    'expense_id'   => $ex['id'],
+                    'work_date'    => $ex['expense_date'],
+                    'user_name'    => $ex['user_name'],
+                    'description'  => __('expenses.cat_' . $ex['category']) . ' – ' . $ex['description'],
+                    'amount'       => $ex['amount'],
+                    'sort'         => 500 + $sort++,
+                ]);
+                DB::update('expenses', ['statement_id' => $id], 'id = ?', [$ex['id']]);
+            }
+            \App\Core\Lang::set($previous);
 
             if (!DB::value('SELECT COUNT(*) FROM statement_lines WHERE statement_id = ?', [$id])) {
                 throw new ValidationException(['client_id' => __('billing.nothing_to_bill')]);
@@ -323,6 +354,9 @@ final class StatementService
             if ($line['time_entry_id']) {
                 DB::update('time_entries', ['statement_id' => null], 'id = ? AND statement_id = ?', [$line['time_entry_id'], $id]);
             }
+            if ($line['expense_id']) {
+                DB::update('expenses', ['statement_id' => null], 'id = ? AND statement_id = ?', [$line['expense_id'], $id]);
+            }
             DB::query('DELETE FROM statement_lines WHERE id = ?', [$line['id']]);
             self::recalculate($id);
             Audit::log('statement.line_removed', 'statement', $id, ['line' => $line['description']], $channel);
@@ -365,6 +399,7 @@ final class StatementService
         }
         DB::transaction(function () use ($id, $s, $channel) {
             DB::update('time_entries', ['statement_id' => null], 'statement_id = ?', [$id]);
+            DB::update('expenses', ['statement_id' => null], 'statement_id = ?', [$id]);
             if ($s['status'] === 'draft') {
                 DB::query('DELETE FROM statements WHERE id = ?', [$id]);
                 Audit::log('statement.draft_deleted', 'statement', $id, [], $channel);

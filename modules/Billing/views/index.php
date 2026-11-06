@@ -26,7 +26,10 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
             <?php foreach ($unbilled as $u): ?>
                 <tr>
                     <td class="cell-main"><strong><?= e($u['name']) ?></strong><span><?= e($u['code']) ?> · <?= e(format_date($u['first_date'])) ?> – <?= e(format_date($u['last_date'])) ?></span></td>
-                    <td><?= (int) $u['entries'] ?> <?= e(__('billing.entries')) ?> · <?= TimeService::hours((int) $u['minutes']) ?> <?= e(__('projects.hours')) ?></td>
+                    <td>
+                        <?= (int) $u['entries'] ?> <?= e(__('billing.entries')) ?> · <?= TimeService::hours((int) $u['minutes']) ?> <?= e(__('projects.hours')) ?>
+                        <?php if ($u['expenses']): ?> · <?= (int) $u['expenses'] ?> <?= e(__('expenses.count_label')) ?><?php endif; ?>
+                    </td>
                     <td class="num"><strong><?= e(format_money((float) $u['amount'], $u['currency'])) ?></strong></td>
                     <td class="cell-actions">
                         <form method="post" action="/billing">

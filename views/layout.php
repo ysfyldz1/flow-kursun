@@ -12,8 +12,9 @@ $nav = [
     ['/',          'home',    'nav.dashboard', null],
     ['/clients',   'users',   'nav.clients',   'clients.view'],
     ['/projects',  'folder',  'nav.projects',  'projects.view'],
-    ['/time',      'clock',   'nav.time',      null],
-    ['/billing',   'receipt', 'nav.billing',   'statements.manage'],
+    ['/time',      'clock',   'nav.time',      ['time.own', 'time.all']],
+    ['/expenses',  'wallet',  'nav.expenses',  ['expenses.own', 'expenses.all']],
+    ['/billing',   'receipt', 'nav.billing',   ['statements.manage', 'payments.manage']],
     ['/reports',   'chart',   'nav.reports',   'reports.view'],
 ];
 ?>
@@ -42,7 +43,7 @@ $nav = [
 
         <nav class="mainnav">
             <?php foreach ($nav as [$href, $ico, $label, $perm]): ?>
-                <?php if ($perm && !can($perm)) continue; ?>
+                <?php if ($perm && !array_filter((array) $perm, fn ($p) => can($p))) continue; ?>
                 <a href="<?= $href ?>" class="<?= request_is($href) ? 'active' : '' ?>">
                     <?= icon($ico) ?><span><?= e(__($label)) ?></span>
                 </a>

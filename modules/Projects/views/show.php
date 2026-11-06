@@ -69,6 +69,33 @@ $billingValue = match ($p['billing_type']) {
             <?php endif; ?>
         </section>
 
+        <section class="card widget widget-auto">
+            <header class="widget-head">
+                <span class="widget-icon"><?= icon('wallet') ?></span>
+                <h2><?= e(__('nav.expenses')) ?></h2>
+                <?php if ($expenses): ?><span class="muted small"><?= e(format_money(array_sum(array_column($expenses, 'amount')), $p['currency'])) ?></span><?php endif; ?>
+                <?php if ($p['status'] !== 'closed' && (can('expenses.own') || can('expenses.all'))): ?>
+                    <a href="/expenses?project_id=<?= $p['id'] ?>" class="btn btn-sm btn-outline head-right"><?= icon('plus', 'icon icon-sm') ?><?= e(__('expenses.add')) ?></a>
+                <?php endif; ?>
+            </header>
+            <?php if (!$expenses): ?>
+                <div class="empty"><?= e(__('expenses.none_for_project')) ?></div>
+            <?php else: ?>
+                <table class="table">
+                    <?php foreach ($expenses as $x): ?>
+                        <tr>
+                            <td class="muted nowrap"><?= e(format_date($x['expense_date'])) ?></td>
+                            <td class="cell-main"><strong><?= e(__('expenses.cat_' . $x['category'])) ?></strong><span><?= e($x['description']) ?> · <?= e($x['user_name']) ?></span></td>
+                            <td class="cell-actions">
+                                <strong><?= e(format_money((float) $x['amount'], $x['currency'])) ?></strong><br>
+                                <span class="muted small"><?= e(__($x['statement_id'] ? 'time.billed' : ($x['is_billable'] ? 'expenses.state_unbilled' : 'expenses.state_internal'))) ?></span>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+            <?php endif; ?>
+        </section>
+
         <?php if ($p['description']): ?>
             <section class="card widget widget-auto">
                 <header class="widget-head"><h2><?= e(__('projects.description')) ?></h2></header>

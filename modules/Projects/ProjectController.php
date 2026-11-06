@@ -44,6 +44,7 @@ final class ProjectController
             'rates'   => $rates,
             'entries' => \App\Services\TimeService::forProject((int) $project['id']),
             'totals'  => \App\Services\TimeService::projectTotals((int) $project['id']),
+            'expenses' => \App\Services\ExpenseService::forProject((int) $project['id']),
         ]);
     }
 

@@ -5,7 +5,7 @@
 return [
     'clients'    => ['clients.view', 'clients.edit'],
     'projects'   => ['projects.view', 'projects.edit'],
-    'time'       => ['time.own', 'time.all'],
+    'time'       => ['time.own', 'time.all', 'expenses.own', 'expenses.all'],
     'billing'    => ['rates.view', 'statements.manage', 'payments.manage', 'portal.manage'],
     'reports'    => ['reports.view'],
     'admin'      => ['users.manage', 'roles.manage', 'settings.manage'],
