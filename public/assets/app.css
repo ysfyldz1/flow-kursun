@@ -346,3 +346,12 @@ a.cell-main:hover strong { color: var(--primary); }
 .widget-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); }
 .widget-row:last-child { border-bottom: 0; }
 .widget-row:hover { background: #fafbfc; }
+
+/* Izgara hücreleri içeriğe göre taşmasın; alanlar hücreyi doldursun */
+.form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) { .form-grid-3 { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 700px) { .form-grid { grid-template-columns: minmax(0, 1fr); } }
+.form-grid > *, .field { min-width: 0; }
+.field input, .field select, .field textarea { width: 100%; min-width: 0; }
+.input-group input { width: auto; flex: 1; }
