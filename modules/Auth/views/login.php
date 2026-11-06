@@ -1,6 +1,17 @@
-<?php use App\Core\Lang; ?>
+<?php
+use App\Core\Lang;
+use App\Services\Settings;
+
+$orgName = Settings::get('org.name', config('app.name'));
+?>
 <div class="auth-card">
-    <div class="auth-brand"><span class="brand-mark">F</span><?= e(config('app.name')) ?></div>
+    <div class="auth-brand">
+        <?php if (Settings::get('org.logo')): ?>
+            <img src="/logo" alt="<?= e($orgName) ?>" class="brand-logo">
+        <?php else: ?>
+            <span class="brand-mark"><?= e(mb_strtoupper(mb_substr($orgName, 0, 1))) ?></span><?= e($orgName) ?>
+        <?php endif; ?>
+    </div>
     <h1><?= e(__('auth.welcome')) ?></h1>
 
     <?php if ($msg = flash('error')): ?>

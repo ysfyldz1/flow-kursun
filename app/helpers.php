@@ -51,7 +51,7 @@ function back(): never
 function abort(int $code): never
 {
     http_response_code($code);
-    $messages = [403 => 'error.403', 404 => 'error.404', 419 => 'error.419', 500 => 'error.500'];
+    $messages = [400 => 'error.500', 403 => 'error.403', 404 => 'error.404', 419 => 'error.419', 500 => 'error.500', 503 => 'error.503'];
     View::render('error', ['code' => $code, 'message' => __($messages[$code] ?? 'error.500')], null);
     exit;
 }
@@ -85,6 +85,31 @@ function flash(string $key, ?string $message = null): ?string
 function old(string $key, string $default = ''): string
 {
     return (string) ($GLOBALS['__old'][$key] ?? $default);
+}
+
+/** Doğrulama hatasını ve girilen değerleri (şifreler hariç) bir sonraki isteğe taşır. */
+function fail(\App\Core\ValidationException $e, string $to): never
+{
+    $_SESSION['_errors'] = $e->errors;
+    $_SESSION['_old'] = array_diff_key($_POST, array_flip(['password', '_csrf']));
+    redirect($to);
+}
+
+function error_for(string $key): string
+{
+    $msg = $GLOBALS['__errors'][$key] ?? null;
+    return $msg ? '<small class="field-error">' . e($msg) . '</small>' : '';
+}
+
+function has_errors(): bool
+{
+    return !empty($GLOBALS['__errors']);
+}
+
+/** Kayıtta name_tr / name_en gibi iki dilli alanın geçerli dildeki değeri */
+function localized(array $row, string $field = 'name'): string
+{
+    return (string) ($row[$field . '_' . Lang::locale()] ?? $row[$field . '_tr'] ?? '');
 }
 
 function request_is(string $prefix): bool

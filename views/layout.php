@@ -1,5 +1,10 @@
 <?php
 use App\Core\Lang;
+use App\Core\View;
+use App\Services\Settings;
+
+$orgName = Settings::get('org.name', config('app.name'));
+$canAdmin = can('users.manage') || can('roles.manage') || can('settings.manage');
 
 $user = auth();
 $initials = implode('', array_map(fn ($p) => mb_substr($p, 0, 1), array_slice(explode(' ', $user['name']), 0, 2)));
@@ -18,15 +23,22 @@ $nav = [
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<?= e(\App\Core\Csrf::token()) ?>">
-    <title><?= e(($title ?? '') . ' · ' . config('app.name')) ?></title>
+    <title><?= e(($title ?? '') . ' · ' . $orgName) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('app.css') ?>">
+    <?= View::partial('_theme') ?>
 </head>
 <body>
 <header class="topbar">
     <div class="topbar-inner">
-        <a href="/" class="brand"><span class="brand-mark">F</span><?= e(config('app.name')) ?></a>
+        <a href="/" class="brand">
+            <?php if (Settings::get('org.logo')): ?>
+                <img src="/logo" alt="<?= e($orgName) ?>" class="brand-logo">
+            <?php else: ?>
+                <span class="brand-mark"><?= e(mb_strtoupper(mb_substr($orgName, 0, 1))) ?></span><?= e($orgName) ?>
+            <?php endif; ?>
+        </a>
 
         <nav class="mainnav">
             <?php foreach ($nav as [$href, $ico, $label, $perm]): ?>
@@ -58,7 +70,7 @@ $nav = [
                             <button name="locale" value="<?= $loc ?>" class="<?= Lang::locale() === $loc ? 'active' : '' ?>"><?= strtoupper($loc) ?></button>
                         <?php endforeach; ?>
                     </form>
-                    <?php if (can('*')): ?>
+                    <?php if ($canAdmin): ?>
                         <a href="/settings"><?= icon('settings') ?><?= e(__('nav.settings')) ?></a>
                     <?php endif; ?>
                     <form method="post" action="/logout">

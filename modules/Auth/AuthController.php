@@ -39,7 +39,8 @@ final class AuthController
             redirect('/login');
         }
 
-        unset($_SESSION['_login_lock'], $_SESSION['locale']);
+        unset($_SESSION['_login_lock']);
+        $_SESSION['locale'] = Auth::user()['locale'];
         Audit::log('auth.login');
         redirect('/');
     }
