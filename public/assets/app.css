@@ -394,7 +394,7 @@ a.cell-main:hover strong { color: var(--primary); }
 .portal-balances { margin-bottom: 16px; }
 .stat-money { font-size: 22px; white-space: nowrap; }
 .text-danger { color: var(--red); }
-.portal-summary { padding: 8px 20px 14px; display: table; }
+.portal-summary { border-collapse: separate; border-spacing: 0; padding: 10px 22px 16px; }
 .portal-summary td { padding: 9px 0; }
 .bank-text { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
 .invite-box { background: var(--green-bg); border-bottom: 1px solid var(--border); }
