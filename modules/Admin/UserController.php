@@ -34,12 +34,12 @@ final class UserController
     public function store(): void
     {
         try {
-            UserService::create($_POST);
+            $id = UserService::create($_POST);
         } catch (ValidationException $e) {
             fail($e, '/settings/users/new');
         }
         flash('success', __('app.saved'));
-        redirect('/settings/users');
+        redirect("/settings/users/$id");
     }
 
     public function update(string $id): void
@@ -51,7 +51,7 @@ final class UserController
             fail($e, "/settings/users/$id");
         }
         flash('success', __('app.saved'));
-        redirect('/settings/users');
+        redirect("/settings/users/$id");
     }
 
     public function toggle(string $id): void

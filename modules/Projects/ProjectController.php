@@ -59,7 +59,7 @@ final class ProjectController
             fail($e, '/projects/new' . (!empty($_POST['client_id']) ? '?client_id=' . (int) $_POST['client_id'] : ''));
         }
         flash('success', __('app.saved'));
-        redirect("/projects/$id");
+        redirect("/projects/$id/edit");
     }
 
     public function update(string $id): void
@@ -71,7 +71,7 @@ final class ProjectController
             fail($e, "/projects/$id/edit");
         }
         flash('success', __('app.saved'));
-        redirect("/projects/$id");
+        redirect("/projects/$id/edit");
     }
 
     private function form(?array $project): void

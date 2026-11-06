@@ -53,7 +53,7 @@ final class ClientController
             fail($e, '/clients/new');
         }
         flash('success', __('app.saved'));
-        redirect("/clients/$id");
+        redirect("/clients/$id/edit");
     }
 
     public function update(string $id): void
@@ -65,7 +65,7 @@ final class ClientController
             fail($e, "/clients/$id/edit");
         }
         flash('success', __('app.saved'));
-        redirect("/clients/$id");
+        redirect("/clients/$id/edit");
     }
 
     public function toggle(string $id): void

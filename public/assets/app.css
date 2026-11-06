@@ -114,7 +114,7 @@ button { font: inherit; cursor: pointer; }
     height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: 9px;
     font: inherit; background: var(--surface); color: var(--text);
 }
-.field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--primary-soft); border-color: var(--primary); }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
 
 .alert { padding: 11px 14px; border-radius: 9px; margin-bottom: 16px; font-size: 13px; }
 .alert-success { background: var(--green-bg); color: #166534; }
@@ -257,3 +257,33 @@ a.cell-main:hover strong { color: var(--primary); }
 .text-warn { color: var(--amber); font-weight: 500; }
 .check-input { width: 16px; height: 16px; accent-color: var(--primary); }
 .dl dt.cell-main span { font-size: 12px; }
+
+/* Bildirimler (toast) */
+.toasts { position: fixed; top: 72px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; width: 340px; max-width: calc(100vw - 32px); }
+.toast { position: relative; overflow: hidden; display: flex; align-items: flex-start; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 14px 16px; box-shadow: 0 12px 32px rgba(15, 23, 42, .14); animation: toast-in .25s ease-out; }
+.toast-out { animation: toast-out .25s ease-in forwards; }
+.toast-icon { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; color: #fff; }
+.toast-success .toast-icon { background: var(--green); }
+.toast-error .toast-icon { background: var(--red); }
+.toast-body { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.toast-body strong { font-weight: 600; }
+.toast-body span { color: var(--muted); font-size: 13px; }
+.toast-close { border: 0; background: var(--bg); color: var(--muted); width: 26px; height: 26px; border-radius: 7px; font-size: 12px; flex-shrink: 0; }
+.toast-close:hover { color: var(--text); }
+.toast-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; transform-origin: left; animation: toast-bar 4s linear forwards; }
+.toast-success .toast-bar { background: var(--green); }
+.toast-error .toast-bar { background: var(--red); }
+.toast-paused .toast-bar { animation-play-state: paused; }
+@keyframes toast-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { to { opacity: 0; transform: translateX(24px); } }
+@keyframes toast-bar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* Grup içindeki alanlar (tutar + para birimi) standart alanlarla aynı görünür */
+.input-group input, .input-group select {
+    height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: 9px;
+    font: inherit; background: var(--surface); color: var(--text); outline: none;
+}
+.input-group input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.input-group input:focus, .input-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.input-addon { height: 40px; }
+.table-compact .input-group input, .table-compact .input-addon { height: 40px; }

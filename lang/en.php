@@ -63,7 +63,7 @@ return [
     'app.saved'           => 'Changes saved.',
     'app.deleted'         => 'Record deleted.',
     'app.confirm_delete'  => 'Are you sure you want to delete this record?',
-    'lang.tr'             => 'TÃ¼rkÃ§e',
+    'lang.tr'             => 'Türkçe',
     'lang.en'             => 'English',
 
     // Validation
@@ -197,7 +197,7 @@ return [
     'projects.only_mine'      => 'Only my projects',
     'projects.number'         => 'Project no',
     'projects.name'           => 'Project name',
-    'projects.name_hint'      => 'e.g. Employment claim â€“ John Doe',
+    'projects.name_hint'      => 'e.g. Employment claim – John Doe',
     'projects.type'           => 'Type',
     'projects.type_litigation'  => 'Litigation',
     'projects.type_advisory'    => 'Advisory',
@@ -240,4 +240,9 @@ return [
     'projects.hour'           => 'hour',
     'projects.hours'          => 'hours',
     'projects.month'          => 'month',
+
+    // Notifications
+    'app.toast_success'       => 'Success',
+    'app.toast_error'         => 'Could not complete',
+    'validation.check_form'   => 'Please check the highlighted fields.',
 ];

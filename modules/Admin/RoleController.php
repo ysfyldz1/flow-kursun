@@ -31,12 +31,12 @@ final class RoleController
     public function save(?string $id = null): void
     {
         try {
-            RoleService::save($id ? (int) $id : null, $_POST);
+            $id = RoleService::save($id ? (int) $id : null, $_POST);
         } catch (ValidationException $e) {
             fail($e, $id ? "/settings/roles/$id" : '/settings/roles/new');
         }
         flash('success', __('app.saved'));
-        redirect('/settings/roles');
+        redirect("/settings/roles/$id");
     }
 
     public function delete(string $id): void

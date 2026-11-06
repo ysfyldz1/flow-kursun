@@ -84,12 +84,28 @@ $nav = [
 </header>
 
 <main class="page">
-    <?php if ($msg = flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
-    <?php if ($msg = flash('error')): ?><div class="alert alert-error"><?= e($msg) ?></div><?php endif; ?>
     <?= $content ?>
 </main>
 
+<div class="toasts" id="toasts">
+    <?php if (has_errors()): ?>
+        <?= View::partial('_toast', ['type' => 'error', 'message' => __('validation.check_form')]) ?>
+    <?php endif; ?>
+    <?php foreach (['success', 'error'] as $type): ?>
+        <?php if ($msg = flash($type)): ?><?= View::partial('_toast', ['type' => $type, 'message' => $msg]) ?><?php endif; ?>
+    <?php endforeach; ?>
+</div>
+
 <script>
+// Bildirimler 4 sn sonra kendiliğinden kapanır; üzerine gelince bekler
+document.querySelectorAll('.toast').forEach(t => {
+    const close = () => { t.classList.add('toast-out'); setTimeout(() => t.remove(), 250); };
+    t.querySelector('.toast-close').addEventListener('click', close);
+    let timer = setTimeout(close, 4000);
+    t.addEventListener('mouseenter', () => { clearTimeout(timer); t.classList.add('toast-paused'); });
+    t.addEventListener('mouseleave', () => { timer = setTimeout(close, 2000); t.classList.remove('toast-paused'); });
+});
+
 // Açık açılır menüyü dışarı tıklanınca kapat
 document.addEventListener('click', e => {
     document.querySelectorAll('details.dropdown[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); });
