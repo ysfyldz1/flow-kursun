@@ -128,6 +128,33 @@ function format_money(float $amount, string $currency = 'TRY'): string
     return $symbol . number_format($amount, 2, '.', ',');
 }
 
+/** "2.500,50", "2.500" veya "2500.50" → sayı; boş → null; geçersiz → false */
+function parse_money(mixed $raw): float|null|false
+{
+    $s = trim((string) $raw);
+    if ($s === '') {
+        return null;
+    }
+    if (str_contains($s, ',')) {
+        $s = str_replace(['.', ','], ['', '.'], $s);
+    } elseif (preg_match('/^\d{1,3}(\.\d{3})+$/', $s)) {
+        $s = str_replace('.', '', $s);   // "2.500" → binlik ayraç
+    }
+    return is_numeric($s) && (float) $s >= 0 ? round((float) $s, 2) : false;
+}
+
+/** Form alanında gösterim: 2500.5 → "2500,50" (TR) / "2500.50" (EN) */
+function money_input(mixed $value): string
+{
+    if ($value === null || $value === '') {
+        return '';
+    }
+    if (!is_numeric($value)) {
+        return (string) $value;   // hatalı girişte kullanıcının yazdığını geri göster
+    }
+    return number_format((float) $value, 2, Lang::locale() === 'tr' ? ',' : '.', '');
+}
+
 function format_date(?string $date, bool $withTime = false): string
 {
     if (!$date) {

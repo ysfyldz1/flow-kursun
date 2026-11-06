@@ -77,7 +77,7 @@ final class UserService
             'title'         => trim((string) ($in['title'] ?? '')) ?: null,
             'role_id'       => (int) ($in['role_id'] ?? 0),
             'locale'        => (string) ($in['locale'] ?? 'tr'),
-            'hourly_rate'   => ($in['hourly_rate'] ?? '') === '' ? null : (float) str_replace(',', '.', (string) $in['hourly_rate']),
+            'hourly_rate'   => parse_money($in['hourly_rate'] ?? ''),
             'rate_currency' => ($in['rate_currency'] ?? '') ?: null,
         ];
 
@@ -100,7 +100,9 @@ final class UserService
         if ($data['rate_currency'] !== null && !in_array($data['rate_currency'], self::CURRENCIES, true)) {
             $errors['rate_currency'] = __('validation.required');
         }
-        if ($data['hourly_rate'] !== null && $data['rate_currency'] === null) {
+        if ($data['hourly_rate'] === false) {
+            $errors['hourly_rate'] = __('validation.number');
+        } elseif ($data['hourly_rate'] !== null && $data['rate_currency'] === null) {
             $errors['rate_currency'] = __('validation.required');
         }
         $password = (string) ($in['password'] ?? '');

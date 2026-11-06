@@ -42,7 +42,7 @@ $v = fn (string $k, $default = '') => old($k, (string) ($user[$k] ?? $default));
                 <label class="field">
                     <span><?= e(__('users.hourly_rate')) ?></span>
                     <div class="input-group">
-                        <input name="hourly_rate" inputmode="decimal" value="<?= e($v('hourly_rate')) ?>">
+                        <input name="hourly_rate" inputmode="decimal" value="<?= e(money_input($v('hourly_rate'))) ?>">
                         <select name="rate_currency">
                             <option value="">—</option>
                             <?php foreach (UserService::CURRENCIES as $c): ?>
@@ -50,6 +50,7 @@ $v = fn (string $k, $default = '') => old($k, (string) ($user[$k] ?? $default));
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <?= error_for('hourly_rate') ?>
                     <?= error_for('rate_currency') ?>
                 </label>
                 <label class="field">
