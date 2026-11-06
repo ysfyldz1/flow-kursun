@@ -42,6 +42,19 @@
                     <small class="muted"><?= e(__('org.logo_hint')) ?></small>
                     <?= error_for('logo') ?>
                 </div>
+                <div class="field">
+                    <span><?= e(__('org.app_icon')) ?></span>
+                    <div class="logo-preview">
+                        <img src="<?= e(\App\Services\AppIcon::url('icon-192.png')) ?>" alt="" class="icon-preview">
+                        <img src="<?= e(\App\Services\AppIcon::url('maskable-512.png')) ?>" alt="" class="icon-preview icon-preview-round" title="Android">
+                        <?php if (Settings::get('org.icon_custom') === '1'): ?>
+                            <label class="check"><input type="checkbox" name="remove_icon" value="1"><span><?= e(__('org.icon_remove')) ?></span></label>
+                        <?php endif; ?>
+                    </div>
+                    <input type="file" name="app_icon" accept="image/png,image/jpeg,image/webp">
+                    <small class="muted"><?= e(__('org.app_icon_hint')) ?></small>
+                    <?= error_for('app_icon') ?>
+                </div>
                 <label class="field">
                     <span><?= e(__('org.address')) ?></span>
                     <textarea name="org_address" rows="3"><?= e(old('org_address', (string) Settings::get('org.address'))) ?></textarea>

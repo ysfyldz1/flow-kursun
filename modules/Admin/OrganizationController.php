@@ -6,6 +6,7 @@ namespace Modules\Admin;
 
 use App\Core\ValidationException;
 use App\Core\View;
+use App\Services\AppIcon;
 use App\Services\Audit;
 use App\Services\Settings;
 
@@ -91,7 +92,19 @@ final class OrganizationController
             $values['org.logo'] = null;
         }
 
+        // Uygulama ikonu: yüklenirse tüm boyutlar üretilir; kaldırılırsa ya da varsayılan ikon kullanılıyorken
+        // ad/renk değişirse varsayılan yeniden üretilir
+        $icon = $_FILES['app_icon'] ?? null;
+        $nameOrColorChanged = $name !== Settings::get('org.name') || strtolower($color) !== Settings::get('org.primary_color');
         Settings::set($values);
+        if ($icon && $icon['error'] !== UPLOAD_ERR_NO_FILE) {
+            if ($err = AppIcon::fromUpload($icon)) {
+                fail(new ValidationException(['app_icon' => $err]), '/settings/organization');
+            }
+            Settings::set(['org.icon_custom' => '1']);
+        } elseif (!empty($_POST['remove_icon']) || ($nameOrColorChanged && Settings::get('org.icon_custom') !== '1')) {
+            AppIcon::reset();
+        }
         Audit::log('settings.updated', 'settings', null, $values);
         flash('success', __('app.saved'));
         redirect('/settings/organization');

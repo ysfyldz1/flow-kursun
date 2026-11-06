@@ -571,4 +571,14 @@ return [
     'expenses.locked'          => 'Bu masraf dökümde kullanıldığı için değiştirilemez.',
     'expenses.project_required'=> 'Bir proje seçin.',
     'expenses.count_label'     => 'masraf',
+
+    // PWA
+    'app.offline_title'        => 'Bağlantı yok',
+    'app.offline_text'         => 'İnternet bağlantınızı kontrol edip tekrar deneyin.',
+    'app.retry'                => 'Tekrar dene',
+    'org.app_icon'             => 'Uygulama ikonu',
+    'org.app_icon_hint'        => 'Telefona ve masaüstüne kurulan uygulamanın ikonu. Kare, en az 512×512 piksel PNG önerilir; tüm boyutlar otomatik üretilir.',
+    'org.icon_remove'          => 'Varsayılan ikona dön',
+    'org.icon_invalid'         => 'Görsel okunamadı; PNG, JPG veya WEBP yükleyin.',
+    'org.icon_too_small'       => 'İkon en az 192×192 piksel olmalı.',
 ];

@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+// PHP'nin yerleşik geliştirme sunucusunda gerçek dosyaları (sw.js, css) doğrudan sun
+if (PHP_SAPI === 'cli-server' && is_file(__DIR__ . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH))) {
+    return false;
+}
+
 require __DIR__ . '/../app/bootstrap.php';
 
 use App\Core\Lang;

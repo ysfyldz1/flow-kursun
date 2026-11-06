@@ -571,4 +571,14 @@ return [
     'expenses.locked'          => 'This expense is on a statement and cannot be changed.',
     'expenses.project_required'=> 'Choose a project.',
     'expenses.count_label'     => 'expenses',
+
+    // PWA
+    'app.offline_title'        => 'No connection',
+    'app.offline_text'         => 'Check your internet connection and try again.',
+    'app.retry'                => 'Try again',
+    'org.app_icon'             => 'App icon',
+    'org.app_icon_hint'        => 'Icon of the app installed on phones and desktops. A square PNG of at least 512×512 is recommended; all sizes are generated automatically.',
+    'org.icon_remove'          => 'Use the default icon',
+    'org.icon_invalid'         => 'The image could not be read; upload PNG, JPG or WEBP.',
+    'org.icon_too_small'       => 'The icon must be at least 192×192 pixels.',
 ];

@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('app.css') ?>">
     <?= \App\Core\View::partial('_theme') ?>
+    <?= \App\Core\View::partial('_pwa_head') ?>
 </head>
 <body class="auth-body">
     <?= $content ?>

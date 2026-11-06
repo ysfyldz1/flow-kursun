@@ -29,6 +29,7 @@ $nav = [
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('app.css') ?>">
     <?= View::partial('_theme') ?>
+    <?= View::partial('_pwa_head') ?>
 </head>
 <body>
 <header class="topbar">
@@ -87,6 +88,15 @@ $nav = [
 <main class="page">
     <?= $content ?>
 </main>
+
+<?php // Telefonda üst menü yerine alt sekme çubuğu (yetkili ilk 5 bölüm) ?>
+<nav class="bottomnav">
+    <?php $shown = 0; foreach ($nav as [$href, $ico, $label, $perm]): ?>
+        <?php if ($perm && !array_filter((array) $perm, fn ($p) => can($p))) continue; ?>
+        <?php if (++$shown > 5) break; ?>
+        <a href="<?= $href ?>" class="<?= request_is($href) ? 'active' : '' ?>"><?= icon($ico) ?><span><?= e(__($label)) ?></span></a>
+    <?php endforeach; ?>
+</nav>
 
 <div class="toasts" id="toasts">
     <?php if (has_errors()): ?>
