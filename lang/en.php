@@ -473,4 +473,17 @@ return [
     'portal.notice_approved_msg' => 'Notice approved and payment recorded.',
     'portal.notice_rejected_msg' => 'Notice rejected.',
     'portal.notice_not_pending'=> 'This notice has already been processed.',
+
+    // Portal: projects
+    'portal.my_projects'          => 'My projects',
+    'portal.project_statements'   => 'Statements for this project',
+    'portal.no_project_statements'=> 'No statements for this project yet.',
+    'portal.time_spent'           => 'Time spent',
+    'portal.of_budget'            => ':pct% of the :budget-hour budget',
+    'projects.portal_visible'     => 'Show in client portal',
+    'projects.portal_visible_hint'=> 'If off, the client cannot see this project.',
+    'projects.portal_shown'       => 'Visible',
+    'projects.portal_hidden'      => 'Hidden',
+    'org.portal_show_hours'       => 'Show time spent in the portal',
+    'org.portal_show_hours_hint'  => 'Clients see total hours and budget usage on their projects.',
 ];

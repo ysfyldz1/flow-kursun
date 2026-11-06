@@ -77,6 +77,12 @@
                     <small class="muted"><?= e(__('org.bank_note')) ?></small>
                 </label>
             </div>
+
+            <h3 class="section-title"><?= e(__('portal.title')) ?></h3>
+            <label class="check">
+                <input type="checkbox" name="portal_show_hours" value="1" <?= Settings::get('portal.show_hours', '1') === '1' ? 'checked' : '' ?>>
+                <span><?= e(__('org.portal_show_hours')) ?> <span class="muted small">— <?= e(__('org.portal_show_hours_hint')) ?></span></span>
+            </label>
             <div class="form-actions">
                 <button class="btn btn-primary"><?= e(__('app.save')) ?></button>
             </div>

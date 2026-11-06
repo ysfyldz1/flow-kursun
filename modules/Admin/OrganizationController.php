@@ -75,6 +75,7 @@ final class OrganizationController
             'billing.withholding_rate' => (string) ($wh ?? 0),
             'billing.due_days'         => $dueDays,
             'billing.bank_accounts'    => $text('bank_accounts'),
+            'portal.show_hours'        => !empty($_POST['portal_show_hours']) ? '1' : '0',
         ];
 
         if ($ext) {

@@ -155,6 +155,7 @@ final class ProjectService
             'court'               => $str('court'),
             'case_number'         => $str('case_number'),
             'description'         => $str('description'),
+            'portal_visible'      => (int) !empty($in['portal_visible']),
             'opened_at'           => (string) ($in['opened_at'] ?? '') ?: date('Y-m-d'),
         ];
 

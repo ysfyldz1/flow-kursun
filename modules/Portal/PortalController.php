@@ -79,7 +79,15 @@ final class PortalController
             'title'      => __('portal.title'),
             'balances'   => PortalService::balances($clientId),
             'statements' => PortalService::statements($clientId),
+            'projects'   => PortalService::projects($clientId),
+            'showHours'  => PortalService::showHours(),
         ], 'portal');
+    }
+
+    public function project(string $id): void
+    {
+        $p = PortalService::project(PortalAuth::clientId(), (int) $id) ?? abort(404);
+        View::render('Portal::project', ['title' => $p['name'], 'p' => $p, 'showHours' => PortalService::showHours()], 'portal');
     }
 
     public function statement(string $id): void

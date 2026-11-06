@@ -109,6 +109,55 @@ final class PortalService
         return rtrim((string) config('app.url'), '/') . '/portal/invite/' . $token;
     }
 
+    // --- Müvekkilin gördüğü projeler ---
+
+    public static function showHours(): bool
+    {
+        return Settings::get('portal.show_hours', '1') === '1';
+    }
+
+    /** Yalnızca portalda görünür işaretli projeler; açıklar önce. */
+    public static function projects(int $clientId): array
+    {
+        return DB::all(
+            "SELECT p.id, p.number, p.name, p.type, p.status, p.court, p.case_number, p.opened_at, p.closed_at,
+                    p.budget_hours, u.name AS responsible_name,
+                    (SELECT COALESCE(SUM(t.minutes), 0) FROM time_entries t WHERE t.project_id = p.id) AS minutes
+             FROM projects p LEFT JOIN users u ON u.id = p.responsible_user_id
+             WHERE p.client_id = ? AND p.portal_visible = 1
+             ORDER BY FIELD(p.status, 'open', 'on_hold', 'closed'), p.opened_at DESC",
+            [$clientId]
+        );
+    }
+
+    public static function project(int $clientId, int $id): ?array
+    {
+        $p = DB::one(
+            "SELECT p.id, p.number, p.name, p.type, p.status, p.court, p.case_number, p.opened_at, p.closed_at,
+                    p.budget_hours, p.billing_type, u.name AS responsible_name, u.email AS responsible_email,
+                    (SELECT COALESCE(SUM(t.minutes), 0) FROM time_entries t WHERE t.project_id = p.id) AS minutes
+             FROM projects p LEFT JOIN users u ON u.id = p.responsible_user_id
+             WHERE p.id = ? AND p.client_id = ? AND p.portal_visible = 1",
+            [$id, $clientId]
+        );
+        if ($p) {
+            // Ekip: yalnızca ad ve unvan (ücret bilgisi asla)
+            $p['team'] = DB::all(
+                'SELECT u.name, u.title FROM project_members m JOIN users u ON u.id = m.user_id
+                 WHERE m.project_id = ? AND u.is_active = 1 ORDER BY u.name',
+                [$id]
+            );
+            // Bu projeyi içeren kesinleşmiş dökümler
+            $p['statements'] = DB::all(
+                "SELECT DISTINCT s.* FROM statements s JOIN statement_lines l ON l.statement_id = s.id
+                 WHERE l.project_id = ? AND s.client_id = ? AND s.status = 'issued'
+                 ORDER BY s.issue_date DESC",
+                [$id, $clientId]
+            );
+        }
+        return $p;
+    }
+
     // --- Müvekkilin gördüğü dökümler ---
 
     /** Müvekkil yalnızca kendi kesinleşmiş dökümlerini görür. */

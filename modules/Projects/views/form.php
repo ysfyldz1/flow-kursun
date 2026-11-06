@@ -102,6 +102,10 @@ $back = $p ? '/projects/' . $p['id'] : ($clientId ? '/clients/' . $clientId : '/
                 <span><?= e(__('projects.description')) ?></span>
                 <textarea name="description" rows="3"><?= e($v('description')) ?></textarea>
             </label>
+            <label class="check field-wide">
+                <input type="checkbox" name="portal_visible" value="1" <?= (has_errors() ? !empty($GLOBALS['__old']['portal_visible']) : (bool) ($p['portal_visible'] ?? true)) ? 'checked' : '' ?>>
+                <span><?= e(__('projects.portal_visible')) ?> <span class="muted small">— <?= e(__('projects.portal_visible_hint')) ?></span></span>
+            </label>
         </div>
     </section>
 

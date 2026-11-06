@@ -410,3 +410,8 @@ a.cell-main:hover strong { color: var(--primary); }
 .notice-actions .input-group { flex: 1; }
 .reject-box summary { cursor: pointer; color: var(--red); }
 .reject-box .form { margin-top: 8px; gap: 8px; }
+.portal-project { align-items: center; }
+.portal-project-side { display: flex; align-items: center; gap: 16px; }
+.portal-project-side .cell-main span { font-size: 11px; }
+.portal-meter .cell-main { align-items: flex-start; text-align: left; }
+.portal-meter .meter { width: 100%; }

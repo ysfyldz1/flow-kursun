@@ -473,4 +473,17 @@ return [
     'portal.notice_approved_msg' => 'Bildirim onaylandı ve ödeme kaydedildi.',
     'portal.notice_rejected_msg' => 'Bildirim reddedildi.',
     'portal.notice_not_pending'=> 'Bu bildirim zaten işlenmiş.',
+
+    // Portal: projeler
+    'portal.my_projects'          => 'Projelerim',
+    'portal.project_statements'   => 'Bu projeye ait dökümler',
+    'portal.no_project_statements'=> 'Bu proje için henüz döküm yok.',
+    'portal.time_spent'           => 'Harcanan süre',
+    'portal.of_budget'            => ':budget saatlik bütçenin %:pct kadarı',
+    'projects.portal_visible'     => 'Müvekkil portalında göster',
+    'projects.portal_visible_hint'=> 'Kapalıysa müvekkil bu projeyi göremez.',
+    'projects.portal_shown'       => 'Görünür',
+    'projects.portal_hidden'      => 'Gizli',
+    'org.portal_show_hours'       => 'Portalda harcanan süreyi göster',
+    'org.portal_show_hours_hint'  => 'Müvekkil projelerindeki toplam saati ve bütçe doluluğunu görür.',
 ];

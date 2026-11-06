@@ -35,6 +35,31 @@ $closed = array_filter($statements, fn ($s) => StatementService::balance($s) <= 
     <?php endforeach; ?>
 </div>
 
+<?php if ($projects): ?>
+    <section class="card widget widget-auto" style="margin-bottom:16px">
+        <header class="widget-head">
+            <span class="widget-icon"><?= icon('folder') ?></span>
+            <h2><?= e(__('portal.my_projects')) ?></h2>
+        </header>
+        <?php foreach ($projects as $p): ?>
+            <a href="/portal/projects/<?= $p['id'] ?>" class="widget-row portal-project">
+                <div class="cell-main">
+                    <strong><?= e($p['name']) ?></strong>
+                    <span>
+                        <?= e($p['number']) ?> · <?= e(__('projects.type_' . $p['type'])) ?>
+                        <?= $p['case_number'] ? ' · ' . e($p['case_number']) : '' ?>
+                        <?= $p['responsible_name'] ? ' · ' . e($p['responsible_name']) : '' ?>
+                    </span>
+                </div>
+                <div class="portal-project-side">
+                    <?php if ($showHours): ?><?= View::partial('Portal::_project_meter', ['p' => $p]) ?><?php endif; ?>
+                    <?= View::partial('Projects::_status', ['status' => $p['status']]) ?>
+                </div>
+            </a>
+        <?php endforeach; ?>
+    </section>
+<?php endif; ?>
+
 <?php foreach (['portal.open_statements' => $open, 'portal.past_statements' => $closed] as $label => $list): ?>
     <?php if (!$list && $label === 'portal.past_statements') continue; ?>
     <section class="card widget widget-auto" style="margin-bottom:16px">

@@ -85,6 +85,7 @@ $billingValue = match ($p['billing_type']) {
                 <?= $row('projects.responsible', $p['responsible_name']) ?>
                 <?= $row('projects.opened_at', format_date($p['opened_at'])) ?>
                 <?= $row('projects.closed_at', format_date($p['closed_at'])) ?>
+                <?= $row('portal.title', __($p['portal_visible'] ? 'projects.portal_shown' : 'projects.portal_hidden')) ?>
                 <?= $row('projects.budget_hours', $p['budget_hours'] !== null ? rtrim(rtrim((string) $p['budget_hours'], '0'), '.') . ' ' . __('projects.hours') : null) ?>
                 <?php if (can('rates.view')): ?>
                     <?= $row('projects.billing_type', __('projects.billing_' . $p['billing_type'])) ?>
