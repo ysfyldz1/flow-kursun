@@ -1,0 +1,13 @@
+{
+    "name": "flow/flow",
+    "description": "Flow – hukuk bürosu yönetim sistemi",
+    "type": "project",
+    "require": {
+        "php": ">=8.2",
+        "dompdf/dompdf": "^3.0"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}

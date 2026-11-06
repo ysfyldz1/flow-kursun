@@ -3,3 +3,4 @@
 /storage/logs/*
 !/storage/uploads/.gitkeep
 !/storage/logs/.gitkeep
+/vendor/

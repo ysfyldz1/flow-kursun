@@ -42,6 +42,40 @@
                     <small class="muted"><?= e(__('org.logo_hint')) ?></small>
                     <?= error_for('logo') ?>
                 </div>
+                <label class="field">
+                    <span><?= e(__('org.address')) ?></span>
+                    <textarea name="org_address" rows="3"><?= e(old('org_address', (string) Settings::get('org.address'))) ?></textarea>
+                    <small class="muted"><?= e(__('org.address_hint')) ?></small>
+                </label>
+                <label class="field">
+                    <span><?= e(__('org.tax_info')) ?></span>
+                    <input name="org_tax_info" value="<?= e(old('org_tax_info', (string) Settings::get('org.tax_info'))) ?>" placeholder="<?= e(__('org.tax_info_hint')) ?>">
+                </label>
+            </div>
+
+            <h3 class="section-title"><?= e(__('org.billing_section')) ?></h3>
+            <div class="form-grid form-grid-3">
+                <label class="field">
+                    <span><?= e(__('org.vat_rate')) ?></span>
+                    <input name="vat_rate" inputmode="decimal" value="<?= e(old('vat_rate', (string) Settings::get('billing.vat_rate', 20))) ?>">
+                    <?= error_for('vat_rate') ?>
+                </label>
+                <label class="field">
+                    <span><?= e(__('org.withholding_rate')) ?></span>
+                    <input name="withholding_rate" inputmode="decimal" value="<?= e(old('withholding_rate', (string) Settings::get('billing.withholding_rate', 20))) ?>">
+                    <small class="muted"><?= e(__('org.withholding_hint')) ?></small>
+                    <?= error_for('withholding_rate') ?>
+                </label>
+                <label class="field">
+                    <span><?= e(__('org.due_days')) ?></span>
+                    <input name="due_days" inputmode="numeric" value="<?= e(old('due_days', (string) Settings::get('billing.due_days', 15))) ?>">
+                    <?= error_for('due_days') ?>
+                </label>
+                <label class="field field-wide">
+                    <span><?= e(__('billing.bank_accounts')) ?></span>
+                    <textarea name="bank_accounts" rows="4" placeholder="<?= e(__('org.bank_hint')) ?>"><?= e(old('bank_accounts', (string) Settings::get('billing.bank_accounts'))) ?></textarea>
+                    <small class="muted"><?= e(__('org.bank_note')) ?></small>
+                </label>
             </div>
             <div class="form-actions">
                 <button class="btn btn-primary"><?= e(__('app.save')) ?></button>

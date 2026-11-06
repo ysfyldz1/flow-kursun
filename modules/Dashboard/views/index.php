@@ -69,7 +69,23 @@
         <header class="widget-head">
             <span class="widget-icon"><?= icon('receipt') ?></span>
             <h2><?= e(__('dash.unpaid_list')) ?></h2>
+            <?php if ($unpaid): ?><a href="/billing" class="widget-link"><?= e(__('app.all')) ?> →</a><?php endif; ?>
         </header>
-        <div class="empty"><?= e(__('dash.empty')) ?></div>
+        <?php if (!$unpaid): ?>
+            <div class="empty"><?= e(__('dash.empty')) ?></div>
+        <?php else: ?>
+            <?php foreach (array_slice($unpaid, 0, 6) as $s): ?>
+                <a href="/billing/<?= $s['id'] ?>" class="widget-row">
+                    <div class="cell-main">
+                        <strong><?= e($s['client_name']) ?></strong>
+                        <span><?= e($s['number']) ?> · <?= e(__('billing.due_date')) ?> <?= e(format_date($s['due_date'])) ?></span>
+                    </div>
+                    <div class="cell-main align-right">
+                        <strong><?= e(format_money(\App\Services\StatementService::balance($s), $s['currency'])) ?></strong>
+                        <?= \App\Core\View::partial('Billing::_status', ['s' => $s]) ?>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </section>
 </div>

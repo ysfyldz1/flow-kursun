@@ -35,6 +35,19 @@ final class OrganizationController
             $errors['org_primary_color'] = __('validation.color');
         }
 
+        $vat = parse_money($_POST['vat_rate'] ?? '0');
+        $wh = parse_money($_POST['withholding_rate'] ?? '0');
+        $dueDays = (string) ($_POST['due_days'] ?? '15');
+        if ($vat === false || $vat > 100) {
+            $errors['vat_rate'] = __('validation.number');
+        }
+        if ($wh === false || $wh > 100) {
+            $errors['withholding_rate'] = __('validation.number');
+        }
+        if (!ctype_digit($dueDays) || (int) $dueDays > 365) {
+            $errors['due_days'] = __('validation.number');
+        }
+
         $logo = $_FILES['logo'] ?? null;
         $ext = null;
         if ($logo && $logo['error'] === UPLOAD_ERR_OK) {
@@ -51,7 +64,18 @@ final class OrganizationController
             fail(new ValidationException($errors), '/settings/organization');
         }
 
-        $values = ['org.name' => $name, 'org.locale' => $locale, 'org.primary_color' => strtolower($color)];
+        $text = fn (string $k) => trim((string) ($_POST[$k] ?? '')) ?: null;
+        $values = [
+            'org.name'                 => $name,
+            'org.locale'               => $locale,
+            'org.primary_color'        => strtolower($color),
+            'org.address'              => $text('org_address'),
+            'org.tax_info'             => $text('org_tax_info'),
+            'billing.vat_rate'         => (string) ($vat ?? 0),
+            'billing.withholding_rate' => (string) ($wh ?? 0),
+            'billing.due_days'         => $dueDays,
+            'billing.bank_accounts'    => $text('bank_accounts'),
+        ];
 
         if ($ext) {
             foreach (glob(BASE_PATH . '/storage/uploads/logo.*') as $old) {

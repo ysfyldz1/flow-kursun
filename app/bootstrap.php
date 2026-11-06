@@ -20,6 +20,9 @@ spl_autoload_register(function (string $class): void {
     }
 });
 
+if (is_file(BASE_PATH . '/vendor/autoload.php')) {
+    require BASE_PATH . '/vendor/autoload.php';   // yalnızca dompdf (PDF üretimi)
+}
 require BASE_PATH . '/app/helpers.php';
 
 $configFile = BASE_PATH . '/config.php';
