@@ -15,7 +15,7 @@
                     <tr>
                         <th><?= e(__('users.name')) ?></th>
                         <th><?= e(__('users.role')) ?></th>
-                        <th><?= e(__('users.hourly_rate')) ?></th>
+                        <?php if (can('rates.view')): ?><th><?= e(__('users.hourly_rate')) ?></th><?php endif; ?>
                         <th><?= e(__('users.last_login')) ?></th>
                         <th><?= e(__('users.status')) ?></th>
                         <th></th>
@@ -31,7 +31,7 @@
                             </a>
                         </td>
                         <td><?= e(localized(['name_tr' => $u['role_tr'], 'name_en' => $u['role_en']])) ?></td>
-                        <td><?= $u['hourly_rate'] !== null ? e(format_money((float) $u['hourly_rate'], $u['rate_currency'])) : '<span class="muted">—</span>' ?></td>
+                        <?php if (can('rates.view')): ?><td><?= $u['hourly_rate'] !== null ? e(format_money((float) $u['hourly_rate'], $u['rate_currency'])) : '<span class="muted">—</span>' ?></td><?php endif; ?>
                         <td class="muted"><?= $u['last_login_at'] ? e(format_date($u['last_login_at'], true)) : '—' ?></td>
                         <td>
                             <span class="badge <?= $u['is_active'] ? 'badge-green' : 'badge-gray' ?>">

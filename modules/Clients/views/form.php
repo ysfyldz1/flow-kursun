@@ -113,6 +113,7 @@ $type = $v('type', 'company');
                 </select>
                 <small class="muted"><?= e(__('clients.locale_hint')) ?></small>
             </label>
+            <?php if (can('rates.view')): ?>
             <label class="field">
                 <span><?= e(__('clients.hourly_rate')) ?></span>
                 <div class="input-group">
@@ -122,8 +123,10 @@ $type = $v('type', 'company');
                 <small class="muted"><?= e(__('clients.hourly_rate_hint')) ?></small>
                 <?= error_for('hourly_rate') ?>
             </label>
+            <?php endif; ?>
         </div>
 
+        <?php if (can('rates.view')): ?>
         <h4 class="subsection-title"><?= e(__('clients.user_rates')) ?></h4>
         <p class="muted small"><?= e(__('clients.user_rates_hint')) ?></p>
         <table class="table table-compact">
@@ -146,6 +149,7 @@ $type = $v('type', 'company');
             <?php endforeach; ?>
             </tbody>
         </table>
+        <?php endif; ?>
     </section>
 
     <section class="card form-card">

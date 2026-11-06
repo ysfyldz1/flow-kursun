@@ -6,7 +6,7 @@ return [
     'clients'    => ['clients.view', 'clients.edit'],
     'projects'   => ['projects.view', 'projects.edit'],
     'time'       => ['time.own', 'time.all'],
-    'billing'    => ['statements.manage', 'payments.manage'],
+    'billing'    => ['rates.view', 'statements.manage', 'payments.manage'],
     'reports'    => ['reports.view'],
     'admin'      => ['users.manage', 'roles.manage', 'settings.manage'],
 ];

@@ -249,3 +249,11 @@ a.cell-main:hover strong { color: var(--primary); }
 @media (max-width: 800px) { .repeater-head { display: none; } .repeater-row { grid-template-columns: 1fr 1fr; padding-bottom: 8px; border-bottom: 1px solid var(--border); } }
 .table-compact td, .table-compact th { padding: 8px 10px; }
 .table-compact .input-group input { height: 36px; }
+
+/* Projeler */
+.head-right { margin-left: auto; }
+.text-strong { color: var(--text); font-weight: 600; }
+.align-right { align-items: flex-end; text-align: right; }
+.text-warn { color: var(--amber); font-weight: 500; }
+.check-input { width: 16px; height: 16px; accent-color: var(--primary); }
+.dl dt.cell-main span { font-size: 12px; }

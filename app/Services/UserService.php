@@ -115,6 +115,9 @@ final class UserService
         if ($errors) {
             throw new ValidationException($errors);
         }
+        if (!\App\Core\Auth::can('rates.view')) {
+            unset($data['hourly_rate'], $data['rate_currency']);   // yetkisi olmayan mevcut ücrete dokunamaz
+        }
         return $data;
     }
 }

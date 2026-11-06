@@ -28,7 +28,11 @@ final class ClientController
     public function show(string $id): void
     {
         $client = ClientService::find((int) $id) ?? abort(404);
-        View::render('Clients::show', ['title' => $client['name'], 'client' => $client]);
+        View::render('Clients::show', [
+            'title'    => $client['name'],
+            'client'   => $client,
+            'projects' => can('projects.view') ? \App\Services\ProjectService::forClient((int) $id) : [],
+        ]);
     }
 
     public function create(): void

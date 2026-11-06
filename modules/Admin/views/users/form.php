@@ -39,6 +39,7 @@ $v = fn (string $k, $default = '') => old($k, (string) ($user[$k] ?? $default));
                     </select>
                     <?= error_for('role_id') ?>
                 </label>
+                <?php if (can('rates.view')): ?>
                 <label class="field">
                     <span><?= e(__('users.hourly_rate')) ?></span>
                     <div class="input-group">
@@ -53,6 +54,7 @@ $v = fn (string $k, $default = '') => old($k, (string) ($user[$k] ?? $default));
                     <?= error_for('hourly_rate') ?>
                     <?= error_for('rate_currency') ?>
                 </label>
+                <?php endif; ?>
                 <label class="field">
                     <span><?= e(__('app.language')) ?></span>
                     <select name="locale">

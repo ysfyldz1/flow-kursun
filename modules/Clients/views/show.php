@@ -27,13 +27,33 @@ $row = fn (string $label, ?string $value) => $value
 
 <div class="grid grid-3-1">
     <div class="stack">
+        <?php if (can('projects.view')): ?>
         <section class="card widget widget-auto">
             <header class="widget-head">
                 <span class="widget-icon"><?= icon('folder') ?></span>
                 <h2><?= e(__('nav.projects')) ?></h2>
+                <?php if (can('projects.edit') && $c['is_active']): ?>
+                    <a href="/projects/new?client_id=<?= $c['id'] ?>" class="btn btn-sm btn-outline head-right"><?= icon('plus', 'icon icon-sm') ?><?= e(__('projects.new')) ?></a>
+                <?php endif; ?>
             </header>
-            <div class="empty"><?= e(__('clients.no_projects')) ?></div>
+            <?php if (!$projects): ?>
+                <div class="empty"><?= e(__('clients.no_projects')) ?></div>
+            <?php else: ?>
+                <table class="table">
+                    <?php foreach ($projects as $p): ?>
+                        <tr class="row-link" onclick="location='/projects/<?= $p['id'] ?>'">
+                            <td><span class="code"><?= e($p['number']) ?></span></td>
+                            <td class="cell-main">
+                                <strong><?= e($p['name']) ?></strong>
+                                <span><?= e(__('projects.type_' . $p['type'])) ?><?= $p['responsible_name'] ? ' · ' . e($p['responsible_name']) : '' ?></span>
+                            </td>
+                            <td class="cell-actions"><?= \App\Core\View::partial('Projects::_status', ['status' => $p['status']]) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+            <?php endif; ?>
         </section>
+        <?php endif; ?>
 
         <section class="card widget widget-auto">
             <header class="widget-head">
@@ -83,10 +103,12 @@ $row = fn (string $label, ?string $value) => $value
             <dl class="dl">
                 <?= $row('clients.currency', $c['currency']) ?>
                 <?= $row('clients.locale', __('lang.' . $c['locale'])) ?>
-                <?= $row('clients.hourly_rate', $c['hourly_rate'] !== null ? format_money((float) $c['hourly_rate'], $c['currency']) : __('clients.rate_default_used')) ?>
-                <?php foreach ($c['user_rates'] as $r): ?>
-                    <div class="dl-row"><dt><?= e($r['name']) ?></dt><dd><?= e(format_money((float) $r['hourly_rate'], $c['currency'])) ?></dd></div>
-                <?php endforeach; ?>
+                <?php if (can('rates.view')): ?>
+                    <?= $row('clients.hourly_rate', $c['hourly_rate'] !== null ? format_money((float) $c['hourly_rate'], $c['currency']) : __('clients.rate_default_used')) ?>
+                    <?php foreach ($c['user_rates'] as $r): ?>
+                        <div class="dl-row"><dt><?= e($r['name']) ?></dt><dd><?= e(format_money((float) $r['hourly_rate'], $c['currency'])) ?></dd></div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </dl>
         </section>
     </div>

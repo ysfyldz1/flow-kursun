@@ -92,11 +92,15 @@ final class ClientService
         Audit::log($active ? 'client.activated' : 'client.deactivated', 'client', $id, [], $channel);
     }
 
-    private static function syncChildren(int $id, array $contacts, array $rates): void
+    /** $rates null ise (ücret yetkisi yok) mevcut ücretlere dokunulmaz. */
+    private static function syncChildren(int $id, array $contacts, ?array $rates): void
     {
         DB::query('DELETE FROM client_contacts WHERE client_id = ?', [$id]);
         foreach ($contacts as $c) {
             DB::insert('client_contacts', $c + ['client_id' => $id]);
+        }
+        if ($rates === null) {
+            return;
         }
         DB::query('DELETE FROM client_user_rates WHERE client_id = ?', [$id]);
         foreach ($rates as $userId => $rate) {
@@ -187,6 +191,10 @@ final class ClientService
 
         if ($errors) {
             throw new ValidationException($errors);
+        }
+        if (!Auth::can('rates.view')) {
+            unset($data['hourly_rate']);
+            $rates = null;
         }
         return [$data, $contacts, $rates];
     }

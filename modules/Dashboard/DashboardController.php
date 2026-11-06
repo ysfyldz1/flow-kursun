@@ -13,7 +13,7 @@ final class DashboardController
         // Müvekkil, proje ve zaman modülleri gelene kadar sayaçlar 0.
         $stats = [
             ['icon' => 'users',   'label' => __('dash.active_clients'),  'hint' => __('dash.hint_clients'),  'value' => \App\Services\ClientService::countActive(), 'tone' => 'blue'],
-            ['icon' => 'folder',  'label' => __('dash.open_projects'),   'hint' => __('dash.hint_projects'), 'value' => 0, 'tone' => 'green'],
+            ['icon' => 'folder',  'label' => __('dash.open_projects'),   'hint' => __('dash.hint_projects'), 'value' => \App\Services\ProjectService::countOpen(), 'tone' => 'green'],
             ['icon' => 'clock',   'label' => __('dash.hours_month'),     'hint' => __('dash.hint_hours'),    'value' => 0, 'tone' => 'amber'],
             ['icon' => 'receipt', 'label' => __('dash.unpaid'),          'hint' => __('dash.hint_unpaid'),   'value' => 0, 'tone' => 'red'],
         ];
