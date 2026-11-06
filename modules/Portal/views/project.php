@@ -50,6 +50,40 @@ $row = fn (string $label, ?string $value) => $value
                 </table>
             <?php endif; ?>
         </section>
+
+        <?php if ($docs !== null): ?>
+            <section class="card widget widget-auto" id="documents">
+                <header class="widget-head">
+                    <span class="widget-icon"><?= icon('folder') ?></span>
+                    <h2><?= e(__('docs.title')) ?></h2>
+                    <label class="btn btn-sm btn-outline head-right upload-zone" data-upload="/portal/projects/<?= $p['id'] ?>/documents/upload"
+                           data-complete="/portal/projects/<?= $p['id'] ?>/documents/complete"
+                           data-csrf="<?= e(\App\Core\Csrf::token()) ?>" data-msg-done="<?= e(__('docs.uploaded')) ?>" data-msg-empty="<?= e(__('docs.file_empty')) ?>">
+                        <?= icon('plus', 'icon icon-sm') ?><?= e(__('docs.upload')) ?>
+                        <input type="file" multiple hidden>
+                        <span class="upload-status"></span>
+                    </label>
+                </header>
+                <?php if (!$docs): ?>
+                    <div class="empty"><?= e(__('docs.portal_empty')) ?></div>
+                <?php else: ?>
+                    <table class="table">
+                        <?php foreach ($docs as $d): ?>
+                            <tr>
+                                <td class="cell-main">
+                                    <a href="/portal/projects/<?= $p['id'] ?>/documents/<?= $d['id'] ?>" class="link"><strong><?= e($d['name']) ?></strong></a>
+                                    <span><?= e(format_bytes($d['size'] !== null ? (int) $d['size'] : null)) ?> · <?= e(format_date($d['created_at'])) ?>
+                                        <?php if ($d['source'] === 'client'): ?> · <?= e(__('docs.uploaded_by_you')) ?><?php endif; ?></span>
+                                </td>
+                                <td class="cell-actions"><a href="/portal/projects/<?= $p['id'] ?>/documents/<?= $d['id'] ?>" class="btn btn-sm btn-outline">↓</a></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </table>
+                <?php endif; ?>
+            </section>
+            <script src="<?= asset('upload.js') ?>" defer></script>
+            <script>document.getElementById('documents').addEventListener('uploaded', () => setTimeout(() => location.reload(), 800));</script>
+        <?php endif; ?>
     </div>
 
     <div class="stack">

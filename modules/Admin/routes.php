@@ -29,6 +29,7 @@ $router->get('/logo', [OrganizationController::class, 'logo'], ['auth' => false]
 $router->get('/settings/microsoft', [MicrosoftController::class, 'edit'], ['can' => 'settings.manage']);
 $router->post('/settings/microsoft', [MicrosoftController::class, 'update'], ['can' => 'settings.manage']);
 $router->post('/settings/microsoft/test', [MicrosoftController::class, 'test'], ['can' => 'settings.manage']);
+$router->post('/settings/microsoft/documents', [MicrosoftController::class, 'documents'], ['can' => 'settings.manage']);
 $router->post('/settings/microsoft/reset', [MicrosoftController::class, 'reset'], ['can' => 'settings.manage']);
 
 $router->get('/settings/mail', [MailController::class, 'edit'], ['can' => 'settings.manage']);

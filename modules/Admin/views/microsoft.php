@@ -49,7 +49,58 @@
             </div>
         </form>
 
-        <?php if (Microsoft::isConfigured()): ?>
+        <?php if (Microsoft::isConfigured()): $provider = old('docs_provider', (string) Settings::get('docs.provider')); ?>
+            <form method="post" action="/settings/microsoft/documents" class="card form-card">
+                <?= csrf_field() ?>
+                <div class="page-head">
+                    <div>
+                        <h3 class="section-title"><?= e(__('docs.settings_title')) ?></h3>
+                        <p class="muted small"><?= e(__('docs.settings_hint')) ?></p>
+                    </div>
+                    <?php if (\App\Services\DocumentService::enabled()): ?>
+                        <span class="badge badge-green"><?= e(__('ms.configured')) ?></span>
+                    <?php endif; ?>
+                </div>
+                <div class="form-grid">
+                    <label class="field">
+                        <span><?= e(__('docs.provider')) ?></span>
+                        <select name="docs_provider" id="docs-provider">
+                            <option value=""><?= e(__('docs.provider_none')) ?></option>
+                            <?php foreach (\App\Services\DocumentService::PROVIDERS as $pv): ?>
+                                <option value="<?= $pv ?>" <?= $provider === $pv ? 'selected' : '' ?>><?= e(__('docs.provider_' . $pv)) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                    <label class="field" data-docs="sharepoint onedrive">
+                        <span data-docs="sharepoint"><?= e(__('docs.site_url')) ?> *</span>
+                        <span data-docs="onedrive"><?= e(__('docs.onedrive_user')) ?> *</span>
+                        <input name="docs_target" value="<?= e(old('docs_target', (string) Settings::get('docs.target'))) ?>"
+                               data-ph-sharepoint="https://kurum.sharepoint.com/sites/Flow" data-ph-onedrive="belgeler@kurum.com.tr">
+                        <?= error_for('docs_target') ?>
+                    </label>
+                    <label class="field" data-docs="sharepoint onedrive">
+                        <span><?= e(__('docs.root')) ?></span>
+                        <input name="docs_root" value="<?= e(old('docs_root', (string) Settings::get('docs.root', 'Flow'))) ?>">
+                        <small class="muted"><?= e(__('docs.root_hint')) ?></small>
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary"><?= e(__('app.save')) ?></button>
+                </div>
+            </form>
+            <script>
+            (() => {
+                const sel = document.getElementById('docs-provider');
+                const input = document.querySelector('[name=docs_target]');
+                const sync = () => {
+                    document.querySelectorAll('[data-docs]').forEach(el => { el.hidden = !el.dataset.docs.split(' ').includes(sel.value); });
+                    input.placeholder = input.dataset['ph' + sel.value.charAt(0).toUpperCase() + sel.value.slice(1)] || '';
+                };
+                sel.addEventListener('change', sync);
+                sync();
+            })();
+            </script>
+
             <div class="card form-card">
                 <p class="muted small"><?= e(__('ms.linked_users', ['count' => $linked])) ?></p>
                 <div class="form-actions">

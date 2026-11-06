@@ -87,7 +87,10 @@ final class PortalController
     public function project(string $id): void
     {
         $p = PortalService::project(PortalAuth::clientId(), (int) $id) ?? abort(404);
-        View::render('Portal::project', ['title' => $p['name'], 'p' => $p, 'showHours' => PortalService::showHours()], 'portal');
+        $docs = \App\Services\DocumentService::enabled()
+            ? \App\Core\DB::all('SELECT * FROM document_shares WHERE project_id = ? ORDER BY created_at DESC', [$p['id']])
+            : null;
+        View::render('Portal::project', ['title' => $p['name'], 'p' => $p, 'showHours' => PortalService::showHours(), 'docs' => $docs], 'portal');
     }
 
     public function statement(string $id): void

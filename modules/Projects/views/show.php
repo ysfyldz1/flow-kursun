@@ -96,6 +96,43 @@ $billingValue = match ($p['billing_type']) {
             <?php endif; ?>
         </section>
 
+        <?php if (\App\Services\DocumentService::enabled()): ?>
+            <section class="card widget widget-auto" id="documents">
+                <header class="widget-head">
+                    <span class="widget-icon"><?= icon('folder') ?></span>
+                    <h2><?= e(__('docs.title')) ?></h2>
+                    <?php if (can('documents.manage')): ?>
+                        <label class="btn btn-sm btn-outline head-right upload-zone" data-upload="/projects/<?= $p['id'] ?>/documents/upload"
+                               data-csrf="<?= e(\App\Core\Csrf::token()) ?>" data-msg-done="<?= e(__('docs.uploaded')) ?>" data-msg-empty="<?= e(__('docs.file_empty')) ?>">
+                            <?= icon('plus', 'icon icon-sm') ?><?= e(__('docs.upload')) ?>
+                            <input type="file" multiple hidden>
+                            <span class="upload-status"></span>
+                        </label>
+                    <?php endif; ?>
+                </header>
+                <div class="docs-body" data-src="/projects/<?= $p['id'] ?>/documents"><div class="empty"><?= e(__('docs.loading')) ?></div></div>
+            </section>
+            <script src="<?= asset('upload.js') ?>" defer></script>
+            <script>
+            (() => {
+                const section = document.getElementById('documents');
+                const body = section.querySelector('.docs-body');
+                const load = () => fetch(body.dataset.src, { credentials: 'same-origin' }).then(r => r.text()).then(html => { body.innerHTML = html; });
+                load();
+                section.addEventListener('uploaded', load);
+                body.addEventListener('click', async e => {
+                    const btn = e.target.closest('[data-share]');
+                    if (!btn) return;
+                    btn.disabled = true;
+                    const fd = new FormData();
+                    fd.append('_csrf', <?= json_encode(\App\Core\Csrf::token()) ?>);
+                    await fetch(btn.dataset.share, { method: 'POST', body: fd, credentials: 'same-origin' });
+                    load();
+                });
+            })();
+            </script>
+        <?php endif; ?>
+
         <?php if ($p['description']): ?>
             <section class="card widget widget-auto">
                 <header class="widget-head"><h2><?= e(__('projects.description')) ?></h2></header>

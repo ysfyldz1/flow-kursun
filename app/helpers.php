@@ -179,3 +179,26 @@ function icon(string $name, string $class = 'icon'): string
     }
     return str_replace('<svg', '<svg class="' . e($class) . '"', file_get_contents($file));
 }
+
+function json_response(array $data, int $status = 200): never
+{
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+function format_bytes(?int $bytes): string
+{
+    if ($bytes === null) {
+        return '';
+    }
+    $units = ['B', 'KB', 'MB', 'GB'];
+    $i = 0;
+    $n = (float) $bytes;
+    while ($n >= 1024 && $i < count($units) - 1) {
+        $n /= 1024;
+        $i++;
+    }
+    return ($i === 0 ? (string) $bytes : number_format($n, $n < 10 ? 1 : 0, ',', '.')) . ' ' . $units[$i];
+}

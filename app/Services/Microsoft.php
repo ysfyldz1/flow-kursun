@@ -119,7 +119,7 @@ final class Microsoft
         return $token['access_token'];
     }
 
-    /** Uygulama belirteciyle Graph çağrısı. 2xx dışı yanıtta Graph'ın hata mesajıyla istisna atar. */
+    /** Uygulama belirteciyle Graph çağrısı. 2xx dışı yanıtta Graph'ın hata mesajıyla, kod = HTTP durumu olan istisna atar. */
     public static function graph(string $method, string $path, ?array $body = null): array
     {
         [$status, $json] = self::http($method, self::GRAPH . $path, $body !== null ? json_encode($body) : null, [
@@ -127,7 +127,7 @@ final class Microsoft
             'Content-Type: application/json',
         ]);
         if ($status < 200 || $status >= 300) {
-            throw new RuntimeException($json['error']['message'] ?? "Graph HTTP $status");
+            throw new RuntimeException($json['error']['message'] ?? "Graph HTTP $status", $status);
         }
         return $json ?? [];
     }
@@ -136,7 +136,9 @@ final class Microsoft
     public static function reset(): void
     {
         DB::transaction(function () {
-            DB::query("DELETE FROM settings WHERE `key` LIKE 'ms.%'");
+            DB::query("DELETE FROM settings WHERE `key` LIKE 'ms.%' OR `key` LIKE 'docs.%'");
+            DB::query('UPDATE projects SET drive_folder_id = NULL');
+            DB::query('DELETE FROM document_shares');
             DB::query("DELETE FROM integration_tokens WHERE provider = 'microsoft'");
             DB::query('UPDATE users SET ms_object_id = NULL, ms_upn = NULL');
             if (Settings::get('mail.driver') === 'graph') {

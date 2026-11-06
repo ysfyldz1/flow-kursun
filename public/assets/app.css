@@ -477,3 +477,11 @@ td.strong { font-weight: 700; }
     body { -webkit-user-select: none; user-select: none; }
     input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; }
 }
+
+/* Belgeler: yükleme düğmesi aynı zamanda sürükle-bırak alanı */
+.upload-zone { cursor: pointer; position: relative; }
+.upload-zone.is-over { outline: 2px dashed var(--primary); outline-offset: 2px; }
+.upload-zone.is-busy { pointer-events: none; opacity: .8; }
+.upload-status { font-weight: 400; color: var(--muted); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-status:empty { display: none; }
+.docs-body .cell-main .badge { vertical-align: middle; }

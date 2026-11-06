@@ -2,6 +2,7 @@
 
 use Modules\Portal\PortalAccessController;
 use Modules\Portal\PortalController;
+use Modules\Portal\PortalDocumentController;
 
 // Müvekkil tarafı
 $guest = ['auth' => false];
@@ -25,3 +26,8 @@ $router->post('/clients/{id}/portal/{user}/active', [PortalAccessController::cla
 $router->post('/billing/{id}/notices/{notice}/approve', [PortalAccessController::class, 'approve'], ['can' => 'payments.manage']);
 $router->post('/billing/{id}/notices/{notice}/reject', [PortalAccessController::class, 'reject'], ['can' => 'payments.manage']);
 $router->get('/billing/{id}/notices/{notice}/receipt', [PortalAccessController::class, 'receipt'], ['can' => 'payments.manage']);
+
+// Müvekkilin proje belgeleri
+$router->get('/portal/projects/{id}/documents/{share}', [PortalDocumentController::class, 'download'], $portal);
+$router->post('/portal/projects/{id}/documents/upload', [PortalDocumentController::class, 'upload'], $portal);
+$router->post('/portal/projects/{id}/documents/complete', [PortalDocumentController::class, 'complete'], $portal);

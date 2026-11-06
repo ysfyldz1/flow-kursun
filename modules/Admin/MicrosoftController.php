@@ -8,6 +8,7 @@ use App\Core\DB;
 use App\Core\ValidationException;
 use App\Core\View;
 use App\Services\Audit;
+use App\Services\DocumentService;
 use App\Services\Microsoft;
 use App\Services\Secret;
 use App\Services\Settings;
@@ -73,6 +74,45 @@ final class MicrosoftController
         } catch (Throwable $e) {
             flash('error', __('ms.test_failed', ['error' => $e->getMessage()]));
         }
+        redirect('/settings/microsoft');
+    }
+
+    /** Belge deposu: drive kimliği kaydederken çözülür, böylece yanlış adres hemen fark edilir. */
+    public function documents(): void
+    {
+        $provider = (string) ($_POST['docs_provider'] ?? '');
+        $target = trim((string) ($_POST['docs_target'] ?? ''));
+        $root = trim((string) ($_POST['docs_root'] ?? '')) ?: 'Flow';
+
+        if (!in_array($provider, DocumentService::PROVIDERS, true)) {
+            Settings::set(['docs.provider' => null, 'docs.drive_id' => null]);
+            flash('success', __('app.saved'));
+            redirect('/settings/microsoft');
+        }
+        $error = match (true) {
+            $target === ''                                                            => __('validation.required'),
+            $provider === 'onedrive' && !filter_var($target, FILTER_VALIDATE_EMAIL)  => __('validation.email'),
+            default                                                                  => null,
+        };
+        if (!$error) {
+            try {
+                $driveId = DocumentService::resolveDrive($provider, $target);
+            } catch (Throwable $e) {
+                $error = __('docs.drive_not_found', ['error' => $e->getMessage()]);
+            }
+        }
+        if ($error) {
+            fail(new ValidationException(['docs_target' => $error]), '/settings/microsoft');
+        }
+
+        // Depo değişirse eski klasör bağları ve paylaşımlar yeni depoda geçersizdir
+        if ($driveId !== Settings::get('docs.drive_id') || $root !== Settings::get('docs.root', 'Flow')) {
+            DB::query('UPDATE projects SET drive_folder_id = NULL');
+            DB::query('DELETE FROM document_shares');
+        }
+        Settings::set(['docs.provider' => $provider, 'docs.target' => $target, 'docs.root' => $root, 'docs.drive_id' => $driveId]);
+        Audit::log('settings.documents', 'settings', null, ['provider' => $provider, 'target' => $target, 'root' => $root]);
+        flash('success', __('docs.connected'));
         redirect('/settings/microsoft');
     }
 
