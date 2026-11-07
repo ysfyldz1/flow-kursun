@@ -5,6 +5,7 @@
 return [
     'clients'    => ['clients.view', 'clients.edit'],
     'projects'   => ['projects.view', 'projects.edit', 'documents.manage'],
+    'meetings'   => ['meetings.manage'],
     'calendar'   => ['calendar.view', 'calendar.edit'],
     'time'       => ['time.own', 'time.all', 'expenses.own', 'expenses.all'],
     'leaves'     => ['leaves.own', 'leaves.approve', 'leaves.manage'],

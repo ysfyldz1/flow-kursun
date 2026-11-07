@@ -35,6 +35,24 @@ $closed = array_filter($statements, fn ($s) => StatementService::balance($s) <= 
     <?php endforeach; ?>
 </div>
 
+<?php if ($meetings): ?>
+    <section class="card widget widget-auto" style="margin-bottom:16px">
+        <header class="widget-head">
+            <span class="widget-icon"><?= icon('users') ?></span>
+            <h2><?= e(__('meetings.title')) ?></h2>
+        </header>
+        <?php foreach ($meetings as $m): ?>
+            <a href="/portal/meetings/<?= $m['id'] ?>" class="widget-row">
+                <div class="cell-main">
+                    <strong><?= e(format_date($m['meeting_at'], true)) ?></strong>
+                    <span><?= e(__('meetings.responses')) ?>: <?= (int) $m['response_count'] ?> / <?= (int) $m['shareholder_count'] ?></span>
+                </div>
+                <div class="cell-main align-right"><?= View::partial('Meetings::_status', ['m' => $m]) ?></div>
+            </a>
+        <?php endforeach; ?>
+    </section>
+<?php endif; ?>
+
 <?php if ($projects): ?>
     <section class="card widget widget-auto" style="margin-bottom:16px">
         <header class="widget-head">

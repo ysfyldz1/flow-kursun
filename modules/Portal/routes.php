@@ -15,6 +15,7 @@ $portal = ['portal' => true];
 $router->post('/portal/logout', [PortalController::class, 'logout'], $portal);
 $router->get('/portal', [PortalController::class, 'index'], $portal);
 $router->get('/portal/projects/{id}', [PortalController::class, 'project'], $portal);
+$router->get('/portal/meetings/{id}', [PortalController::class, 'meeting'], $portal);
 $router->get('/portal/statements/{id}',[PortalController::class, 'statement'], $portal);
 $router->get('/portal/statements/{id}/pdf', [PortalController::class, 'pdf'], $portal);
 $router->get('/portal/statements/{id}/invoice', [PortalController::class, 'invoice'], $portal);

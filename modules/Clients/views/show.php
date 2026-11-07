@@ -78,6 +78,28 @@ $row = fn (string $label, ?string $value) => $value
             <?php endif; ?>
         </section>
 
+        <?php if ($meetings !== null): ?>
+            <section class="card widget widget-auto">
+                <header class="widget-head">
+                    <span class="widget-icon"><?= icon('users') ?></span>
+                    <h2><?= e(__('meetings.title')) ?></h2>
+                    <a href="/meetings/new?client_id=<?= $c['id'] ?>" class="widget-link"><?= e(__('meetings.new')) ?> →</a>
+                </header>
+                <?php if (!$meetings): ?>
+                    <div class="empty"><?= e(__('meetings.empty_client')) ?></div>
+                <?php endif; ?>
+                <?php foreach ($meetings as $m): ?>
+                    <a href="/meetings/<?= $m['id'] ?>" class="widget-row">
+                        <div class="cell-main">
+                            <strong><?= e(format_date($m['meeting_at'], true)) ?></strong>
+                            <span><?= e(__('meetings.responses')) ?>: <?= (int) $m['response_count'] ?> / <?= (int) $m['shareholder_count'] ?></span>
+                        </div>
+                        <div class="cell-main align-right"><?= \App\Core\View::partial('Meetings::_status', ['m' => $m]) ?></div>
+                    </a>
+                <?php endforeach; ?>
+            </section>
+        <?php endif; ?>
+
         <?php if (can('portal.manage')): ?>
             <?php $inviteLink = $_SESSION['_portal_invite_link'] ?? null; unset($_SESSION['_portal_invite_link']); ?>
             <section class="card widget widget-auto" id="portal">

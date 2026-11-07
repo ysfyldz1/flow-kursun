@@ -80,6 +80,7 @@ final class PortalController
             'balances'   => PortalService::balances($clientId),
             'statements' => PortalService::statements($clientId),
             'projects'   => PortalService::projects($clientId),
+            'meetings'   => \App\Services\MeetingService::forClient($clientId),
             'showHours'  => PortalService::showHours(),
         ], 'portal');
     }
@@ -91,6 +92,22 @@ final class PortalController
             ? \App\Core\DB::all('SELECT * FROM document_shares WHERE project_id = ? ORDER BY created_at DESC', [$p['id']])
             : null;
         View::render('Portal::project', ['title' => $p['name'], 'p' => $p, 'showHours' => PortalService::showHours(), 'docs' => $docs], 'portal');
+    }
+
+    /** Genel kurul yanıt durumu (müvekkil şirket kendi pay sahiplerinin dönüşlerini izler). */
+    public function meeting(string $id): void
+    {
+        $m = \App\Services\MeetingService::find((int) $id);
+        if (!$m || (int) $m['client_id'] !== PortalAuth::clientId()) {
+            abort(404);
+        }
+        $shareholders = \App\Services\MeetingService::shareholders((int) $id);
+        View::render('Portal::meeting', [
+            'title'        => __('meetings.event_title', ['client' => $m['client_name']]),
+            'm'            => $m,
+            'shareholders' => $shareholders,
+            'summary'      => \App\Services\MeetingService::summary($shareholders),
+        ], 'portal');
     }
 
     public function statement(string $id): void
