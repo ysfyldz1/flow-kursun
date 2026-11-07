@@ -52,7 +52,7 @@ $text = [
         const count = panel.querySelector('[data-count]');
         const status = panel.querySelector('[data-status]');
         const hint = count.textContent;
-        const selectedText = <?= json_encode(__('emails.selected')) ?>;
+        const selectedText = <?= json_encode(__('onedrive.selected')) ?>;
         const sync = ids => {
             count.textContent = ids.length ? selectedText.replace(':count', ids.length) : hint;
             send.disabled = !ids.length || !project.value;

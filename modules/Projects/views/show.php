@@ -198,7 +198,7 @@ $billingValue = match ($p['billing_type']) {
                 if (od) {
                     const odStatus = od.querySelector('[data-od-status]');
                     const odCopy = od.querySelector('[data-od-copy]');
-                    const odSelected = <?= json_encode(__('emails.selected')) ?>;
+                    const odSelected = <?= json_encode(__('onedrive.selected')) ?>;
                     let browser = null;
                     section.querySelector('[data-od-open]').addEventListener('click', () => {
                         od.showModal();
