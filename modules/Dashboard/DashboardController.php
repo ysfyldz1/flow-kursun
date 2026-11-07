@@ -16,18 +16,24 @@ final class DashboardController
 {
     public function index(): void
     {
-        $stats = [
-            ['icon' => 'users',   'label' => __('dash.active_clients'), 'hint' => __('dash.hint_clients'),  'value' => ClientService::countActive(), 'tone' => 'blue'],
-            ['icon' => 'folder',  'label' => __('dash.open_projects'),  'hint' => __('dash.hint_projects'), 'value' => ProjectService::countOpen(), 'tone' => 'green'],
-            ['icon' => 'clock',   'label' => __('dash.hours_month'),    'hint' => __('dash.hint_hours'),    'value' => TimeService::hours(TimeService::minutesInMonth(Auth::id())), 'tone' => 'amber'],
-            ['icon' => 'receipt', 'label' => __('dash.unpaid'),         'hint' => __('dash.hint_unpaid'),   'value' => StatementService::countOpen(), 'tone' => 'red'],
-        ];
+        // Her kutu kendi yetkisiyle; faturalama yetkisi olmayana (avukat) döküm yerine açık görev sayısı
+        $billing = can('statements.manage') || can('payments.manage');
+        $tasks = can('tasks.own') || can('tasks.all');
+        $time = can('time.own') || can('time.all');
+        $stats = array_values(array_filter([
+            can('clients.view') ? ['icon' => 'users', 'label' => __('dash.active_clients'), 'hint' => __('dash.hint_clients'), 'value' => ClientService::countActive(), 'tone' => 'blue'] : null,
+            can('projects.view') ? ['icon' => 'folder', 'label' => __('dash.open_projects'), 'hint' => __('dash.hint_projects'), 'value' => ProjectService::countOpen(), 'tone' => 'green'] : null,
+            $time ? ['icon' => 'clock', 'label' => __('dash.hours_month'), 'hint' => __('dash.hint_hours'), 'value' => TimeService::hours(TimeService::minutesInMonth(Auth::id())), 'tone' => 'amber'] : null,
+            $billing
+                ? ['icon' => 'receipt', 'label' => __('dash.unpaid'), 'hint' => __('dash.hint_unpaid'), 'value' => StatementService::countOpen(), 'tone' => 'red']
+                : ($tasks ? ['icon' => 'check', 'label' => __('dash.open_tasks'), 'hint' => __('dash.hint_tasks'), 'value' => \App\Services\TaskService::countOpenMine(), 'tone' => 'red'] : null),
+        ]));
 
         View::render('Dashboard::index', [
             'title'      => __('nav.dashboard'),
             'stats'      => $stats,
-            'recentTime' => TimeService::recent(Auth::id()),
-            'unpaid'     => can('statements.manage') || can('payments.manage') ? StatementService::list(['status' => 'open']) : [],
+            'recentTime' => $time ? TimeService::recent(Auth::id()) : null,
+            'unpaid'     => $billing ? StatementService::list(['status' => 'open']) : null,
             // Yaklaşanlar: önümüzdeki 7 gün + gecikmiş süreler (yalnızca kişinin kendi kayıtları)
             'upcoming'   => can('calendar.view')
                 ? array_merge(
@@ -35,10 +41,10 @@ final class DashboardController
                     \App\Services\CalendarService::range(date('Y-m-d'), date('Y-m-d', strtotime('+6 days')), Auth::id())
                 )
                 : null,
-            'tasks'      => can('tasks.own') || can('tasks.all') ? \App\Services\TaskService::list('mine') : null,
+            'tasks'      => $tasks ? \App\Services\TaskService::list('mine') : null,
             'onLeave'    => LeaveService::approvedInRange(date('Y-m-d'), date('Y-m-d')),
             'leavePending' => can('leaves.own') || can('leaves.approve') || can('leaves.manage') ? LeaveService::list('approve') : [],
-            'myProjects' => can('projects.view') ? ProjectService::list(['mine' => true, 'status' => 'open']) : [],
+            'myProjects' => can('projects.view') ? ProjectService::list(['mine' => true, 'status' => 'open']) : null,
         ]);
     }
 }

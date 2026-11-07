@@ -45,6 +45,8 @@ return [
     'dash.hint_hours'     => 'Time you logged',
     'dash.unpaid'         => 'Pending statements',
     'dash.hint_unpaid'    => 'Awaiting payment',
+    'dash.open_tasks'     => 'Open tasks',
+    'dash.hint_tasks'     => 'Assigned to you',
     'dash.recent_time'    => 'Recent time entries',
     'dash.my_projects'    => 'My projects',
     'dash.unpaid_list'    => 'Unpaid statements',

@@ -6,7 +6,7 @@
     </div>
 </div>
 
-<div class="grid grid-4">
+<div class="grid grid-<?= max(1, count($stats)) ?>">
     <?php foreach ($stats as $s): ?>
         <div class="card stat">
             <span class="stat-icon tone-<?= $s['tone'] ?>"><?= icon($s['icon']) ?></span>
@@ -74,6 +74,7 @@
         </section>
     <?php endif; ?>
 
+    <?php if ($recentTime !== null): ?>
     <section class="card widget">
         <header class="widget-head">
             <span class="widget-icon"><?= icon('clock') ?></span>
@@ -98,6 +99,9 @@
         <?php endif; ?>
     </section>
 
+    <?php endif; ?>
+
+    <?php if ($myProjects !== null): ?>
     <section class="card widget">
         <header class="widget-head">
             <span class="widget-icon"><?= icon('folder') ?></span>
@@ -118,6 +122,9 @@
         <?php endif; ?>
     </section>
 
+    <?php endif; ?>
+
+    <?php if ($unpaid !== null): ?>
     <section class="card widget">
         <header class="widget-head">
             <span class="widget-icon"><?= icon('receipt') ?></span>
@@ -141,4 +148,5 @@
             <?php endforeach; ?>
         <?php endif; ?>
     </section>
+    <?php endif; ?>
 </div>

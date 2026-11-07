@@ -45,6 +45,8 @@ return [
     'dash.hint_hours'     => 'Girdiğiniz süre',
     'dash.unpaid'         => 'Bekleyen döküm',
     'dash.hint_unpaid'    => 'Ödemesi beklenen',
+    'dash.open_tasks'     => 'Açık görev',
+    'dash.hint_tasks'     => 'Size atanan',
     'dash.recent_time'    => 'Son zaman kayıtları',
     'dash.my_projects'    => 'Projelerim',
     'dash.unpaid_list'    => 'Ödenmemiş dökümler',
