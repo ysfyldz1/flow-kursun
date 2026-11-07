@@ -219,6 +219,10 @@ $billingValue = match ($p['billing_type']) {
             </script>
         <?php endif; ?>
 
+        <?php if (\App\Services\DocumentService::enabled()): ?>
+            <?= View::partial('Projects::_emails', ['p' => $p]) ?>
+        <?php endif; ?>
+
         <?php if ($p['description']): ?>
             <section class="card widget widget-auto">
                 <header class="widget-head"><h2><?= e(__('projects.description')) ?></h2></header>

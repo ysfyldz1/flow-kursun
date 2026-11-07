@@ -1,6 +1,7 @@
 <?php
 
 use Modules\Projects\DocumentController;
+use Modules\Projects\EmailController;
 use Modules\Projects\ProjectController;
 
 $router->get('/projects', [ProjectController::class, 'index'], ['can' => 'projects.view']);
@@ -16,3 +17,8 @@ $router->post('/projects/{id}/documents/upload', [DocumentController::class, 'up
 $router->get('/projects/{id}/documents/{item}/download', [DocumentController::class, 'download'], ['can' => 'projects.view']);
 $router->get('/projects/{id}/documents/{item}/open', [DocumentController::class, 'open'], ['can' => 'projects.view']);
 $router->post('/projects/{id}/documents/{item}/share', [DocumentController::class, 'share'], ['can' => 'documents.manage']);
+
+// Yazışmalar: kişinin kendi posta kutusundan projeye e-posta kaydetme
+$router->get('/projects/{id}/emails/search', [EmailController::class, 'search'], ['can' => 'documents.manage']);
+$router->post('/projects/{id}/emails', [EmailController::class, 'store'], ['can' => 'documents.manage']);
+$router->post('/projects/{id}/emails/{email}/delete', [EmailController::class, 'delete'], ['can' => 'documents.manage']);

@@ -186,6 +186,55 @@ final class Microsoft
         return $token['access_token'];
     }
 
+    /** Kullanıcı adına ham içerik (ör. e-postanın MIME hali: /me/messages/{id}/$value). */
+    public static function rawAs(int $userId, string $path): string
+    {
+        $ch = curl_init(self::GRAPH . $path);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . self::userToken($userId)],
+            CURLOPT_TIMEOUT        => 60,
+        ]);
+        $body = curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        curl_close($ch);
+        if ($body === false || $status !== 200) {
+            throw new RuntimeException(json_decode((string) $body, true)['error']['message'] ?? "Graph HTTP $status", $status);
+        }
+        return $body;
+    }
+
+    /** Uygulama belirteciyle dosya içeriği yükler (PUT …/content, 4 MB'a kadar). */
+    public static function putContent(string $path, string $content, string $contentType = 'application/octet-stream'): array
+    {
+        [$status, $json] = self::http('PUT', self::GRAPH . $path, $content, [
+            'Authorization: Bearer ' . self::appToken(),
+            'Content-Type: ' . $contentType,
+        ]);
+        if ($status < 200 || $status >= 300) {
+            throw new RuntimeException($json['error']['message'] ?? "Graph HTTP $status", $status);
+        }
+        return $json ?? [];
+    }
+
+    /** Önceden yetkilendirilmiş yükleme oturumuna parça parça yükler (4 MB üstü dosyalar). */
+    public static function putSession(string $uploadUrl, string $content): array
+    {
+        $size = strlen($content);
+        $chunk = 5 * 1024 * 1024 - (5 * 1024 * 1024) % 327680;   // 320 KiB'ın katı
+        $json = [];
+        for ($start = 0; $start < $size; $start += $chunk) {
+            $part = substr($content, $start, $chunk);
+            $end = $start + strlen($part) - 1;
+            [$status, $json] = self::http('PUT', $uploadUrl, $part, ["Content-Range: bytes $start-$end/$size", 'Content-Type: application/octet-stream']);
+            if (!in_array($status, [200, 201, 202], true)) {
+                throw new RuntimeException($json['error']['message'] ?? "Upload HTTP $status", $status);
+            }
+        }
+        return $json ?? [];
+    }
+
     /** Kullanıcı adına Graph çağrısı (/me/...). Hata davranışı graph() ile aynı. */
     public static function graphAs(int $userId, string $method, string $path, ?array $body = null): array
     {

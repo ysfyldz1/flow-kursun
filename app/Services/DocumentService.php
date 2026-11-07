@@ -129,6 +129,43 @@ final class DocumentService
         ]);
     }
 
+    /** Projenin altındaki sabit bir alt klasör (ör. "Yazışmalar"); yoksa oluşturulur. */
+    public static function projectSubfolder(array $project, string $name): string
+    {
+        $root = self::projectFolder($project);
+        $name = self::safeName($name);
+        try {
+            return self::graph('GET', "/items/$root:/" . rawurlencode($name) . '?$select=id')['id'];
+        } catch (RuntimeException $e) {
+            if ($e->getCode() !== 404) {
+                throw $e;
+            }
+            return self::createFolder($root, $name)['id'];
+        }
+    }
+
+    /** Sunucudaki içeriği klasöre dosya olarak yazar; aynı ad varsa yeni ad verilir. Büyük dosyada yükleme oturumu. */
+    public static function storeFile(string $folderId, string $name, string $content): array
+    {
+        $name = self::safeName($name);
+        $drive = '/drives/' . Settings::get('docs.drive_id');
+        if (strlen($content) <= 4 * 1024 * 1024) {
+            return Microsoft::putContent("$drive/items/$folderId:/" . rawurlencode($name) . ':/content?@microsoft.graph.conflictBehavior=rename', $content);
+        }
+        return Microsoft::putSession(self::uploadSession($folderId, $name, strlen($content)), $content);
+    }
+
+    public static function deleteItem(string $itemId): void
+    {
+        try {
+            self::graph('DELETE', "/items/$itemId");
+        } catch (RuntimeException $e) {
+            if ($e->getCode() !== 404) {   // zaten silinmişse sorun değil
+                throw $e;
+            }
+        }
+    }
+
     private static function fullPath(array $item): string
     {
         return rawurldecode((string) ($item['parentReference']['path'] ?? '')) . '/' . $item['name'];
