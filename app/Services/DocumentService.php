@@ -82,7 +82,8 @@ final class DocumentService
         if (!preg_match('/^[A-Za-z0-9!_\-]+$/', $itemId)) {
             throw new RuntimeException('Invalid item', 404);
         }
-        $item = self::graph('GET', "/items/$itemId?\$select=" . self::SELECT . ',@microsoft.graph.downloadUrl');
+        // $select kullanılmaz: Graph, alan seçilince bazı dosyalarda (ör. .eml) indirme adresini döndürmüyor
+        $item = self::graph('GET', "/items/$itemId");
         $root = self::fullPath(self::graph('GET', "/items/$folderId?\$select=id,name,parentReference"));
         $parent = rawurldecode((string) ($item['parentReference']['path'] ?? ''));
         if (($item['parentReference']['id'] ?? null) !== $folderId && !str_starts_with($parent . '/', $root . '/')) {

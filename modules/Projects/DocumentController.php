@@ -71,6 +71,9 @@ final class DocumentController
     public function download(string $id, string $item): void
     {
         $i = $this->item($id, $item);
+        if (empty($i['@microsoft.graph.downloadUrl'])) {
+            abort(404);   // klasör ya da indirilemeyen öğe
+        }
         header('Location: ' . $i['@microsoft.graph.downloadUrl']);
     }
 
