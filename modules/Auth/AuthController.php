@@ -65,7 +65,16 @@ final class AuthController
     {
         $state = $_SESSION['_ms_state'] ?? '';
         $nonce = $_SESSION['_ms_nonce'] ?? '';
-        unset($_SESSION['_ms_state'], $_SESSION['_ms_nonce']);
+        $connect = !empty($_SESSION['_ms_connect']);
+        unset($_SESSION['_ms_state'], $_SESSION['_ms_nonce'], $_SESSION['_ms_connect']);
+
+        // Aynı yönlendirme adresi, giriş yapmış kullanıcının hesabını bağlaması için de kullanılır
+        if ($connect && Auth::check()) {
+            $this->connectCallback($state, $nonce);
+        }
+        if (Auth::check()) {
+            redirect('/');
+        }
 
         if (!Microsoft::loginEnabled() || $state === '' || !hash_equals($state, (string) ($_GET['state'] ?? ''))) {
             flash('error', __('auth.ms_failed'));
@@ -98,6 +107,57 @@ final class AuthController
         $_SESSION['locale'] = $user['locale'];
         Audit::log('auth.login', null, null, ['via' => 'microsoft']);
         redirect('/');
+    }
+
+    /** Profilde "Microsoft 365 hesabımı bağla": kişinin kendi posta kutusu ve OneDrive'ı için izin istenir. */
+    public function microsoftConnect(): void
+    {
+        if (!Microsoft::isConfigured()) {
+            abort(404);
+        }
+        $_SESSION['_ms_state'] = bin2hex(random_bytes(16));
+        $_SESSION['_ms_nonce'] = bin2hex(random_bytes(16));
+        $_SESSION['_ms_connect'] = true;
+        header('Location: ' . Microsoft::authorizeUrl($_SESSION['_ms_state'], $_SESSION['_ms_nonce'], true, auth()['ms_upn'] ?: auth()['email']));
+        exit;
+    }
+
+    public function microsoftDisconnect(): void
+    {
+        Microsoft::disconnectUser((int) Auth::id());
+        flash('success', __('ms.disconnected'));
+        redirect('/account');
+    }
+
+    private function connectCallback(string $state, string $nonce): never
+    {
+        if ($state === '' || !hash_equals($state, (string) ($_GET['state'] ?? ''))) {
+            flash('error', __('auth.ms_failed'));
+            redirect('/account');
+        }
+        if (isset($_GET['error'])) {
+            if ($_GET['error'] !== 'access_denied') {
+                flash('error', __('ms.connect_error', ['error' => strtok((string) ($_GET['error_description'] ?? $_GET['error']), "\r\n")]));
+            }
+            redirect('/account');
+        }
+        try {
+            Microsoft::connectUser(auth(), Microsoft::exchangeCode((string) ($_GET['code'] ?? ''), $nonce, true));
+            flash('success', __('ms.connected'));
+        } catch (\Throwable $e) {
+            flash('error', __('ms.connect_error', ['error' => $e->getMessage()]));
+        }
+        redirect('/account');
+    }
+
+    /** Profil: ad, dil ve Microsoft 365 bağlantısı. */
+    public function account(): void
+    {
+        View::render('Auth::account', [
+            'title'      => __('app.profile'),
+            'user'       => auth(),
+            'connection' => Microsoft::isConfigured() ? Microsoft::connection((int) Auth::id()) : false,
+        ]);
     }
 
     public function logout(): void

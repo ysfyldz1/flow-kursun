@@ -115,6 +115,7 @@ $pinned = array_slice(array_values(array_merge(
                             <button name="locale" value="<?= $loc ?>" class="<?= Lang::locale() === $loc ? 'active' : '' ?>"><?= strtoupper($loc) ?></button>
                         <?php endforeach; ?>
                     </form>
+                    <a href="/account"><?= icon('user') ?><?= e(__('app.profile')) ?></a>
                     <?php if ($canAdmin): ?>
                         <a href="/settings"><?= icon('settings') ?><?= e(__('nav.settings')) ?></a>
                     <?php endif; ?>
