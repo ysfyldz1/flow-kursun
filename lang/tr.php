@@ -37,7 +37,6 @@ return [
     // Pano
     'dash.hello'          => 'Hoş geldin, :name',
     'dash.subtitle'       => 'Ofisinizin güncel durumu tek bakışta.',
-    'dash.customize'      => 'Panoyu özelleştir',
     'dash.active_clients' => 'Aktif müvekkil',
     'dash.hint_clients'   => 'Kayıtlı müvekkilleriniz',
     'dash.open_projects'  => 'Açık proje',

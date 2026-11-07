@@ -4,7 +4,6 @@
         <h1><?= e(__('dash.hello', ['name' => explode(' ', auth()['name'])[0]])) ?></h1>
         <p class="muted"><?= e(__('dash.subtitle')) ?></p>
     </div>
-    <button class="btn btn-outline"><?= icon('sliders') ?><?= e(__('dash.customize')) ?></button>
 </div>
 
 <div class="grid grid-4">

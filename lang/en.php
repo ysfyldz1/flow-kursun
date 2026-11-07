@@ -37,7 +37,6 @@ return [
     // Dashboard
     'dash.hello'          => 'Welcome, :name',
     'dash.subtitle'       => 'Your office at a glance.',
-    'dash.customize'      => 'Customize dashboard',
     'dash.active_clients' => 'Active clients',
     'dash.hint_clients'   => 'Your registered clients',
     'dash.open_projects'  => 'Open projects',
