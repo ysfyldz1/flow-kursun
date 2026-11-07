@@ -603,3 +603,8 @@ td.strong { font-weight: 700; }
 .task-row.is-done .task-check { background: var(--green); border-color: var(--green); color: #fff; }
 .task-row.is-done .cell-main strong { text-decoration: line-through; color: var(--muted); font-weight: 500; }
 .task-row.is-overdue .task-check { border-color: var(--red); }
+
+/* Form alanı içindeki onay kutuları tam genişlik almasın (.field input kuralını ezer) */
+.field .check input, .field .check-input { width: 16px; height: 16px; min-width: 16px; flex: 0 0 auto; padding: 0; box-shadow: none; }
+.field .check span { font-weight: 400; }
+.field .check-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
