@@ -35,6 +35,7 @@ final class DashboardController
                     \App\Services\CalendarService::range(date('Y-m-d'), date('Y-m-d', strtotime('+6 days')), Auth::id())
                 )
                 : null,
+            'tasks'      => can('tasks.own') || can('tasks.all') ? \App\Services\TaskService::list('mine') : null,
             'onLeave'    => LeaveService::approvedInRange(date('Y-m-d'), date('Y-m-d')),
             'leavePending' => can('leaves.own') || can('leaves.approve') || can('leaves.manage') ? LeaveService::list('approve') : [],
             'myProjects' => can('projects.view') ? ProjectService::list(['mine' => true, 'status' => 'open']) : [],

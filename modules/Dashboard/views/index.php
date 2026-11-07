@@ -20,6 +20,21 @@
 </div>
 
 <div class="grid grid-3">
+    <?php if ($tasks !== null): ?>
+        <section class="card widget">
+            <header class="widget-head">
+                <span class="widget-icon"><?= icon('check') ?></span>
+                <h2><?= e(__('tasks.mine')) ?></h2>
+                <a href="/tasks" class="widget-link"><?= e(__('app.all')) ?> →</a>
+            </header>
+            <?php if (!$tasks): ?>
+                <div class="empty"><?= e(__('tasks.empty')) ?></div>
+            <?php endif; ?>
+            <?php foreach (array_slice($tasks, 0, 6) as $t): ?>
+                <?= \App\Core\View::partial('Tasks::_row', ['t' => $t]) ?>
+            <?php endforeach; ?>
+        </section>
+    <?php endif; ?>
     <?php if ($upcoming !== null): ?>
         <section class="card widget">
             <header class="widget-head">

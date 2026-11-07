@@ -15,6 +15,7 @@ $nav = [
     ['/clients',   'users',   'nav.clients',   'clients.view'],
     ['/projects',  'folder',  'nav.projects',  'projects.view'],
     ['/calendar',  'calendar','nav.calendar',  'calendar.view'],
+    ['/tasks',     'check',   'nav.tasks',     ['tasks.own', 'tasks.all']],
     ['/time',      'clock',   'nav.time',      ['time.own', 'time.all']],
     ['group' => 'nav.finance', 'icon' => 'wallet', 'items' => [
         ['/billing',   'receipt', 'nav.billing',   ['statements.manage', 'payments.manage']],

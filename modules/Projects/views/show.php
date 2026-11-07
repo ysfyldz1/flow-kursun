@@ -96,6 +96,24 @@ $billingValue = match ($p['billing_type']) {
             <?php endif; ?>
         </section>
 
+        <?php if (can('tasks.own') || can('tasks.all')): $tasks = \App\Services\TaskService::forProject((int) $p['id']); ?>
+            <section class="card widget widget-auto">
+                <header class="widget-head">
+                    <span class="widget-icon"><?= icon('check') ?></span>
+                    <h2><?= e(__('tasks.title')) ?></h2>
+                    <?php if ($p['status'] !== 'closed'): ?>
+                        <a href="/tasks?project_id=<?= $p['id'] ?>" class="btn btn-sm btn-outline head-right"><?= icon('plus', 'icon icon-sm') ?><?= e(__('tasks.add')) ?></a>
+                    <?php endif; ?>
+                </header>
+                <?php if (!$tasks): ?>
+                    <div class="empty"><?= e(__('tasks.none_for_project')) ?></div>
+                <?php endif; ?>
+                <?php foreach ($tasks as $t): ?>
+                    <?= View::partial('Tasks::_row', ['t' => $t, 'hideProject' => true]) ?>
+                <?php endforeach; ?>
+            </section>
+        <?php endif; ?>
+
         <?php if (can('calendar.view')): $events = \App\Services\CalendarService::forProject((int) $p['id']); ?>
             <section class="card widget widget-auto">
                 <header class="widget-head">

@@ -591,3 +591,15 @@ td.strong { font-weight: 700; }
 .filepick-text small { color: var(--muted); font-size: 12px; }
 .filepick-clear { position: relative; z-index: 1; margin-left: auto; border: 0; background: none; color: var(--muted); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; }
 .filepick-clear:hover { background: var(--bg); color: var(--red); }
+
+/* Görevler */
+.task-row { align-items: center; gap: 12px; }
+.task-row > form { flex: 0 0 auto; }
+.task-row > a.cell-main { flex: 1; min-width: 0; }
+.task-row .cell-main strong { display: flex; align-items: center; gap: 6px; }
+.task-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); display: grid; place-items: center; cursor: pointer; color: transparent; padding: 0; }
+.task-check .icon { width: 14px; height: 14px; }
+.task-check:hover { border-color: var(--green); color: var(--green); }
+.task-row.is-done .task-check { background: var(--green); border-color: var(--green); color: #fff; }
+.task-row.is-done .cell-main strong { text-decoration: line-through; color: var(--muted); font-weight: 500; }
+.task-row.is-overdue .task-check { border-color: var(--red); }
