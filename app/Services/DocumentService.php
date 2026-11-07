@@ -45,7 +45,15 @@ final class DocumentService
     public static function projectFolder(array $project): string
     {
         if (!empty($project['drive_folder_id'])) {
-            return $project['drive_folder_id'];
+            try {
+                self::graph('GET', "/items/{$project['drive_folder_id']}?\$select=id");
+                return $project['drive_folder_id'];
+            } catch (RuntimeException $e) {
+                // Klasör silinmiş/taşınmış ya da depo değişmiş: yeniden oluşturulur.
+                if ($e->getCode() !== 404) {
+                    throw $e;
+                }
+            }
         }
         $client = DB::one('SELECT code, name FROM clients WHERE id = ?', [$project['client_id']]);
         $folder = self::ensurePath([
