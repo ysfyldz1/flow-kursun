@@ -148,6 +148,15 @@ $billingValue = match ($p['billing_type']) {
                         </label>
                     <?php endif; ?>
                 </header>
+                <?php if (can('documents.manage')): ?>
+                    <form class="docs-newfolder" hidden>
+                        <?= icon('folder') ?>
+                        <input name="name" maxlength="200" placeholder="<?= e(__('docs.new_folder_prompt')) ?>" autocomplete="off">
+                        <button class="btn btn-sm btn-primary"><?= e(__('docs.create')) ?></button>
+                        <button type="button" class="btn btn-sm btn-outline" data-cancel><?= e(__('app.cancel')) ?></button>
+                        <span class="field-error" data-error></span>
+                    </form>
+                <?php endif; ?>
                 <div class="docs-body" data-src="/projects/<?= $p['id'] ?>/documents"><div class="empty"><?= e(__('docs.loading')) ?></div></div>
             </section>
             <script src="<?= asset('upload.js') ?>" defer></script>
@@ -168,16 +177,31 @@ $billingValue = match ($p['billing_type']) {
                 });
                 load();
                 section.addEventListener('uploaded', load);
-                section.querySelector('[data-new-folder]')?.addEventListener('click', async () => {
-                    const name = prompt(<?= json_encode(__('docs.new_folder_prompt')) ?>);
-                    if (!name || !name.trim()) return;
+                // Yeni klasör: kutunun içinde açılan satır (Enter oluşturur, Esc kapatır)
+                const nf = section.querySelector('.docs-newfolder');
+                const nfError = nf?.querySelector('[data-error]');
+                const closeNf = () => { nf.hidden = true; nf.name.value = ''; nfError.textContent = ''; };
+                section.querySelector('[data-new-folder]')?.addEventListener('click', () => {
+                    nf.hidden = !nf.hidden;
+                    if (!nf.hidden) nf.name.focus();
+                });
+                nf?.querySelector('[data-cancel]').addEventListener('click', closeNf);
+                nf?.addEventListener('keydown', e => { if (e.key === 'Escape') closeNf(); });
+                nf?.addEventListener('submit', async e => {
+                    e.preventDefault();
+                    const name = nf.name.value.trim();
+                    if (!name) { nf.name.focus(); return; }
+                    const btn = nf.querySelector('.btn-primary');
+                    btn.disabled = true;
                     const fd = new FormData();
                     fd.append('_csrf', csrf);
-                    fd.append('name', name.trim());
+                    fd.append('name', name);
                     fd.append('folder', folder);
                     const r = await fetch('/projects/<?= $p['id'] ?>/documents/folder', { method: 'POST', body: fd, credentials: 'same-origin' });
                     const json = await r.json().catch(() => ({}));
-                    if (!r.ok) { alert(json.error || r.statusText); return; }
+                    btn.disabled = false;
+                    if (!r.ok) { nfError.textContent = json.error || r.statusText; return; }
+                    closeNf();
                     load();
                 });
                 body.addEventListener('click', async e => {

@@ -695,6 +695,7 @@ return [
     'docs.title'               => 'Documents',
     'docs.new_folder'          => 'New folder',
     'docs.new_folder_prompt'   => 'Folder name',
+    'docs.create'              => 'Create',
     'docs.open_in_m365'        => 'Open in Microsoft 365',
     'docs.loading'             => 'Loading documents…',
     'docs.empty'               => 'No documents in this project yet. Click the button or drag files onto it to upload.',

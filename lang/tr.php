@@ -695,6 +695,7 @@ return [
     'docs.title'               => 'Belgeler',
     'docs.new_folder'          => 'Yeni klasör',
     'docs.new_folder_prompt'   => 'Klasör adı',
+    'docs.create'              => 'Oluştur',
     'docs.open_in_m365'        => "Microsoft 365'te aç",
     'docs.loading'             => 'Belgeler yükleniyor…',
     'docs.empty'               => 'Bu projede henüz belge yok. Yüklemek için düğmeye basın ya da dosyaları üzerine sürükleyin.',
