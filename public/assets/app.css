@@ -610,3 +610,39 @@ td.strong { font-weight: 700; }
 .field .check input, .field .check-input { width: 16px; height: 16px; min-width: 16px; flex: 0 0 auto; padding: 0; box-shadow: none; }
 .field .check span { font-weight: 400; }
 .field .check-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+
+/* Ofis durumu ve grafikler. Seri renkleri doğrulanmış kategorik paletin ilk iki sırası (mavi, turuncu). */
+.office { margin-bottom: 8px; }
+.office-head { display: flex; align-items: baseline; justify-content: space-between; margin: 4px 0 12px; }
+.office-head h2 { font-size: 15px; margin: 0; }
+a.card.stat { color: inherit; }
+a.card.stat:hover { border-color: var(--primary); }
+.tabs-sm a { padding: 3px 9px; font-size: 12px; }
+.widget-head .tabs-sm { margin-left: auto; }
+.viz-body { padding: 4px 16px 14px; }
+.viz { margin: 0; --series-1: #2a78d6; --series-2: #eb6834; }
+.viz svg { width: 100%; height: auto; display: block; overflow: visible; }
+.viz-grid { stroke: var(--border); stroke-width: 1; }
+.viz-axis { stroke: #cbd5e1; stroke-width: 1; }
+.viz-tick { fill: var(--muted); font-size: 11px; font-family: inherit; }
+.viz-hit { fill: transparent; }
+.viz-col:hover .viz-hit { fill: rgba(15, 23, 42, .04); }
+.viz-s1 { fill: var(--series-1, #2a78d6); background: var(--series-1, #2a78d6); }
+.viz-s2 { fill: var(--series-2, #eb6834); background: var(--series-2, #eb6834); }
+.viz-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.viz-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.viz-sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+.viz-table { margin-left: auto; }
+.viz-table summary { cursor: pointer; color: var(--primary); }
+.viz-table[open] { flex-basis: 100%; margin-left: 0; }
+.viz-table .table { margin-top: 8px; font-size: 12px; }
+.viz-bars { display: flex; flex-direction: column; gap: 4px; }
+.viz-bar-row { display: grid; grid-template-columns: minmax(90px, 34%) 1fr; align-items: center; gap: 12px; padding: 5px 6px; border-radius: 6px; color: inherit; }
+.viz-bar-row:hover { background: var(--bg); }
+.viz-bar-label { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viz-bar-track { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.viz-bar-fill { height: 14px; border-radius: 0 4px 4px 0; flex: 0 0 auto; }
+.viz-bar-value { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.viz-tip { position: fixed; z-index: 60; pointer-events: none; background: #0f172a; color: #fff; border-radius: 8px; padding: 8px 10px; font-size: 12px; display: flex; flex-direction: column; gap: 3px; box-shadow: 0 8px 24px rgba(15, 23, 42, .25); max-width: 260px; }
+.viz-tip span { display: flex; align-items: center; gap: 6px; color: #e2e8f0; }
+@media (max-width: 1000px) { .grid-2 { grid-template-columns: 1fr; } }

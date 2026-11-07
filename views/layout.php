@@ -188,6 +188,22 @@ document.querySelectorAll('.toast').forEach(t => {
     t.addEventListener('mouseleave', () => { timer = setTimeout(close, 2000); t.classList.remove('toast-paused'); });
 });
 
+// Grafik ipucu: data-tip taşıyan öğenin üzerine gelince imleci izleyen kutu
+const tip = document.createElement('div');
+tip.className = 'viz-tip';
+tip.hidden = true;
+document.body.appendChild(tip);
+document.addEventListener('mousemove', e => {
+    const el = e.target.closest('[data-tip]');
+    if (!el) { tip.hidden = true; return; }
+    if (tip.dataset.for !== el.dataset.tip) { tip.innerHTML = el.dataset.tip; tip.dataset.for = el.dataset.tip; }
+    tip.hidden = false;
+    const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8);
+    const y = e.clientY + 16 + tip.offsetHeight > innerHeight ? e.clientY - tip.offsetHeight - 12 : e.clientY + 16;
+    tip.style.left = x + 'px';
+    tip.style.top = y + 'px';
+});
+
 // Mobil menü penceresi: düğmeyle açılır, boşluğa dokununca kapanır
 const sheet = document.getElementById('sheet');
 document.getElementById('sheet-open')?.addEventListener('click', () => sheet.showModal());

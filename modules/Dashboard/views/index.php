@@ -6,6 +6,11 @@
     </div>
 </div>
 
+<?php if ($office): ?>
+    <?= \App\Core\View::partial('Dashboard::_office', ['o' => $office]) ?>
+    <div class="office-head"><h2><?= e(__('dash.mine')) ?></h2></div>
+<?php endif; ?>
+
 <div class="grid grid-<?= max(1, count($stats)) ?>">
     <?php foreach ($stats as $s): ?>
         <div class="card stat">

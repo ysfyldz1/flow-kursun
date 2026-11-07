@@ -29,7 +29,27 @@ final class DashboardController
                 : ($tasks ? ['icon' => 'check', 'label' => __('dash.open_tasks'), 'hint' => __('dash.hint_tasks'), 'value' => \App\Services\TaskService::countOpenMine(), 'tone' => 'red'] : null),
         ]));
 
+        // Ofis durumu yalnız raporları görebilene (yönetici, muhasebe)
+        $office = null;
+        if (can('reports.view')) {
+            $range = in_array($_GET['range'] ?? '', \App\Services\OfficeStats::RANGES, true) ? $_GET['range'] : 'year';
+            [$from, $to] = \App\Services\OfficeStats::range($range);
+            $currencies = \App\Services\OfficeStats::currencies();
+            $currency = in_array($_GET['cur'] ?? '', $currencies, true) ? $_GET['cur'] : ($currencies[0] ?? null);
+            $office = [
+                'range'       => $range,
+                'kpis'        => \App\Services\OfficeStats::kpis(),
+                'monthly'     => \App\Services\OfficeStats::monthlyHours(),
+                'clients'     => \App\Services\OfficeStats::topClients($from, $to),
+                'people'      => \App\Services\OfficeStats::byPerson($from, $to),
+                'currencies'  => $currencies,
+                'currency'    => $currency,
+                'collections' => $currency ? \App\Services\OfficeStats::collections($currency) : [],
+            ];
+        }
+
         View::render('Dashboard::index', [
+            'office'     => $office,
             'title'      => __('nav.dashboard'),
             'stats'      => $stats,
             'recentTime' => $time ? TimeService::recent(Auth::id()) : null,
