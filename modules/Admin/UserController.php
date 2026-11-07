@@ -86,6 +86,8 @@ final class UserController
             'title' => $user ? $user['name'] : __('users.new'),
             'user'  => $user,
             'roles' => RoleService::list(),
+            'approverOptions' => \App\Core\DB::all('SELECT id, name FROM users WHERE is_active = 1 ORDER BY name'),
+            'approvers' => $user ? \App\Services\LeaveService::assignedApprovers((int) $user['id']) : [],
         ]);
     }
 }

@@ -74,6 +74,31 @@ $v = fn (string $k, $default = '') => old($k, (string) ($user[$k] ?? $default));
                     <?= error_for('password') ?>
                 </label>
             </div>
+            <h3 class="card-title" style="margin-top:8px"><?= e(__('users.leave_section')) ?></h3>
+            <div class="form-grid">
+                <label class="field">
+                    <span><?= e(__('users.hire_date')) ?></span>
+                    <input type="date" name="hire_date" value="<?= e($v('hire_date')) ?>">
+                    <small class="muted"><?= e(__('users.hire_date_hint')) ?></small>
+                    <?= error_for('hire_date') ?>
+                </label>
+                <label class="field">
+                    <span><?= e(__('users.leave_entitlement')) ?></span>
+                    <input name="leave_entitlement" inputmode="decimal" value="<?= e(is_numeric($v('leave_entitlement')) ? str_replace('.', ',', (string) (float) $v('leave_entitlement')) : $v('leave_entitlement')) ?>">
+                    <small class="muted"><?= e(__('users.leave_entitlement_hint')) ?></small>
+                    <?= error_for('leave_entitlement') ?>
+                </label>
+            </div>
+            <div class="field">
+                <span><?= e(__('users.leave_approvers')) ?></span>
+                <div class="check-grid">
+                    <?php foreach ($approverOptions as $a): ?>
+                        <?php if ($user && (int) $a['id'] === (int) $user['id']) continue; ?>
+                        <label class="check"><input type="checkbox" name="leave_approvers[]" value="<?= $a['id'] ?>" <?= in_array((int) $a['id'], $approvers, true) ? 'checked' : '' ?>><span><?= e($a['name']) ?></span></label>
+                    <?php endforeach; ?>
+                </div>
+                <small class="muted"><?= e(__('users.leave_approvers_hint')) ?></small>
+            </div>
             <?php if (!$user && \App\Services\Mailer::delivers()): ?>
                 <label class="check">
                     <input type="checkbox" name="send_welcome" value="1" checked>

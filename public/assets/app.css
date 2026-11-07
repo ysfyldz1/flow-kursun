@@ -518,3 +518,6 @@ td.strong { font-weight: 700; }
 .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 16px; margin-bottom: 8px; }
 @media (max-width: 760px) { .month-nav { margin-left: 0; } .agenda-day { gap: 10px; padding: 10px 12px; } }
+
+/* İzin */
+.event-leave .event-bar { background: var(--green); }

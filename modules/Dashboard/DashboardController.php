@@ -7,6 +7,7 @@ namespace Modules\Dashboard;
 use App\Core\Auth;
 use App\Core\View;
 use App\Services\ClientService;
+use App\Services\LeaveService;
 use App\Services\ProjectService;
 use App\Services\StatementService;
 use App\Services\TimeService;
@@ -34,6 +35,8 @@ final class DashboardController
                     \App\Services\CalendarService::range(date('Y-m-d'), date('Y-m-d', strtotime('+6 days')), Auth::id())
                 )
                 : null,
+            'onLeave'    => LeaveService::approvedInRange(date('Y-m-d'), date('Y-m-d')),
+            'leavePending' => can('leaves.own') || can('leaves.approve') || can('leaves.manage') ? LeaveService::list('approve') : [],
             'myProjects' => can('projects.view') ? ProjectService::list(['mine' => true, 'status' => 'open']) : [],
         ]);
     }

@@ -54,11 +54,13 @@ final class TimeController
     public function store(): void
     {
         try {
-            TimeService::create($_POST);
+            $id = TimeService::create($_POST);
         } catch (ValidationException $e) {
             fail($e, $this->back());
         }
-        flash('success', __('time.saved'));
+        $entry = TimeService::find($id);
+        // Kayıt engellenmez; onaylı izinli güne girildiyse not düşülür
+        flash('success', __('time.saved') . (\App\Services\LeaveService::isOnLeave((int) $entry['user_id'], $entry['work_date']) ? ' ' . __('leaves.time_on_leave') : ''));
         // Aynı güne art arda giriş kolay olsun diye tarih ve proje hatırlanır
         $_SESSION['_time_last'] = ['work_date' => $_POST['work_date'] ?? '', 'project_id' => $_POST['project_id'] ?? ''];
         redirect($this->back());

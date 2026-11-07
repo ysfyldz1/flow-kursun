@@ -38,6 +38,28 @@
         </section>
     <?php endif; ?>
 
+    <?php if ($leavePending || $onLeave): ?>
+        <section class="card widget">
+            <header class="widget-head">
+                <span class="widget-icon"><?= icon('sun') ?></span>
+                <h2><?= e(__('leaves.widget')) ?></h2>
+                <a href="/leaves" class="widget-link"><?= e(__('app.all')) ?> →</a>
+            </header>
+            <?php foreach ($leavePending as $l): ?>
+                <a href="/leaves/<?= $l['id'] ?>" class="widget-row">
+                    <div class="cell-main">
+                        <strong><?= e($l['user_name']) ?></strong>
+                        <span><?= e(__('leaves.type_' . $l['type'])) ?> · <?= e(format_date($l['start_date'])) ?><?= $l['end_date'] !== $l['start_date'] ? ' – ' . e(format_date($l['end_date'])) : '' ?></span>
+                    </div>
+                    <div class="cell-main align-right"><span class="badge badge-amber"><?= e(__('leaves.awaiting')) ?></span></div>
+                </a>
+            <?php endforeach; ?>
+            <?php foreach ($onLeave as $l): ?>
+                <?= \App\Core\View::partial('Leaves::_cal_row', ['l' => $l]) ?>
+            <?php endforeach; ?>
+        </section>
+    <?php endif; ?>
+
     <section class="card widget">
         <header class="widget-head">
             <span class="widget-icon"><?= icon('clock') ?></span>

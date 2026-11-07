@@ -9,6 +9,7 @@ use App\Core\DB;
 use App\Core\ValidationException;
 use App\Core\View;
 use App\Services\CalendarService;
+use App\Services\LeaveService;
 use App\Services\TimeService;
 
 final class CalendarController
@@ -26,11 +27,23 @@ final class CalendarController
         foreach (CalendarService::range($from, $to, $userId) as $e) {
             $days[substr($e['starts_at'], 0, 10)][] = $e;
         }
+        // Onaylı izinler: hafta içi her gün için "izinde" satırı
+        $leaves = [];
+        foreach (LeaveService::approvedInRange($from, $to, $userId) as $l) {
+            for ($d = max($l['start_date'], $from); $d <= min($l['end_date'], $to); $d = date('Y-m-d', strtotime("$d +1 day"))) {
+                if (date('N', strtotime($d)) < 6) {
+                    $leaves[$d][] = $l;
+                    $days[$d] ??= [];
+                }
+            }
+        }
+        ksort($days);
         View::render('Calendar::index', [
             'title'   => __('cal.title'),
             'month'   => $month,
             'mine'    => $mine,
             'days'    => $days,
+            'leaves'  => $leaves,
             'overdue' => CalendarService::overdue($userId),
         ]);
     }

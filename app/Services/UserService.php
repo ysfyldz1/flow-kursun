@@ -31,6 +31,7 @@ final class UserService
         // Microsoft ile giriş açıkken şifresiz kullanıcı açılabilir; yalnızca Microsoft hesabıyla girer
         $data['password'] = ($input['password'] ?? '') !== '' ? password_hash($input['password'], PASSWORD_DEFAULT) : null;
         $id = DB::insert('users', $data);
+        LeaveService::setApprovers($id, (array) ($input['leave_approvers'] ?? []));
         Audit::log('user.created', 'user', $id, ['email' => $data['email']], $channel);
         return $id;
     }
@@ -42,6 +43,7 @@ final class UserService
             $data['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
         }
         DB::update('users', $data, 'id = ?', [$id]);
+        LeaveService::setApprovers($id, (array) ($input['leave_approvers'] ?? []));
         unset($data['password']);
         Audit::log('user.updated', 'user', $id, $data, $channel);
     }
@@ -80,6 +82,8 @@ final class UserService
             'locale'        => (string) ($in['locale'] ?? 'tr'),
             'hourly_rate'   => parse_money($in['hourly_rate'] ?? ''),
             'rate_currency' => ($in['rate_currency'] ?? '') ?: null,
+            'hire_date'     => ($in['hire_date'] ?? '') ?: null,
+            'leave_entitlement' => ($in['leave_entitlement'] ?? '') === '' ? null : str_replace(',', '.', (string) $in['leave_entitlement']),
         ];
 
         if ($data['name'] === '') {
@@ -105,6 +109,12 @@ final class UserService
             $errors['hourly_rate'] = __('validation.number');
         } elseif ($data['hourly_rate'] !== null && $data['rate_currency'] === null) {
             $errors['rate_currency'] = __('validation.required');
+        }
+        if ($data['hire_date'] !== null && (!($d = \DateTime::createFromFormat('Y-m-d', $data['hire_date'])) || $d->format('Y-m-d') !== $data['hire_date'])) {
+            $errors['hire_date'] = __('validation.date');
+        }
+        if ($data['leave_entitlement'] !== null && (!is_numeric($data['leave_entitlement']) || $data['leave_entitlement'] < 0)) {
+            $errors['leave_entitlement'] = __('validation.number');
         }
         $password = (string) ($in['password'] ?? '');
         if (($id === null && !Microsoft::loginEnabled()) || $password !== '') {

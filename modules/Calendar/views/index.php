@@ -56,6 +56,9 @@ $today = date('Y-m-d');
                     <span><?= e(__('cal.dow_' . date('N', strtotime($day)))) ?></span>
                 </div>
                 <div class="agenda-events">
+                    <?php foreach ($leaves[$day] ?? [] as $l): ?>
+                        <?= View::partial('Leaves::_cal_row', ['l' => $l]) ?>
+                    <?php endforeach; ?>
                     <?php foreach ($events as $e): ?>
                         <?= View::partial('Calendar::_row', ['e' => $e]) ?>
                     <?php endforeach; ?>
