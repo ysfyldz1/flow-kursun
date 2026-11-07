@@ -29,7 +29,7 @@ final class ProjectController
 
     public function show(string $id): void
     {
-        $project = ProjectService::find((int) $id) ?? abort(404);
+        $project = (\App\Services\Access::canSeeProject((int) $id) ? ProjectService::find((int) $id) : null) ?? abort(404);
 
         // Her ekip üyesi için geçerli ücret ve kaynağı (yalnızca yetkiliye gösterilir)
         $rates = [];
@@ -55,7 +55,7 @@ final class ProjectController
 
     public function edit(string $id): void
     {
-        $this->form(ProjectService::find((int) $id) ?? abort(404));
+        $this->form((\App\Services\Access::canSeeProject((int) $id) ? ProjectService::find((int) $id) : null) ?? abort(404));
     }
 
     public function store(): void
@@ -71,7 +71,7 @@ final class ProjectController
 
     public function update(string $id): void
     {
-        ProjectService::find((int) $id) ?? abort(404);
+        (\App\Services\Access::canSeeProject((int) $id) ? ProjectService::find((int) $id) : null) ?? abort(404);
         try {
             ProjectService::update((int) $id, $_POST);
         } catch (ValidationException $e) {
@@ -86,7 +86,7 @@ final class ProjectController
         View::render('Projects::form', [
             'title'    => $project ? $project['name'] : __('projects.new'),
             'project'  => $project,
-            'clients'  => DB::all('SELECT id, code, name, currency FROM clients WHERE is_active = 1 ORDER BY name'),
+            'clients'  => DB::all('SELECT c.id, c.code, c.name, c.currency FROM clients c WHERE c.is_active = 1 AND ' . \App\Services\Access::clientWhere()[0] . ' ORDER BY c.name', \App\Services\Access::clientWhere()[1]),
             'users'    => DB::all('SELECT id, name, title FROM users WHERE is_active = 1 ORDER BY name'),
             'clientId' => (int) ($_GET['client_id'] ?? 0),
         ]);

@@ -169,7 +169,7 @@ final class TaskService
             $errors['title'] = __('validation.required');
         }
         $projectId = (int) ($in['project_id'] ?? 0) ?: null;
-        if ($projectId && !DB::value('SELECT id FROM projects WHERE id = ?', [$projectId])) {
+        if ($projectId && (!DB::value('SELECT id FROM projects WHERE id = ?', [$projectId]) || (!Access::canSeeProject($projectId) && (int) ($current['project_id'] ?? 0) !== $projectId))) {
             $errors['project_id'] = __('validation.required');
         }
         $due = (string) ($in['due_date'] ?? '') ?: null;

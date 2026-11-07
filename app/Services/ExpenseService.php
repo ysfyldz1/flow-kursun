@@ -124,6 +124,9 @@ final class ExpenseService
 
         $projectId = (int) ($in['project_id'] ?? 0);
         $project = DB::one('SELECT id, client_id, status, currency, billing_type FROM projects WHERE id = ?', [$projectId]);
+        if ($project && !Access::canSeeProject($projectId) && (int) ($current['project_id'] ?? 0) !== $projectId) {
+            $project = null;   // görmediği projeye kayıt giremez
+        }
         if (!$project || ($project['status'] === 'closed' && (int) ($current['project_id'] ?? 0) !== $projectId)) {
             $errors['project_id'] = __('expenses.project_required');
         }

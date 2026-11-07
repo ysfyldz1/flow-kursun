@@ -31,6 +31,10 @@ final class ClientService
             $params[] = $filters['type'];
         }
 
+        [$visible, $vParams] = Access::clientWhere();
+        $where[] = $visible;
+        array_push($params, ...$vParams);
+
         return DB::all(
             'SELECT c.*,
                     (SELECT name FROM client_contacts cc WHERE cc.client_id = c.id ORDER BY cc.is_primary DESC, cc.id LIMIT 1) AS contact_name
@@ -43,7 +47,8 @@ final class ClientService
 
     public static function countActive(): int
     {
-        return (int) DB::value('SELECT COUNT(*) FROM clients WHERE is_active = 1');
+        [$visible, $params] = Access::clientWhere();
+        return (int) DB::value("SELECT COUNT(*) FROM clients c WHERE c.is_active = 1 AND $visible", $params);
     }
 
     public static function find(int $id): ?array

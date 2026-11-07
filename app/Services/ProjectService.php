@@ -37,6 +37,9 @@ final class ProjectService
             $where[] = '(p.responsible_user_id = ? OR EXISTS (SELECT 1 FROM project_members m WHERE m.project_id = p.id AND m.user_id = ?))';
             array_push($params, Auth::id(), Auth::id());
         }
+        [$visible, $vParams] = Access::projectWhere();
+        $where[] = $visible;
+        array_push($params, ...$vParams);
 
         return DB::all(
             'SELECT p.*, c.name AS client_name, c.code AS client_code, u.name AS responsible_name
@@ -56,7 +59,8 @@ final class ProjectService
 
     public static function countOpen(): int
     {
-        return (int) DB::value("SELECT COUNT(*) FROM projects WHERE status = 'open'");
+        [$visible, $params] = Access::projectWhere();
+        return (int) DB::value("SELECT COUNT(*) FROM projects p WHERE p.status = 'open' AND $visible", $params);
     }
 
     public static function find(int $id): ?array
@@ -87,6 +91,10 @@ final class ProjectService
             $data['number'] = sprintf('%s/%03d', $client['code'], Counter::next('project.' . $data['client_id']));
             $data['created_by'] = Auth::id();
             $id = DB::insert('projects', $data);
+            // Kısıtlı kullanıcı açtığı projeyi görmeye devam etsin: ekibe kendisi de eklenir
+            if (!Access::allProjects()) {
+                $members += [Auth::id() => null];
+            }
             self::syncMembers($id, $members, $data['responsible_user_id']);
             Audit::log('project.created', 'project', $id, ['number' => $data['number'], 'name' => $data['name']], $channel);
             return $id;

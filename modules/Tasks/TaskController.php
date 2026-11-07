@@ -103,7 +103,8 @@ final class TaskController
         return [
             'projects' => DB::all(
                 "SELECT p.id, p.number, p.name, c.name AS client_name FROM projects p JOIN clients c ON c.id = p.client_id
-                 WHERE p.status <> 'closed' ORDER BY p.number"
+                 WHERE p.status <> 'closed' AND " . \App\Services\Access::projectWhere()[0] . " ORDER BY p.number",
+                \App\Services\Access::projectWhere()[1]
             ),
             'users'    => DB::all('SELECT id, name FROM users WHERE is_active = 1 ORDER BY name'),
             'me'       => Auth::id(),

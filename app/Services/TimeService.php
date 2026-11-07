@@ -54,9 +54,9 @@ final class TimeService
             "SELECT p.id, p.number, p.name, p.billing_type, c.name AS client_name,
                     EXISTS (SELECT 1 FROM project_members m WHERE m.project_id = p.id AND m.user_id = ?) AS is_member
              FROM projects p JOIN clients c ON c.id = p.client_id
-             WHERE p.status = 'open'
+             WHERE p.status = 'open' AND " . Access::projectWhere()[0] . "
              ORDER BY is_member DESC, c.name, p.number",
-            [$userId]
+            array_merge([$userId], Access::projectWhere()[1])
         );
     }
 
@@ -167,7 +167,7 @@ final class TimeService
 
     public static function startTimer(int $userId, int $projectId, ?string $description): void
     {
-        if (!DB::value("SELECT id FROM projects WHERE id = ? AND status = 'open'", [$projectId])) {
+        if (!DB::value("SELECT id FROM projects WHERE id = ? AND status = 'open'", [$projectId]) || !Access::canSeeProject($projectId)) {
             throw new ValidationException(['timer_project_id' => __('validation.required')]);
         }
         DB::query(
@@ -211,6 +211,9 @@ final class TimeService
 
         $projectId = (int) ($in['project_id'] ?? 0);
         $project = DB::one('SELECT id, client_id, status, billing_type, currency FROM projects WHERE id = ?', [$projectId]);
+        if ($project && !Access::canSeeProject($projectId) && (int) ($current['project_id'] ?? 0) !== $projectId) {
+            $project = null;   // görmediği projeye kayıt giremez
+        }
         // Kapalı projeye yeni kayıt girilmez; mevcut kaydın projesi aynı kaldıysa düzenlenebilir
         if (!$project || ($project['status'] !== 'open' && (int) ($current['project_id'] ?? 0) !== $projectId)) {
             $errors['project_id'] = __('time.project_required');

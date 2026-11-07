@@ -49,8 +49,10 @@ final class MeetingService
     /** when: upcoming (bugünden sonra) | past */
     public static function list(string $when): array
     {
+        [$visible, $params] = Access::clientWhere();
         return DB::all(
-            self::SELECT . ($when === 'past' ? ' WHERE m.meeting_at < NOW() ORDER BY m.meeting_at DESC' : ' WHERE m.meeting_at >= NOW() ORDER BY m.meeting_at'),
+            self::SELECT . " WHERE $visible AND " . ($when === 'past' ? 'm.meeting_at < NOW() ORDER BY m.meeting_at DESC' : 'm.meeting_at >= NOW() ORDER BY m.meeting_at'),
+            $params
         );
     }
 
@@ -212,11 +214,11 @@ final class MeetingService
         $errors = [];
         $clean = fn ($s) => trim(preg_replace('/\s+/u', ' ', (string) $s));
         $clientId = (int) ($current['client_id'] ?? $in['client_id'] ?? 0);   // müvekkil sonradan değişmez
-        if (!DB::value('SELECT id FROM clients WHERE id = ?', [$clientId])) {
+        if (!DB::value('SELECT id FROM clients WHERE id = ?', [$clientId]) || (!$current && !Access::canSeeClient($clientId))) {
             $errors['client_id'] = __('validation.required');
         }
         $projectId = (int) ($in['project_id'] ?? 0) ?: null;
-        if ($projectId && !DB::value('SELECT id FROM projects WHERE id = ? AND client_id = ?', [$projectId, $clientId])) {
+        if ($projectId && (!DB::value('SELECT id FROM projects WHERE id = ? AND client_id = ?', [$projectId, $clientId]) || (!Access::canSeeProject($projectId) && (int) ($current['project_id'] ?? 0) !== $projectId))) {
             $errors['project_id'] = __('meetings.project_mismatch');
         }
         $date = (string) ($in['date'] ?? '');

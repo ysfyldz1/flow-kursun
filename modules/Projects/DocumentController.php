@@ -66,7 +66,7 @@ final class DocumentController
 
     private function project(string $id): array
     {
-        $project = ProjectService::find((int) $id) ?? abort(404);
+        $project = (\App\Services\Access::canSeeProject((int) $id) ? ProjectService::find((int) $id) : null) ?? abort(404);
         if (!DocumentService::enabled()) {
             abort(404);
         }

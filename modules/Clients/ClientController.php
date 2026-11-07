@@ -27,7 +27,7 @@ final class ClientController
 
     public function show(string $id): void
     {
-        $client = ClientService::find((int) $id) ?? abort(404);
+        $client = (\App\Services\Access::canSeeClient((int) $id) ? ClientService::find((int) $id) : null) ?? abort(404);
         View::render('Clients::show', [
             'title'    => $client['name'],
             'client'   => $client,
@@ -44,7 +44,7 @@ final class ClientController
 
     public function edit(string $id): void
     {
-        $this->form(ClientService::find((int) $id) ?? abort(404));
+        $this->form((\App\Services\Access::canSeeClient((int) $id) ? ClientService::find((int) $id) : null) ?? abort(404));
     }
 
     public function store(): void
@@ -60,7 +60,7 @@ final class ClientController
 
     public function update(string $id): void
     {
-        ClientService::find((int) $id) ?? abort(404);
+        (\App\Services\Access::canSeeClient((int) $id) ? ClientService::find((int) $id) : null) ?? abort(404);
         try {
             ClientService::update((int) $id, $_POST);
         } catch (ValidationException $e) {
@@ -72,7 +72,7 @@ final class ClientController
 
     public function toggle(string $id): void
     {
-        $client = ClientService::find((int) $id) ?? abort(404);
+        $client = (\App\Services\Access::canSeeClient((int) $id) ? ClientService::find((int) $id) : null) ?? abort(404);
         ClientService::setActive((int) $id, !$client['is_active']);
         flash('success', __('app.saved'));
         redirect("/clients/$id");

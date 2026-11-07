@@ -29,7 +29,7 @@ final class MeetingController
 
     public function edit(string $id): void
     {
-        $this->form(MeetingService::find((int) $id) ?? abort(404));
+        $this->form($this->load($id));
     }
 
     public function store(): void
@@ -45,7 +45,7 @@ final class MeetingController
 
     public function update(string $id): void
     {
-        MeetingService::find((int) $id) ?? abort(404);
+        $this->load($id);
         try {
             MeetingService::save((int) $id, $_POST, $_FILES['proxy_doc'] ?? null);
         } catch (ValidationException $e) {
@@ -57,7 +57,7 @@ final class MeetingController
 
     public function show(string $id): void
     {
-        $m = MeetingService::find((int) $id) ?? abort(404);
+        $m = $this->load($id);
         $shareholders = MeetingService::shareholders((int) $id);
         View::render('Meetings::show', [
             'title'        => __('meetings.event_title', ['client' => $m['client_name']]),
@@ -69,14 +69,14 @@ final class MeetingController
 
     public function toggle(string $id): void
     {
-        MeetingService::find((int) $id) ?? abort(404);
+        $this->load($id);
         MeetingService::toggleOpen((int) $id);
         back();
     }
 
     public function reset(string $id, string $shareholder): void
     {
-        MeetingService::find((int) $id) ?? abort(404);
+        $this->load($id);
         MeetingService::resetResponse((int) $id, (int) $shareholder);
         flash('success', __('meetings.response_reset'));
         redirect("/meetings/$id");
@@ -84,7 +84,7 @@ final class MeetingController
 
     public function delete(string $id): void
     {
-        $m = MeetingService::find((int) $id) ?? abort(404);
+        $m = $this->load($id);
         MeetingService::delete((int) $id);
         flash('success', __('app.deleted'));
         redirect('/clients/' . $m['client_id']);
@@ -92,20 +92,20 @@ final class MeetingController
 
     public function csv(string $id): void
     {
-        MeetingService::csv(MeetingService::find((int) $id) ?? abort(404));
+        MeetingService::csv($this->load($id));
     }
 
     /** Yüklenen vekaletname şablonu/örneği. */
     public function doc(string $id): void
     {
-        $m = MeetingService::find((int) $id) ?? abort(404);
+        $m = $this->load($id);
         $this->send(MeetingService::docPath($m['proxy_doc_file']) ?? abort(404), (string) $m['proxy_doc_name']);
     }
 
     /** Bir pay sahibinin doldurulmuş vekaletnamesi. */
     public function proxy(string $id, string $shareholder): void
     {
-        $m = MeetingService::find((int) $id) ?? abort(404);
+        $m = $this->load($id);
         $s = array_values(array_filter(MeetingService::shareholders((int) $id), fn ($s) => (int) $s['id'] === (int) $shareholder))[0] ?? abort(404);
         [$path, $name] = MeetingService::filledProxy($m, $s) ?? abort(404);
         $this->send($path, $name, true);
@@ -122,6 +122,13 @@ final class MeetingController
         json_response($lines ? ['lines' => $lines] : ['error' => __('meetings.import_empty')], $lines ? 200 : 422);
     }
 
+    /** Genel kurul, müvekkili görünen kullanıcıya açılır. */
+    private function load(string $id): array
+    {
+        $m = MeetingService::find((int) $id);
+        return $m && \App\Services\Access::canSeeClient((int) $m['client_id']) ? $m : abort(404);
+    }
+
     private function form(?array $m): void
     {
         $clientId = (int) ($m['client_id'] ?? $_GET['client_id'] ?? old('client_id', '0'));
@@ -129,8 +136,8 @@ final class MeetingController
             'title'    => __($m ? 'meetings.edit' : 'meetings.new'),
             'm'        => $m,
             'clientId' => $clientId,
-            'clients'  => $m ? [] : DB::all("SELECT id, code, name FROM clients WHERE is_active = 1 ORDER BY name"),
-            'projects' => DB::all('SELECT id, client_id, number, name FROM projects WHERE status <> \'closed\' OR id = ? ORDER BY number', [(int) ($m['project_id'] ?? 0)]),
+            'clients'  => $m ? [] : DB::all('SELECT c.id, c.code, c.name FROM clients c WHERE c.is_active = 1 AND ' . \App\Services\Access::clientWhere()[0] . ' ORDER BY c.name', \App\Services\Access::clientWhere()[1]),
+            'projects' => DB::all('SELECT p.id, p.client_id, p.number, p.name FROM projects p WHERE (p.status <> \'closed\' AND ' . \App\Services\Access::projectWhere()[0] . ') OR p.id = ? ORDER BY p.number', array_merge(\App\Services\Access::projectWhere()[1], [(int) ($m['project_id'] ?? 0)])),
             'lines'    => $m ? implode("\n", array_map([MeetingService::class, 'line'], MeetingService::shareholders((int) $m['id']))) : '',
         ]);
     }

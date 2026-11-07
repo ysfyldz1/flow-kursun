@@ -4,7 +4,7 @@
 // rol ekranı kutucukları bu listeden çizer. Etiketler lang dosyalarında "perm.<izin>".
 return [
     'clients'    => ['clients.view', 'clients.edit'],
-    'projects'   => ['projects.view', 'projects.edit', 'documents.manage'],
+    'projects'   => ['projects.view', 'projects.all', 'projects.edit', 'documents.manage'],
     'tasks'      => ['tasks.own', 'tasks.all'],
     'meetings'   => ['meetings.manage'],
     'calendar'   => ['calendar.view', 'calendar.edit'],

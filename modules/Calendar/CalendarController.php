@@ -50,7 +50,7 @@ final class CalendarController
 
     public function show(string $id): void
     {
-        $event = CalendarService::find((int) $id) ?? abort(404);
+        $event = (CalendarService::canSee((int) $id) ? CalendarService::find((int) $id) : null) ?? abort(404);
         View::render('Calendar::show', ['title' => $event['title'], 'e' => $event]);
     }
 
@@ -61,7 +61,7 @@ final class CalendarController
 
     public function edit(string $id): void
     {
-        $this->form(CalendarService::find((int) $id) ?? abort(404));
+        $this->form((CalendarService::canSee((int) $id) ? CalendarService::find((int) $id) : null) ?? abort(404));
     }
 
     public function store(): void
@@ -77,7 +77,7 @@ final class CalendarController
 
     public function update(string $id): void
     {
-        CalendarService::find((int) $id) ?? abort(404);
+        (CalendarService::canSee((int) $id) ? CalendarService::find((int) $id) : null) ?? abort(404);
         try {
             CalendarService::update((int) $id, $_POST);
         } catch (ValidationException $e) {
@@ -89,7 +89,7 @@ final class CalendarController
 
     public function delete(string $id): void
     {
-        $e = CalendarService::find((int) $id) ?? abort(404);
+        $e = (CalendarService::canSee((int) $id) ? CalendarService::find((int) $id) : null) ?? abort(404);
         CalendarService::delete((int) $id);
         flash('success', __('cal.deleted'));
         redirect($e['project_id'] ? "/projects/{$e['project_id']}" : '/calendar');
@@ -97,7 +97,7 @@ final class CalendarController
 
     public function done(string $id): void
     {
-        CalendarService::find((int) $id) ?? abort(404);
+        (CalendarService::canSee((int) $id) ? CalendarService::find((int) $id) : null) ?? abort(404);
         CalendarService::toggleDone((int) $id);
         back();
     }
@@ -105,7 +105,7 @@ final class CalendarController
     /** Outlook'a yansıtılamayan kopyaları yeniden dener. */
     public function resync(string $id): void
     {
-        CalendarService::find((int) $id) ?? abort(404);
+        (CalendarService::canSee((int) $id) ? CalendarService::find((int) $id) : null) ?? abort(404);
         CalendarService::sync((int) $id);
         back();
     }

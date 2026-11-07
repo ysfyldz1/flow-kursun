@@ -118,6 +118,7 @@ return [
     'perm.clients.view'   => 'Müvekkilleri görüntüleme',
     'perm.clients.edit'   => 'Müvekkil ekleme ve düzenleme',
     'perm.projects.view'  => 'Projeleri görüntüleme',
+    'perm.projects.all'   => 'Tüm projeleri ve müvekkilleri görme (yoksa yalnız ekibinde olduklarını görür)',
     'perm.projects.edit'  => 'Proje ekleme ve düzenleme',
     'perm.time.own'       => 'Kendi zaman kayıtlarını girme',
     'perm.time.all'       => 'Herkesin zaman kayıtlarını yönetme',

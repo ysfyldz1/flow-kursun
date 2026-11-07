@@ -61,6 +61,12 @@ final class CalendarService
         );
     }
 
+    public static function canSee(int $id): bool
+    {
+        [$visible, $params] = Access::eventWhere();
+        return (bool) DB::value("SELECT 1 FROM events e WHERE e.id = ? AND $visible", array_merge([$id], $params));
+    }
+
     public static function forProject(int $projectId): array
     {
         return DB::all(
@@ -238,6 +244,9 @@ final class CalendarService
             $errors['type'] = __('validation.required');
         }
         $project = $projectId ? DB::one('SELECT id, number, name FROM projects WHERE id = ?', [$projectId]) : null;
+        if ($project && !Access::canSeeProject($projectId) && (int) ($current['project_id'] ?? 0) !== $projectId) {
+            $project = null;
+        }
         if ($projectId && !$project) {
             $errors['project_id'] = __('validation.required');
         }
@@ -291,8 +300,9 @@ final class CalendarService
 
     private static function mine(?int $userId): array
     {
+        [$visible, $params] = Access::eventWhere();
         return $userId
-            ? ['AND EXISTS (SELECT 1 FROM event_attendees a WHERE a.event_id = e.id AND a.user_id = ?)', [$userId]]
-            : ['', []];
+            ? ["AND EXISTS (SELECT 1 FROM event_attendees a WHERE a.event_id = e.id AND a.user_id = ?) AND $visible", array_merge([$userId], $params)]
+            : ["AND $visible", $params];
     }
 }

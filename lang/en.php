@@ -118,6 +118,7 @@ return [
     'perm.clients.view'   => 'View clients',
     'perm.clients.edit'   => 'Add and edit clients',
     'perm.projects.view'  => 'View projects',
+    'perm.projects.all'   => 'See all projects and clients (otherwise only those on their team)',
     'perm.projects.edit'  => 'Add and edit projects',
     'perm.time.own'       => 'Log own time',
     'perm.time.all'       => "Manage everyone's time",
