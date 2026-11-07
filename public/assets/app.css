@@ -661,3 +661,8 @@ a.card.stat:hover { border-color: var(--primary); }
 .viz-row > .card { display: flex; flex-direction: column; }
 .viz-row .viz-body { flex: 1; display: flex; }
 .viz-row .viz { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+/* Açılır bölüm başlıkları kurum renginde; yazı rengi _theme.php'de kontrasta göre (--on-primary) */
+.fold-head { background: var(--primary); border-color: var(--primary); color: var(--on-primary, #fff); }
+.fold-head:hover { border-color: var(--primary); filter: brightness(1.06); }
+.fold-head h2, .fold-head .widget-link, .fold-head .fold-chevron { color: inherit; }
+.fold-head .fold-hint { color: inherit; opacity: .78; }
