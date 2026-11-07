@@ -33,6 +33,7 @@ Kurumun kendi Entra yönetim merkezinde, kurumun yönetici hesabıyla:
    | `offline_access` | Temsilci | Kişinin bağlantısı oturum kapansa da sürsün (yenileme belirteci) |
    | `Mail.Read` | Temsilci | Kişinin **kendi** e-postasını projeye kaydetmesi |
    | `Files.ReadWrite` | Temsilci | Kişinin **kendi** OneDrive'ından projeye dosya eklemesi |
+   | `Files.Read.All` | Temsilci | OneDrive'da "Dosyalarım'a kısayol ekle" ile eklenen SharePoint klasörlerini okumak (yalnız kişinin zaten erişebildiği dosyalar) |
    | `Mail.Send` | Uygulama | Sistem e-postaları (ortak posta kutusundan) |
    | `Calendars.ReadWrite` | Uygulama | Duruşma/süre/toplantıları katılımcıların Outlook takvimine yazmak |
    | `Sites.ReadWrite.All`, `Files.ReadWrite.All` | Uygulama | Proje belgeleri (SharePoint sitesi ya da merkezi OneDrive) |
@@ -50,8 +51,8 @@ Sıra önemlidir:
 3. **E-posta** (Ayarlar → E-posta): sürücü `graph`, gönderen ortak posta kutusu (ör. `it@kurum.av.tr`) → deneme e-postası.
 4. **Belgeler**: SharePoint sitesi adresi ya da merkezi OneDrive kullanıcısı + kök klasör (ör. `Clients`).
 5. **Outlook takvimi** anahtarı: yalnız `Calendars.ReadWrite` için yönetici onayı verildikten **sonra** açılır.
-6. **"Microsoft ile girişte e-posta ve OneDrive bağlantısını da kur"** anahtarı: yalnız `Mail.Read`, `Files.ReadWrite`
-   ve `offline_access` için yönetici onayı verildikten **sonra** açılır. Önce açılırsa Microsoft ile giriş yapan herkes
+6. **"Microsoft ile girişte e-posta ve OneDrive bağlantısını da kur"** anahtarı: yalnız `Mail.Read`, `Files.ReadWrite`,
+   `Files.Read.All` ve `offline_access` için yönetici onayı verildikten **sonra** açılır. Önce açılırsa Microsoft ile giriş yapan herkes
    izin ekranına takılır. Açıkken Microsoft ile giren kişinin hesabı kendiliğinden bağlanır; Flow şifresiyle girenler
    Profilim → "Microsoft 365 hesabımı bağla" ile bir kez bağlar.
 
@@ -72,3 +73,9 @@ Yeni bir kuruma geçerken eski bağlantıdan iz kalmaması için: **Ayarlar → 
 - İstemci gizli dizisinin bitiş tarihi not edilir.
 - `config.php`: `app.debug` = `false`, `app.url` canlı adres.
 - Telefonda PWA kurulumu HTTPS üzerinden denenir.
+
+## Not: kullanıcı izinlerini değiştirirken
+
+Flow'un kullanıcı adına istediği izinler (`Microsoft::CONNECT_SCOPES`) değiştirilecekse **önce** Azure'da izin eklenip
+yönetici onayı verilir, **sonra** kod güncellenir. Ters sırada bağlı kullanıcıların belirteç yenilemesi başarısız olur ve
+bağlantıları kopar. Güncellemeden sonra kullanıcılar Profilim → Yeniden bağla der (ya da Microsoft ile yeniden girer).

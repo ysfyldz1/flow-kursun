@@ -2,7 +2,7 @@
  * Kişinin OneDrive'ı için gezgin: klasörlerde gezinme, yol gösterici, arama, çoklu dosya seçimi.
  * Dosyalarım sayfası ve proje Belgeler'deki "OneDrive'dan ekle" penceresi birlikte kullanır.
  *   const b = OneDriveBrowser(el, { text: {...}, onChange: ids => … });  b.load(); b.selected(); b.reload();
- * Sunucu: GET /files/browse?folder=&q= → {crumbs: [[id, ad]], items: [...], search}
+ * Sunucu: GET /files/browse?folder=&q= → {items: [...], search}
  */
 window.OneDriveBrowser = (root, { text, onChange = () => {} }) => {
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -16,14 +16,16 @@ window.OneDriveBrowser = (root, { text, onChange = () => {} }) => {
     const list = root.querySelector('[data-od-list]');
     const crumbs = root.querySelector('[data-od-crumbs]');
     const form = root.querySelector('[data-od-search]');
-    let folder = '';
+    // Yol gösterici tarayıcıda tutulur: [[id, ad], ...]; kısayolun içinde gezinirken de doğru kalır
+    let trail = [];
+    const folder = () => trail.length ? trail[trail.length - 1][0] : '';
 
     const selected = () => [...list.querySelectorAll('input:checked')].map(i => i.value);
     const changed = () => onChange(selected());
 
     const load = async (q = '') => {
         list.innerHTML = '<div class="empty">…</div>';
-        const r = await fetch('/files/browse?' + new URLSearchParams({ folder, q }), { credentials: 'same-origin' });
+        const r = await fetch('/files/browse?' + new URLSearchParams({ folder: q ? '' : folder(), q }), { credentials: 'same-origin' });
         const json = await r.json().catch(() => ({}));
         if (!r.ok) {
             crumbs.innerHTML = '';
@@ -32,13 +34,14 @@ window.OneDriveBrowser = (root, { text, onChange = () => {} }) => {
             changed();
             return;
         }
-        crumbs.innerHTML = `<button type="button" class="link" data-od-folder="">⌂ ${esc(text.root)}</button>`
+        const steps = json.search ? [] : trail;
+        crumbs.innerHTML = `<button type="button" class="link" data-od-crumb="0">⌂ ${esc(text.root)}</button>`
             + (json.search ? ` <span class="muted">›</span> <strong>${esc(text.results)}</strong>` : '')
-            + json.crumbs.map(([id, name], i) => ` <span class="muted">›</span> ` + (i === json.crumbs.length - 1
-                ? `<strong>${esc(name)}</strong>` : `<button type="button" class="link" data-od-folder="${esc(id)}">${esc(name)}</button>`)).join('');
+            + steps.map(([, name], i) => ` <span class="muted">›</span> ` + (i === steps.length - 1
+                ? `<strong>${esc(name)}</strong>` : `<button type="button" class="link" data-od-crumb="${i + 1}">${esc(name)}</button>`)).join('');
         list.innerHTML = json.items.length ? json.items.map(i => i.folder
-            ? `<button type="button" class="pick-row od-folder" data-od-folder="${esc(i.id)}">
-                   <span class="od-icon">📁</span>
+            ? `<button type="button" class="pick-row od-folder" data-od-folder="${esc(i.id)}" data-name="${esc(i.name)}">
+                   <span class="od-icon" ${i.shortcut ? `title="${esc(text.shortcut || '')}"` : ''}>${i.shortcut ? '🔗' : '📁'}</span>
                    <span class="cell-main"><strong>${esc(i.name)}</strong><span>${esc(text.items.replace(':count', i.count ?? 0))}</span></span>
                    <span class="muted">›</span>
                </button>`
@@ -51,8 +54,11 @@ window.OneDriveBrowser = (root, { text, onChange = () => {} }) => {
 
     root.addEventListener('click', e => {
         const f = e.target.closest('[data-od-folder]');
-        if (!f) return;
-        folder = f.dataset.odFolder;
+        const c = e.target.closest('[data-od-crumb]');
+        if (!f && !c) return;
+        // Aramadan bir klasöre girilirse yol o klasörden başlar
+        if (f) trail = form.q.value.trim() ? [[f.dataset.odFolder, f.dataset.name]] : [...trail, [f.dataset.odFolder, f.dataset.name]];
+        else trail = trail.slice(0, +c.dataset.odCrumb);
         form.q.value = '';
         load();
     });

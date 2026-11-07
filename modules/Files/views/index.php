@@ -4,6 +4,7 @@ $text = [
     'search' => __('onedrive.search'), 'searchBtn' => __('app.search'), 'root' => __('onedrive.root'),
     'results' => __('onedrive.results'), 'items' => __('docs.folder_items'), 'empty' => __('onedrive.empty'),
     'noResults' => __('onedrive.no_results'), 'tooLarge' => __('onedrive.too_large_short'), 'connect' => __('ms.connect'),
+    'shortcut' => __('onedrive.shortcut'),
 ];
 ?>
 <div class="page-head">

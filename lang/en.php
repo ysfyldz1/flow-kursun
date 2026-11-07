@@ -737,6 +737,7 @@ return [
     'onedrive.copy_here'       => 'Copy to this folder',
     'onedrive.search'          => 'Search OneDrive…',
     'onedrive.root'            => 'OneDrive',
+    'onedrive.shortcut'        => 'Shortcut (from another site)',
     'onedrive.results'         => 'Search results',
     'onedrive.empty'           => 'This folder is empty.',
     'onedrive.no_results'      => 'No results.',

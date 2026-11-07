@@ -737,6 +737,7 @@ return [
     'onedrive.copy_here'       => 'Bu klasöre kopyala',
     'onedrive.search'          => 'OneDrive\'da ara…',
     'onedrive.root'            => 'OneDrive',
+    'onedrive.shortcut'        => 'Kısayol (başka bir siteden)',
     'onedrive.results'         => 'Arama sonuçları',
     'onedrive.empty'           => 'Bu klasör boş.',
     'onedrive.no_results'      => 'Sonuç bulunamadı.',

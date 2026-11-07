@@ -208,7 +208,7 @@ $billingValue = match ($p['billing_type']) {
                                 text: <?= json_encode([
                                     'search' => __('onedrive.search'), 'searchBtn' => __('app.search'), 'root' => __('onedrive.root'),
                                     'results' => __('onedrive.results'), 'items' => __('docs.folder_items'), 'empty' => __('onedrive.empty'),
-                                    'noResults' => __('onedrive.no_results'), 'tooLarge' => __('onedrive.too_large_short'), 'connect' => __('ms.connect'),
+                                    'noResults' => __('onedrive.no_results'), 'tooLarge' => __('onedrive.too_large_short'), 'connect' => __('ms.connect'), 'shortcut' => __('onedrive.shortcut'),
                                 ], JSON_UNESCAPED_UNICODE) ?>,
                                 onChange: ids => { odCopy.disabled = !ids.length; odStatus.textContent = ids.length ? odSelected.replace(':count', ids.length) : ''; },
                             });
