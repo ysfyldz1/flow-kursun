@@ -8,17 +8,43 @@ $canAdmin = can('users.manage') || can('roles.manage') || can('settings.manage')
 
 $user = auth();
 $initials = implode('', array_map(fn ($p) => mb_substr($p, 0, 1), array_slice(explode(' ', $user['name']), 0, 2)));
+// Menü: tek öğe [href, ikon, etiket, yetki] ya da grup ['group' => etiket, 'icon' => ikon, 'items' => [...]].
+// Yeni modül uygun gruba eklenir; üst menü uzamaz.
 $nav = [
     ['/',          'home',    'nav.dashboard', null],
     ['/clients',   'users',   'nav.clients',   'clients.view'],
     ['/projects',  'folder',  'nav.projects',  'projects.view'],
     ['/calendar',  'calendar','nav.calendar',  'calendar.view'],
     ['/time',      'clock',   'nav.time',      ['time.own', 'time.all']],
-    ['/leaves',    'sun',     'nav.leaves',    ['leaves.own', 'leaves.approve', 'leaves.manage']],
-    ['/expenses',  'wallet',  'nav.expenses',  ['expenses.own', 'expenses.all']],
-    ['/billing',   'receipt', 'nav.billing',   ['statements.manage', 'payments.manage']],
-    ['/reports',   'chart',   'nav.reports',   'reports.view'],
+    ['group' => 'nav.finance', 'icon' => 'wallet', 'items' => [
+        ['/billing',   'receipt', 'nav.billing',   ['statements.manage', 'payments.manage']],
+        ['/expenses',  'wallet',  'nav.expenses',  ['expenses.own', 'expenses.all']],
+        ['/reports',   'chart',   'nav.reports',   'reports.view'],
+    ]],
+    ['group' => 'nav.office', 'icon' => 'building', 'items' => [
+        ['/leaves',    'sun',     'nav.leaves',    ['leaves.own', 'leaves.approve', 'leaves.manage']],
+    ]],
 ];
+$allowed = fn (array $item) => !$item[3] || array_filter((array) $item[3], fn ($p) => can($p));
+foreach ($nav as $i => &$entry) {
+    if (isset($entry['group'])) {
+        $entry['items'] = array_values(array_filter($entry['items'], $allowed));
+        if (!$entry['items']) unset($nav[$i]);
+    } elseif (!$allowed($entry)) {
+        unset($nav[$i]);
+    }
+}
+unset($entry);
+
+// Telefonda alt çubuk: ortada menü düğmesi, iki yanında ikişer sık kullanılan bölüm
+$flat = [];
+foreach ($nav as $entry) {
+    foreach (isset($entry['group']) ? $entry['items'] : [$entry] as $item) $flat[$item[0]] = $item;
+}
+$pinned = array_slice(array_values(array_merge(
+    array_intersect_key($flat, array_flip(['/', '/projects', '/calendar', '/time'])),
+    $flat
+)), 0, 4);
 ?>
 <!doctype html>
 <html lang="<?= e(Lang::locale()) ?>">
@@ -45,11 +71,24 @@ $nav = [
         </a>
 
         <nav class="mainnav">
-            <?php foreach ($nav as [$href, $ico, $label, $perm]): ?>
-                <?php if ($perm && !array_filter((array) $perm, fn ($p) => can($p))) continue; ?>
-                <a href="<?= $href ?>" class="<?= request_is($href) ? 'active' : '' ?>">
-                    <?= icon($ico) ?><span><?= e(__($label)) ?></span>
-                </a>
+            <?php foreach ($nav as $entry): ?>
+                <?php if (isset($entry['group'])): ?>
+                    <?php $active = array_filter($entry['items'], fn ($i) => request_is($i[0])); ?>
+                    <details class="dropdown nav-group">
+                        <summary class="<?= $active ? 'active' : '' ?>" title="<?= e(__($entry['group'])) ?>">
+                            <?= icon($entry['icon']) ?><span><?= e(__($entry['group'])) ?></span><?= icon('chevron-down', 'icon icon-sm') ?>
+                        </summary>
+                        <div class="dropdown-menu">
+                            <?php foreach ($entry['items'] as [$href, $ico, $label]): ?>
+                                <a href="<?= $href ?>" class="<?= request_is($href) ? 'active' : '' ?>"><?= icon($ico) ?><?= e(__($label)) ?></a>
+                            <?php endforeach; ?>
+                        </div>
+                    </details>
+                <?php else: [$href, $ico, $label] = $entry; ?>
+                    <a href="<?= $href ?>" class="<?= request_is($href) ? 'active' : '' ?>" title="<?= e(__($label)) ?>">
+                        <?= icon($ico) ?><span><?= e(__($label)) ?></span>
+                    </a>
+                <?php endif; ?>
             <?php endforeach; ?>
         </nav>
 
@@ -91,14 +130,42 @@ $nav = [
     <?= $content ?>
 </main>
 
-<?php // Telefonda üst menü yerine alt sekme çubuğu (yetkili ilk 5 bölüm) ?>
+<?php // Telefonda üst menü yerine alt çubuk: 2 bölüm · menü düğmesi · 2 bölüm; kalanlar alttan açılan pencerede ?>
 <nav class="bottomnav">
-    <?php $shown = 0; foreach ($nav as [$href, $ico, $label, $perm]): ?>
-        <?php if ($perm && !array_filter((array) $perm, fn ($p) => can($p))) continue; ?>
-        <?php if (++$shown > 5) break; ?>
+    <?php foreach ($pinned as $n => [$href, $ico, $label]): ?>
+        <?php if ($n === 2): ?>
+            <button type="button" class="bottomnav-menu" id="sheet-open" aria-label="<?= e(__('nav.menu')) ?>"><?= icon('more') ?></button>
+        <?php endif; ?>
         <a href="<?= $href ?>" class="<?= request_is($href) ? 'active' : '' ?>"><?= icon($ico) ?><span><?= e(__($label)) ?></span></a>
     <?php endforeach; ?>
+    <?php if (count($pinned) < 3): ?>
+        <button type="button" class="bottomnav-menu" id="sheet-open" aria-label="<?= e(__('nav.menu')) ?>"><?= icon('more') ?></button>
+    <?php endif; ?>
 </nav>
+
+<dialog class="sheet" id="sheet">
+    <div class="sheet-body">
+    <div class="sheet-handle"></div>
+    <?php
+    $loose = array_filter($nav, fn ($e) => !isset($e['group']));
+    $sections = array_merge(
+        [['group' => 'nav.main', 'items' => array_values($loose)]],
+        array_values(array_filter($nav, fn ($e) => isset($e['group'])))
+    );
+    if ($canAdmin) {
+        $sections[] = ['group' => 'nav.settings', 'items' => [['/settings', 'settings', 'nav.settings', null]]];
+    }
+    ?>
+    <?php foreach ($sections as $s): ?>
+        <div class="sheet-title"><?= e(__($s['group'])) ?></div>
+        <div class="sheet-grid">
+            <?php foreach ($s['items'] as [$href, $ico, $label]): ?>
+                <a href="<?= $href ?>" class="<?= request_is($href) ? 'active' : '' ?>"><span class="sheet-icon"><?= icon($ico) ?></span><?= e(__($label)) ?></a>
+            <?php endforeach; ?>
+        </div>
+    <?php endforeach; ?>
+    </div>
+</dialog>
 
 <div class="toasts" id="toasts">
     <?php if (has_errors()): ?>
@@ -119,7 +186,17 @@ document.querySelectorAll('.toast').forEach(t => {
     t.addEventListener('mouseleave', () => { timer = setTimeout(close, 2000); t.classList.remove('toast-paused'); });
 });
 
-// Açık açılır menüyü dışarı tıklanınca kapat
+// Mobil menü penceresi: düğmeyle açılır, boşluğa dokununca kapanır
+const sheet = document.getElementById('sheet');
+document.getElementById('sheet-open')?.addEventListener('click', () => sheet.showModal());
+sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });
+
+// Üst menü sığmazsa yalnız ikonlara geçer (kaydırma çubuğu çıkmasın)
+const mainnav = document.querySelector('.mainnav');
+const fit = () => { mainnav.classList.remove('compact'); if (mainnav.scrollWidth > mainnav.clientWidth) mainnav.classList.add('compact'); };
+addEventListener('resize', fit); fit();
+
+// Açık açılır menüyü dışarı tıklanınca kapat; menüde biri açılınca diğeri kapanır
 document.addEventListener('click', e => {
     document.querySelectorAll('details.dropdown[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); });
 });

@@ -18,6 +18,10 @@ return [
     'nav.billing'         => 'Faturalama',
     'nav.reports'         => 'Raporlar',
     'nav.settings'        => 'Ayarlar',
+    'nav.finance'         => 'Finans',
+    'nav.office'          => 'Ofis',
+    'nav.main'            => 'Genel',
+    'nav.menu'            => 'Menü',
 
     // Giriş
     'auth.login'          => 'Giriş yap',

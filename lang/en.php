@@ -18,6 +18,10 @@ return [
     'nav.billing'         => 'Billing',
     'nav.reports'         => 'Reports',
     'nav.settings'        => 'Settings',
+    'nav.finance'         => 'Finance',
+    'nav.office'          => 'Office',
+    'nav.main'            => 'General',
+    'nav.menu'            => 'Menu',
 
     // Sign in
     'auth.login'          => 'Sign in',
