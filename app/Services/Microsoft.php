@@ -19,7 +19,7 @@ final class Microsoft
     private const GRAPH = 'https://graph.microsoft.com/v1.0';
     private const SIGNIN_SCOPES = 'openid profile email User.Read';
     /** Kullanıcının kendi posta kutusu ve OneDrive'ı için (delegated); offline_access yenileme belirteci verir. */
-    public const CONNECT_SCOPES = 'openid profile email offline_access User.Read Mail.Read Files.ReadWrite';
+    public const CONNECT_SCOPES = 'openid profile email offline_access User.Read Mail.Read Files.ReadWrite Files.Read.All';
 
     public static function tenantId(): ?string
     {

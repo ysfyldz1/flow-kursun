@@ -29,6 +29,9 @@ final class OneDriveService
         }
         [$drive, $base] = $folderId ? self::path($folderId) : [null, '/me/drive/root'];
         $items = Microsoft::graphAs($userId, 'GET', "$base/children?\$top=200&\$select=" . self::SELECT)['value'] ?? [];
+        if (!$folderId) {
+            $items = array_merge($items, self::rootShortcuts($userId, $items));
+        }
         $items = self::shape($items, $drive);
         usort($items, fn ($a, $b) => [$b['folder'], mb_strtolower($a['name'])] <=> [$a['folder'], mb_strtolower($b['name'])]);
         return ['items' => $items, 'search' => false];
@@ -66,6 +69,24 @@ final class OneDriveService
             }
         }
         return [$done, $errors];
+    }
+
+    /**
+     * Graph, "Dosyalarım'a kısayol ekle" ile eklenen öğeleri children listesinde döndürmüyor; boş arama döndürüyor.
+     * Kökteki kısayollar (üst klasörü kök olanlar) buradan alınıp listeye eklenir.
+     */
+    private static function rootShortcuts(int $userId, array $children): array
+    {
+        try {
+            $found = Microsoft::graphAs($userId, 'GET', "/me/drive/root/search(q='')?\$top=200&\$select=" . self::SELECT)['value'] ?? [];
+        } catch (RuntimeException) {
+            return [];   // arama çalışmazsa kısayolsuz liste yine gösterilir
+        }
+        $rootId = $children[0]['parentReference']['id'] ?? Microsoft::graphAs($userId, 'GET', '/me/drive/root?$select=id')['id'];
+        $have = array_column($children, 'id');
+        return array_values(array_filter($found, fn ($i) => isset($i['remoteItem'])
+            && ($i['parentReference']['id'] ?? null) === $rootId
+            && !in_array($i['id'], $have, true)));
     }
 
     /** Kimlik → [sürücü ya da null, Graph yolu]. "sürücü~öğe" başka sürücüdeki (kısayol) öğedir. */
