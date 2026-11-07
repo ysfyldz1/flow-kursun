@@ -36,6 +36,12 @@ final class Microsoft
         return self::tenantId() && self::clientId() && Settings::get('ms.client_secret');
     }
 
+    /** Microsoft ile girişte e-posta/OneDrive izinleri de istenip hesap bağlansın mı (Azure'da yönetici onayı verildikten sonra açılır). */
+    public static function loginConnects(): bool
+    {
+        return Settings::get('ms.login_connect') === '1';
+    }
+
     public static function loginEnabled(): bool
     {
         return self::isConfigured() && Settings::get('ms.login_enabled') === '1';
@@ -58,7 +64,7 @@ final class Microsoft
             'scope'         => $connect ? self::CONNECT_SCOPES : self::SIGNIN_SCOPES,
             'state'         => $state,
             'nonce'         => $nonce,
-            'prompt'        => $connect ? null : 'select_account',
+            'prompt'        => $loginHint ? null : 'select_account',
             'login_hint'    => $loginHint,
         ]));
     }

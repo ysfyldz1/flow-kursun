@@ -693,6 +693,8 @@ return [
     // Belgeler
     'perm.documents.manage'    => 'Belge yükleme ve portalda paylaşma',
     'ms.my_connection'         => 'Microsoft 365 hesabım',
+    'ms.login_connect'         => 'Microsoft ile girişte kişinin e-posta ve OneDrive bağlantısını da kur',
+    'ms.login_connect_hint'    => 'Önce Azure\'da Mail.Read, Files.ReadWrite ve offline_access (temsilci) izinlerini ekleyip yönetici onayı verin; aksi halde Microsoft ile giriş izin ekranına takılır.',
     'ms.connect_error'         => 'Hesap bağlanamadı: :error',
     'ms.connect'               => 'Microsoft 365 hesabımı bağla',
     'ms.reconnect'             => 'Yeniden bağla',

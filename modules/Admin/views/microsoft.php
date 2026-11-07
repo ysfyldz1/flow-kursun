@@ -95,6 +95,10 @@
                     <input type="checkbox" name="calendar_outlook" value="1" <?= Settings::get('calendar.outlook') === '1' ? 'checked' : '' ?>>
                     <span><?= e(__('cal.settings_outlook')) ?> <span class="muted small">— <?= e(__('cal.settings_outlook_hint')) ?></span></span>
                 </label>
+                <label class="check">
+                    <input type="checkbox" name="login_connect" value="1" <?= Settings::get('ms.login_connect') === '1' ? 'checked' : '' ?>>
+                    <span><?= e(__('ms.login_connect')) ?> <span class="muted small">— <?= e(__('ms.login_connect_hint')) ?></span></span>
+                </label>
                 <div class="form-actions">
                     <button class="btn btn-primary"><?= e(__('app.save')) ?></button>
                 </div>

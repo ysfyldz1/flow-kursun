@@ -53,7 +53,8 @@ final class AuthController
         }
         $_SESSION['_ms_state'] = bin2hex(random_bytes(16));
         $_SESSION['_ms_nonce'] = bin2hex(random_bytes(16));
-        header('Location: ' . Microsoft::authorizeUrl($_SESSION['_ms_state'], $_SESSION['_ms_nonce']));
+        $_SESSION['_ms_login_connect'] = Microsoft::loginConnects();
+        header('Location: ' . Microsoft::authorizeUrl($_SESSION['_ms_state'], $_SESSION['_ms_nonce'], $_SESSION['_ms_login_connect']));
         exit;
     }
 
@@ -66,7 +67,8 @@ final class AuthController
         $state = $_SESSION['_ms_state'] ?? '';
         $nonce = $_SESSION['_ms_nonce'] ?? '';
         $connect = !empty($_SESSION['_ms_connect']);
-        unset($_SESSION['_ms_state'], $_SESSION['_ms_nonce'], $_SESSION['_ms_connect']);
+        $loginConnect = !empty($_SESSION['_ms_login_connect']);
+        unset($_SESSION['_ms_state'], $_SESSION['_ms_nonce'], $_SESSION['_ms_connect'], $_SESSION['_ms_login_connect']);
 
         // Aynı yönlendirme adresi, giriş yapmış kullanıcının hesabını bağlaması için de kullanılır
         if ($connect && Auth::check()) {
@@ -89,7 +91,7 @@ final class AuthController
         }
 
         try {
-            $ms = Microsoft::exchangeCode((string) ($_GET['code'] ?? ''), $nonce);
+            $ms = Microsoft::exchangeCode((string) ($_GET['code'] ?? ''), $nonce, $loginConnect);
         } catch (\Throwable $e) {
             flash('error', __('auth.ms_error', ['error' => $e->getMessage()]));
             redirect('/login');
@@ -105,6 +107,14 @@ final class AuthController
         DB::update('users', ['ms_object_id' => $ms['oid'], 'ms_upn' => $ms['email'] ?: null], 'id = ?', [$user['id']]);
         Auth::login($user);
         $_SESSION['locale'] = $user['locale'];
+        // Girişle birlikte hesap da bağlanır; olmazsa giriş yine geçerli, kişi profilinden bağlayabilir
+        if (!empty($ms['token'])) {
+            try {
+                Microsoft::connectUser(DB::one('SELECT * FROM users WHERE id = ?', [$user['id']]), $ms);
+            } catch (\Throwable $e) {
+                error_log('Microsoft connect at login: ' . $e->getMessage());
+            }
+        }
         Audit::log('auth.login', null, null, ['via' => 'microsoft']);
         redirect('/');
     }

@@ -693,6 +693,8 @@ return [
     // Documents
     'perm.documents.manage'    => 'Upload documents and share them in the portal',
     'ms.my_connection'         => 'My Microsoft 365 account',
+    'ms.login_connect'         => 'Also connect each person\'s email and OneDrive when they sign in with Microsoft',
+    'ms.login_connect_hint'    => 'First add the delegated Mail.Read, Files.ReadWrite and offline_access permissions in Azure and grant admin consent; otherwise Microsoft sign-in stops at a consent screen.',
     'ms.connect_error'         => 'Could not connect the account: :error',
     'ms.connect'               => 'Connect my Microsoft 365 account',
     'ms.reconnect'             => 'Reconnect',
