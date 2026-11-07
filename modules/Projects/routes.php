@@ -13,6 +13,7 @@ $router->post('/projects/{id}', [ProjectController::class, 'update'], ['can' => 
 
 $router->get('/projects/{id}/documents', [DocumentController::class, 'index'], ['can' => 'projects.view']);
 $router->post('/projects/{id}/documents/folder', [DocumentController::class, 'createFolder'], ['can' => 'documents.manage']);
+$router->post('/projects/{id}/documents/from-onedrive', [DocumentController::class, 'fromOneDrive'], ['can' => 'documents.manage']);
 $router->post('/projects/{id}/documents/upload', [DocumentController::class, 'upload'], ['can' => 'documents.manage']);
 $router->get('/projects/{id}/documents/{item}/download', [DocumentController::class, 'download'], ['can' => 'projects.view']);
 $router->get('/projects/{id}/documents/{item}/open', [DocumentController::class, 'open'], ['can' => 'projects.view']);

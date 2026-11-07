@@ -24,6 +24,7 @@ $nav = [
     ]],
     ['group' => 'nav.office', 'icon' => 'building', 'items' => [
         ['/meetings',  'users',   'nav.meetings',  'meetings.manage'],
+        ['/files',     'folder',  'nav.files',     'documents.manage'],
         ['/leaves',    'sun',     'nav.leaves',    ['leaves.own', 'leaves.approve', 'leaves.manage']],
     ]],
 ];

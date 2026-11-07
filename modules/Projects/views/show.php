@@ -140,6 +140,7 @@ $billingValue = match ($p['billing_type']) {
                     <h2><?= e(__('docs.title')) ?></h2>
                     <?php if (can('documents.manage')): ?>
                         <button type="button" class="btn btn-sm btn-outline head-right" data-new-folder><?= icon('folder', 'icon icon-sm') ?><?= e(__('docs.new_folder')) ?></button>
+                        <button type="button" class="btn btn-sm btn-outline" data-od-open><?= icon('globe', 'icon icon-sm') ?><?= e(__('onedrive.add')) ?></button>
                         <label class="btn btn-sm btn-outline upload-zone" data-upload="/projects/<?= $p['id'] ?>/documents/upload"
                                data-csrf="<?= e(\App\Core\Csrf::token()) ?>" data-msg-done="<?= e(__('docs.uploaded')) ?>" data-msg-empty="<?= e(__('docs.file_empty')) ?>">
                             <?= icon('plus', 'icon icon-sm') ?><?= e(__('docs.upload')) ?>
@@ -159,6 +160,21 @@ $billingValue = match ($p['billing_type']) {
                 <?php endif; ?>
                 <div class="docs-body" data-src="/projects/<?= $p['id'] ?>/documents"><div class="empty"><?= e(__('docs.loading')) ?></div></div>
             </section>
+            <?php if (can('documents.manage')): ?>
+                <dialog class="modal" id="od-picker">
+                    <div class="modal-head">
+                        <h3><?= e(__('onedrive.pick_title')) ?></h3>
+                        <button type="button" class="icon-btn" data-close aria-label="×">✕</button>
+                    </div>
+                    <div class="od-modal" data-od-root></div>
+                    <div class="modal-foot">
+                        <span class="muted small" data-od-status></span>
+                        <button type="button" class="btn btn-outline" data-close><?= e(__('app.cancel')) ?></button>
+                        <button type="button" class="btn btn-primary" data-od-copy disabled><?= e(__('onedrive.copy_here')) ?></button>
+                    </div>
+                </dialog>
+                <script src="<?= asset('onedrive.js') ?>"></script>
+            <?php endif; ?>
             <script src="<?= asset('upload.js') ?>" defer></script>
             <script>
             (() => {
@@ -177,6 +193,44 @@ $billingValue = match ($p['billing_type']) {
                 });
                 load();
                 section.addEventListener('uploaded', load);
+                // OneDrive'dan ekle: seçilenler açık klasöre kopyalanır
+                const od = document.getElementById('od-picker');
+                if (od) {
+                    const odStatus = od.querySelector('[data-od-status]');
+                    const odCopy = od.querySelector('[data-od-copy]');
+                    const odSelected = <?= json_encode(__('emails.selected')) ?>;
+                    let browser = null;
+                    section.querySelector('[data-od-open]').addEventListener('click', () => {
+                        od.showModal();
+                        odStatus.textContent = '';
+                        if (!browser) {
+                            browser = OneDriveBrowser(od.querySelector('[data-od-root]'), {
+                                text: <?= json_encode([
+                                    'search' => __('onedrive.search'), 'searchBtn' => __('app.search'), 'root' => __('onedrive.root'),
+                                    'results' => __('onedrive.results'), 'items' => __('docs.folder_items'), 'empty' => __('onedrive.empty'),
+                                    'noResults' => __('onedrive.no_results'), 'tooLarge' => __('onedrive.too_large_short'), 'connect' => __('ms.connect'),
+                                ], JSON_UNESCAPED_UNICODE) ?>,
+                                onChange: ids => { odCopy.disabled = !ids.length; odStatus.textContent = ids.length ? odSelected.replace(':count', ids.length) : ''; },
+                            });
+                            browser.load();
+                        }
+                    });
+                    od.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => od.close()));
+                    od.addEventListener('click', e => { if (e.target === od) od.close(); });
+                    odCopy.addEventListener('click', async () => {
+                        odCopy.disabled = true;
+                        odStatus.textContent = <?= json_encode(__('onedrive.copying')) ?>;
+                        try {
+                            const r = await OneDriveSend('/projects/<?= $p['id'] ?>/documents/from-onedrive', csrf, browser.selected(), { folder });
+                            if (r.errors.length) { odStatus.textContent = r.message + ' · ' + r.errors.join(' '); browser.reload(); }
+                            else { od.close(); }
+                            load();
+                        } catch (e) {
+                            odStatus.textContent = e.message;
+                            odCopy.disabled = false;
+                        }
+                    });
+                }
                 // Yeni klasör: kutunun içinde açılan satır (Enter oluşturur, Esc kapatır)
                 const nf = section.querySelector('.docs-newfolder');
                 const nfError = nf?.querySelector('[data-error]');

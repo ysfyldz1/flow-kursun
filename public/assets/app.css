@@ -705,3 +705,13 @@ button.link { background: none; border: 0; padding: 0; font: inherit; cursor: po
 .pick-row .cell-main span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pick-row.is-saved { opacity: .55; cursor: default; }
 #emails .widget-row form { flex: 0 0 auto; }
+/* OneDrive gezgini (Dosyalarım ve "OneDrive'dan ekle") */
+.od-panel { overflow: hidden; }
+.od-panel .modal-search { padding: 14px 16px 0; }
+.od-crumbs { border-bottom: 1px solid var(--border); margin-top: 10px; }
+.od-list { padding: 6px 8px; max-height: 60vh; overflow-y: auto; }
+.od-modal { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.od-modal .od-list { flex: 1; min-height: 240px; }
+button.pick-row { width: 100%; border: 0; background: none; font: inherit; text-align: left; color: inherit; }
+.od-icon { width: 16px; text-align: center; }
+.od-send { position: sticky; top: 80px; }

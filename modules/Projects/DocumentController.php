@@ -62,6 +62,12 @@ final class DocumentController
         json_response(['id' => $f['id']]);
     }
 
+    /** OneDrive'dan seçilen dosyaları açık klasöre kopyalar. */
+    public function fromOneDrive(string $id): void
+    {
+        \Modules\Files\FileController::copy($this->project($id), $_POST['folder'] ?? null);
+    }
+
     public function download(string $id, string $item): void
     {
         $i = $this->item($id, $item);
