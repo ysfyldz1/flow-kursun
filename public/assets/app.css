@@ -666,3 +666,9 @@ a.card.stat:hover { border-color: var(--primary); }
 .fold-head:hover { border-color: var(--primary); filter: brightness(1.06); }
 .fold-head h2, .fold-head .widget-link, .fold-head .fold-chevron { color: inherit; }
 .fold-head .fold-hint { color: inherit; opacity: .78; }
+
+/* Belgelerde klasör gezintisi */
+button.link { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-align: left; }
+.docs-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.docs-folder strong { display: inline-flex; align-items: center; gap: 6px; }
+.widget-head .head-right + .upload-zone { margin-left: 6px; }

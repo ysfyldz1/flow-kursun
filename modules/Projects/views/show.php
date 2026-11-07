@@ -139,7 +139,8 @@ $billingValue = match ($p['billing_type']) {
                     <span class="widget-icon"><?= icon('folder') ?></span>
                     <h2><?= e(__('docs.title')) ?></h2>
                     <?php if (can('documents.manage')): ?>
-                        <label class="btn btn-sm btn-outline head-right upload-zone" data-upload="/projects/<?= $p['id'] ?>/documents/upload"
+                        <button type="button" class="btn btn-sm btn-outline head-right" data-new-folder><?= icon('folder', 'icon icon-sm') ?><?= e(__('docs.new_folder')) ?></button>
+                        <label class="btn btn-sm btn-outline upload-zone" data-upload="/projects/<?= $p['id'] ?>/documents/upload"
                                data-csrf="<?= e(\App\Core\Csrf::token()) ?>" data-msg-done="<?= e(__('docs.uploaded')) ?>" data-msg-empty="<?= e(__('docs.file_empty')) ?>">
                             <?= icon('plus', 'icon icon-sm') ?><?= e(__('docs.upload')) ?>
                             <input type="file" multiple hidden>
@@ -154,10 +155,34 @@ $billingValue = match ($p['billing_type']) {
             (() => {
                 const section = document.getElementById('documents');
                 const body = section.querySelector('.docs-body');
-                const load = () => fetch(body.dataset.src, { credentials: 'same-origin' }).then(r => r.text()).then(html => { body.innerHTML = html; });
+                const zone = section.querySelector('[data-upload]');
+                const uploadBase = zone?.dataset.upload;
+                const csrf = <?= json_encode(\App\Core\Csrf::token()) ?>;
+                // Açık klasör: liste, yükleme ve yeni klasör bu klasöre göre çalışır
+                let folder = '';
+                const q = () => folder ? '?folder=' + encodeURIComponent(folder) : '';
+                const load = () => fetch(body.dataset.src + q(), { credentials: 'same-origin' }).then(r => r.text()).then(html => {
+                    body.innerHTML = html;
+                    folder = body.querySelector('[data-current-folder]')?.dataset.currentFolder || '';
+                    if (zone) zone.dataset.upload = uploadBase + q();
+                });
                 load();
                 section.addEventListener('uploaded', load);
+                section.querySelector('[data-new-folder]')?.addEventListener('click', async () => {
+                    const name = prompt(<?= json_encode(__('docs.new_folder_prompt')) ?>);
+                    if (!name || !name.trim()) return;
+                    const fd = new FormData();
+                    fd.append('_csrf', csrf);
+                    fd.append('name', name.trim());
+                    fd.append('folder', folder);
+                    const r = await fetch('/projects/<?= $p['id'] ?>/documents/folder', { method: 'POST', body: fd, credentials: 'same-origin' });
+                    const json = await r.json().catch(() => ({}));
+                    if (!r.ok) { alert(json.error || r.statusText); return; }
+                    load();
+                });
                 body.addEventListener('click', async e => {
+                    const nav = e.target.closest('[data-folder]');
+                    if (nav) { folder = nav.dataset.folder; load(); return; }
                     const btn = e.target.closest('[data-share]');
                     if (!btn) return;
                     btn.disabled = true;

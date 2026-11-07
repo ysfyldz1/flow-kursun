@@ -73,17 +73,65 @@ final class DocumentService
         return $items;
     }
 
-    /** Öğe projenin klasöründe mi? Başka klasörden kimlik uydurup indirme yapılamasın. */
+    /**
+     * Öğe projenin klasöründe (alt klasörler dahil) mi? Başka klasörden kimlik uydurup erişilemesin.
+     * Graph'taki tam yol karşılaştırılır: öğenin üst yolu proje klasörünün yoluyla başlamalı.
+     */
     public static function item(string $folderId, string $itemId): array
     {
         if (!preg_match('/^[A-Za-z0-9!_\-]+$/', $itemId)) {
             throw new RuntimeException('Invalid item', 404);
         }
         $item = self::graph('GET', "/items/$itemId?\$select=" . self::SELECT . ',@microsoft.graph.downloadUrl');
-        if (($item['parentReference']['id'] ?? null) !== $folderId) {
+        $root = self::fullPath(self::graph('GET', "/items/$folderId?\$select=id,name,parentReference"));
+        $parent = rawurldecode((string) ($item['parentReference']['path'] ?? ''));
+        if (($item['parentReference']['id'] ?? null) !== $folderId && !str_starts_with($parent . '/', $root . '/')) {
             throw new RuntimeException('Item not in project folder', 404);
         }
         return $item;
+    }
+
+    /**
+     * Gösterilecek klasör: boşsa proje klasörü, doluysa projenin altındaki bir klasör.
+     * [klasör kimliği, yol gösterici [[id, ad], ...]] döner (proje kökü hariç).
+     */
+    public static function folder(array $project, ?string $folderId): array
+    {
+        $root = self::projectFolder($project);
+        if (!$folderId || $folderId === $root) {
+            return [$root, []];
+        }
+        $item = self::item($root, $folderId);
+        if (!isset($item['folder'])) {
+            throw new RuntimeException('Not a folder', 404);
+        }
+        // Kökten bu klasöre kadar olan zincir; derinlik sınırlı
+        $crumbs = [[$item['id'], $item['name']]];
+        $parentId = $item['parentReference']['id'] ?? null;
+        for ($i = 0; $i < 12 && $parentId && $parentId !== $root; $i++) {
+            $p = self::graph('GET', "/items/$parentId?\$select=id,name,parentReference");
+            array_unshift($crumbs, [$p['id'], $p['name']]);
+            $parentId = $p['parentReference']['id'] ?? null;
+        }
+        return [$item['id'], $crumbs];
+    }
+
+    public static function createFolder(string $parentId, string $name): array
+    {
+        $name = self::safeName($name);
+        if ($name === '') {
+            throw new ValidationException(['name' => __('validation.required')]);
+        }
+        return self::graph('POST', "/items/$parentId/children", [
+            'name'   => $name,
+            'folder' => new \stdClass(),
+            '@microsoft.graph.conflictBehavior' => 'rename',
+        ]);
+    }
+
+    private static function fullPath(array $item): string
+    {
+        return rawurldecode((string) ($item['parentReference']['path'] ?? '')) . '/' . $item['name'];
     }
 
     /** Tarayıcının parça parça yükleyeceği, önceden yetkilendirilmiş adres. Aynı ad varsa yeni ad verilir. */

@@ -693,6 +693,9 @@ return [
     // Documents
     'perm.documents.manage'    => 'Upload documents and share them in the portal',
     'docs.title'               => 'Documents',
+    'docs.new_folder'          => 'New folder',
+    'docs.new_folder_prompt'   => 'Folder name',
+    'docs.open_in_m365'        => 'Open in Microsoft 365',
     'docs.loading'             => 'Loading documents…',
     'docs.empty'               => 'No documents in this project yet. Click the button or drag files onto it to upload.',
     'docs.portal_empty'        => 'No documents have been shared with you. You can send documents to the office with the Upload button.',

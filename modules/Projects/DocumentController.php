@@ -18,7 +18,7 @@ final class DocumentController
     {
         $project = $this->project($id);
         try {
-            $folder = DocumentService::projectFolder($project);
+            [$folder, $crumbs] = DocumentService::folder($project, $_GET['folder'] ?? null);
             $items = DocumentService::list($folder);
         } catch (RuntimeException $e) {
             http_response_code(502);
@@ -28,6 +28,8 @@ final class DocumentController
         echo View::partial('Projects::_documents', [
             'project' => $project,
             'items'   => $items,
+            'folder'  => $folder,
+            'crumbs'  => $crumbs,
             'shares'  => DocumentService::shares((int) $project['id']),
         ]);
     }
@@ -36,13 +38,28 @@ final class DocumentController
     {
         $project = $this->project($id);
         try {
-            $url = DocumentService::uploadSession(DocumentService::projectFolder($project), (string) ($_POST['name'] ?? ''), (int) ($_POST['size'] ?? 0));
+            $url = DocumentService::uploadSession(DocumentService::folder($project, $_GET['folder'] ?? null)[0], (string) ($_POST['name'] ?? ''), (int) ($_POST['size'] ?? 0));
         } catch (ValidationException $e) {
             json_response(['error' => reset($e->errors)], 422);
         } catch (RuntimeException $e) {
             json_response(['error' => $e->getMessage()], 502);
         }
         json_response(['uploadUrl' => $url]);
+    }
+
+    /** Açık klasörün içinde yeni klasör. */
+    public function createFolder(string $id): void
+    {
+        $project = $this->project($id);
+        try {
+            [$parent] = DocumentService::folder($project, $_POST['folder'] ?? null);
+            $f = DocumentService::createFolder($parent, (string) ($_POST['name'] ?? ''));
+        } catch (ValidationException $e) {
+            json_response(['error' => reset($e->errors)], 422);
+        } catch (RuntimeException $e) {
+            json_response(['error' => $e->getMessage()], $e->getCode() === 404 ? 404 : 502);
+        }
+        json_response(['id' => $f['id']]);
     }
 
     public function download(string $id, string $item): void

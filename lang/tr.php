@@ -693,6 +693,9 @@ return [
     // Belgeler
     'perm.documents.manage'    => 'Belge yükleme ve portalda paylaşma',
     'docs.title'               => 'Belgeler',
+    'docs.new_folder'          => 'Yeni klasör',
+    'docs.new_folder_prompt'   => 'Klasör adı',
+    'docs.open_in_m365'        => "Microsoft 365'te aç",
     'docs.loading'             => 'Belgeler yükleniyor…',
     'docs.empty'               => 'Bu projede henüz belge yok. Yüklemek için düğmeye basın ya da dosyaları üzerine sürükleyin.',
     'docs.portal_empty'        => 'Sizinle paylaşılmış belge yok. Ofise belge iletmek için Yükle düğmesini kullanabilirsiniz.',
