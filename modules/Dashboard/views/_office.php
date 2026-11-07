@@ -10,11 +10,14 @@ $q = fn (array $over) => '?' . http_build_query($over + ['range' => $o['range'],
 $k = $o['kpis'];
 $pct = fn (?float $v) => $v === null ? '—' : '%' . number_format($v * 100, 0, ',', '.');
 ?>
-<section class="office">
-    <div class="office-head">
+<?php // Kapalı gelir; dönem/para birimi seçilerek sayfa yenilendiyse açık kalır ?>
+<details class="fold office" data-fold="office" <?= isset($_GET['range']) || isset($_GET['cur']) ? 'open' : '' ?>>
+    <summary class="fold-head">
+        <span class="fold-chevron"><?= icon('chevron-down') ?></span>
         <h2><?= e(__('dash.office')) ?></h2>
+        <span class="muted small fold-hint"><?= e(__('dash.office_hint')) ?></span>
         <a href="/reports" class="widget-link"><?= e(__('nav.reports')) ?> →</a>
-    </div>
+    </summary>
 
     <div class="grid grid-4">
         <div class="card stat">
@@ -42,7 +45,7 @@ $pct = fn (?float $v) => $v === null ? '—' : '%' . number_format($v * 100, 0, 
         </a>
     </div>
 
-    <div class="grid grid-3-1">
+    <div class="grid grid-3-1 viz-row">
         <section class="card widget widget-auto">
             <header class="widget-head"><h2><?= e(__('dash.monthly_hours')) ?></h2><span class="muted small"><?= e(__('dash.last_12')) ?></span></header>
             <div class="viz-body">
@@ -80,7 +83,7 @@ $pct = fn (?float $v) => $v === null ? '—' : '%' . number_format($v * 100, 0, 
                         'xLabel'  => $monthName,
                         'xShort'  => $monthShort,
                         'caption' => __('dash.collections') . ' (' . $o['currency'] . ')',
-                        'width'   => 400,
+                        'width'   => 430,
                     ]) ?>
                 <?php endif; ?>
             </div>
@@ -102,4 +105,4 @@ $pct = fn (?float $v) => $v === null ? '—' : '%' . number_format($v * 100, 0, 
             </section>
         <?php endforeach; ?>
     </div>
-</section>
+</details>

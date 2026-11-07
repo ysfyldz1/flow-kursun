@@ -8,7 +8,11 @@
 
 <?php if ($office): ?>
     <?= \App\Core\View::partial('Dashboard::_office', ['o' => $office]) ?>
-    <div class="office-head"><h2><?= e(__('dash.mine')) ?></h2></div>
+    <details class="fold" data-fold="mine" open>
+        <summary class="fold-head">
+            <span class="fold-chevron"><?= icon('chevron-down') ?></span>
+            <h2><?= e(__('dash.mine')) ?></h2>
+        </summary>
 <?php endif; ?>
 
 <div class="grid grid-<?= max(1, count($stats)) ?>">
@@ -155,3 +159,15 @@
     </section>
     <?php endif; ?>
 </div>
+<?php if ($office): ?>
+    </details>
+
+    <script>
+    // Bölümlerin açık/kapalı durumu bu tarayıcıda hatırlanır
+    document.querySelectorAll('details[data-fold]').forEach(d => {
+        const key = 'fold.' + d.dataset.fold;
+        try { const v = localStorage.getItem(key); if (v !== null && !location.search) d.open = v === '1'; } catch (e) {}
+        d.addEventListener('toggle', () => { try { localStorage.setItem(key, d.open ? '1' : '0'); } catch (e) {} });
+    });
+    </script>
+<?php endif; ?>
