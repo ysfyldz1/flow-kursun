@@ -883,6 +883,10 @@ return [
     'mail.leave_reviewed_body_cancelled' => 'Your leave was cancelled by :reviewer.',
     'mail.leave_reviewed_button' => 'View leave',
 
+    'file.choose'              => 'Choose a file',
+    'file.drop'                => 'or drag it here',
+    'file.remove'              => 'Remove',
+
     // General meetings
     'nav.meetings'             => 'General Meetings',
     'perm.group.meetings'      => 'General Meetings',

@@ -883,6 +883,10 @@ return [
     'mail.leave_reviewed_body_cancelled' => 'İzniniz :reviewer tarafından iptal edildi.',
     'mail.leave_reviewed_button' => 'İzni görüntüle',
 
+    'file.choose'              => 'Dosya seç',
+    'file.drop'                => 'ya da buraya sürükleyin',
+    'file.remove'              => 'Kaldır',
+
     // Genel kurul
     'nav.meetings'             => 'Genel Kurul',
     'perm.group.meetings'      => 'Genel Kurul',

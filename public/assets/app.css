@@ -577,3 +577,17 @@ td.strong { font-weight: 700; }
 .gk-check { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--green-bg); color: var(--green); margin-bottom: 14px; }
 .gk-foot { text-align: center; color: var(--muted); font-size: 12px; margin-top: 20px; }
 .gk-body [hidden] { display: none !important; }
+
+/* Dosya seçme kutusu (assets/filepick.js) */
+.filepick { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px dashed var(--border); border-radius: 10px; background: var(--bg); transition: border-color .15s, background .15s; min-width: 0; }
+.filepick:hover, .filepick.is-over { border-color: var(--primary); background: var(--primary-soft); }
+.filepick.has-file { border-style: solid; background: var(--surface); }
+.filepick > input[type=file] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.filepick-icon { flex: 0 0 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; background: var(--surface); color: var(--primary); border: 1px solid var(--border); }
+.filepick-icon svg { width: 18px; height: 18px; }
+.filepick-text { display: flex; flex-direction: column; min-width: 0; }
+.filepick-text strong { font-weight: 600; color: var(--primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filepick.has-file .filepick-text strong { color: var(--text, #0f172a); }
+.filepick-text small { color: var(--muted); font-size: 12px; }
+.filepick-clear { position: relative; z-index: 1; margin-left: auto; border: 0; background: none; color: var(--muted); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; }
+.filepick-clear:hover { background: var(--bg); color: var(--red); }

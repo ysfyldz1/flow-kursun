@@ -202,5 +202,7 @@ document.addEventListener('click', e => {
     document.querySelectorAll('details.dropdown[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); });
 });
 </script>
+<script>window.FILEPICK = <?= json_encode(['choose' => __('file.choose'), 'drop' => __('file.drop'), 'remove' => __('file.remove')], JSON_UNESCAPED_UNICODE) ?>;</script>
+<script src="<?= asset('filepick.js') ?>"></script>
 </body>
 </html>

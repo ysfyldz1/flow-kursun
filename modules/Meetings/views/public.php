@@ -193,5 +193,7 @@ $checked = fn (string $k, string $v) => old($k) === $v ? 'checked' : '';
 })();
 </script>
 <?php endif; ?>
+<script>window.FILEPICK = <?= json_encode(['choose' => __('file.choose'), 'drop' => __('file.drop'), 'remove' => __('file.remove')], JSON_UNESCAPED_UNICODE) ?>;</script>
+<script src="<?= asset('filepick.js') ?>"></script>
 </body>
 </html>
