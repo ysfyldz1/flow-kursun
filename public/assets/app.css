@@ -462,6 +462,7 @@ td.strong { font-weight: 700; }
 @media (max-width: 760px) {
     .mainnav { display: none; }
     .topbar-inner { gap: 12px; }
+    .topbar-actions { margin-left: auto; }
     .topbar-actions .icon-btn[title] { display: none; }
     .page { padding: 18px 14px calc(84px + env(safe-area-inset-bottom)); }
     .page-head { flex-direction: column; align-items: stretch; }
