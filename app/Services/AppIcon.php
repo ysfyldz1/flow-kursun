@@ -34,10 +34,12 @@ final class AppIcon
         if (!$src) {
             return __('org.icon_invalid');
         }
-        if (min(imagesx($src), imagesy($src)) < 192) {
+        if (max(imagesx($src), imagesy($src)) < 192) {
             return __('org.icon_too_small');
         }
-        self::writeAll(self::squareCrop($src));
+        imagepalettetotruecolor($src);
+        $square = self::squareFit($src);
+        self::writeAll($square, self::maskableBackground($square));
         return null;
     }
 
@@ -68,12 +70,13 @@ final class AppIcon
         return '/icons/' . $name . '?v=' . Settings::get('org.icon_version', '1');
     }
 
-    private static function writeAll(\GdImage $square): void
+    /** @param array{int,int,int}|null $background maskable zemini; verilmezse kurum rengi */
+    private static function writeAll(\GdImage $square, ?array $background = null): void
     {
         if (!is_dir(self::dir())) {
             mkdir(self::dir(), 0775, true);
         }
-        [$r, $g, $b] = self::rgb((string) Settings::get('org.primary_color', '#1e3a8a'));
+        [$r, $g, $b] = $background ?? self::rgb((string) Settings::get('org.primary_color', '#1e3a8a'));
         foreach (self::SIZES as $name => [$size, $maskable]) {
             $img = imagecreatetruecolor($size, $size);
             if ($maskable) {
@@ -94,16 +97,67 @@ final class AppIcon
         Settings::set(['org.icon_version' => (string) time()]);
     }
 
-    private static function squareCrop(\GdImage $src): \GdImage
+    /** Görseli kırpmadan kareye ortalar; boşluklar görselin kendi zemin rengiyle ya da şeffaf doldurulur */
+    private static function squareFit(\GdImage $src): \GdImage
     {
         $w = imagesx($src);
         $h = imagesy($src);
-        $side = min($w, $h);
+        $side = max($w, $h);
         $dst = imagecreatetruecolor($side, $side);
-        imagealphablending($dst, false);
         imagesavealpha($dst, true);
-        imagecopy($dst, $src, 0, 0, (int) (($w - $side) / 2), (int) (($h - $side) / 2), $side, $side);
+        imagealphablending($dst, false);
+        $corner = imagecolorsforindex($src, imagecolorat($src, 0, 0));
+        $opaque = $corner['alpha'] < 64;
+        imagefill($dst, 0, 0, $opaque
+            ? imagecolorallocate($dst, $corner['red'], $corner['green'], $corner['blue'])
+            : imagecolorallocatealpha($dst, 0, 0, 0, 127));
+        imagecopy($dst, $src, (int) (($side - $w) / 2), (int) (($side - $h) / 2), 0, 0, $w, $h);
         return $dst;
+    }
+
+    /** Kendi zemini olan görselde o renk; şeffafta kurum rengi, görsel onunla karışıyorsa beyaz */
+    private static function maskableBackground(\GdImage $square): array
+    {
+        $side = imagesx($square);
+        $corner = imagecolorsforindex($square, imagecolorat($square, 0, 0));
+        if ($corner['alpha'] < 64) {
+            return [$corner['red'], $corner['green'], $corner['blue']];
+        }
+
+        $sum = [0, 0, 0];
+        $count = 0;
+        $step = max(1, intdiv($side, 64));
+        for ($y = 0; $y < $side; $y += $step) {
+            for ($x = 0; $x < $side; $x += $step) {
+                $c = imagecolorsforindex($square, imagecolorat($square, $x, $y));
+                if ($c['alpha'] < 64) {
+                    $sum[0] += $c['red'];
+                    $sum[1] += $c['green'];
+                    $sum[2] += $c['blue'];
+                    $count++;
+                }
+            }
+        }
+        $primary = self::rgb((string) Settings::get('org.primary_color', '#1e3a8a'));
+        if (!$count) {
+            return $primary;
+        }
+        $average = array_map(fn (int $v) => (int) round($v / $count), $sum);
+        return self::contrast($average, $primary) < 3 ? [255, 255, 255] : $primary;
+    }
+
+    private static function contrast(array $a, array $b): float
+    {
+        $lum = function (array $rgb): float {
+            [$r, $g, $b] = array_map(function (int $v): float {
+                $s = $v / 255;
+                return $s <= 0.03928 ? $s / 12.92 : (($s + 0.055) / 1.055) ** 2.4;
+            }, $rgb);
+            return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+        };
+        $la = $lum($a);
+        $lb = $lum($b);
+        return (max($la, $lb) + 0.05) / (min($la, $lb) + 0.05);
     }
 
     /** Kurum renginde yuvarlak köşeli kare + baş harf */
