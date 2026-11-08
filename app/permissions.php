@@ -7,6 +7,7 @@ return [
     'projects'   => ['projects.view', 'projects.all', 'projects.edit', 'documents.manage'],
     'tasks'      => ['tasks.own', 'tasks.all'],
     'meetings'   => ['meetings.manage'],
+    'transfers'  => ['transfers.own', 'transfers.all'],
     'calendar'   => ['calendar.view', 'calendar.edit'],
     'time'       => ['time.own', 'time.all', 'expenses.own', 'expenses.all'],
     'leaves'     => ['leaves.own', 'leaves.approve', 'leaves.manage'],

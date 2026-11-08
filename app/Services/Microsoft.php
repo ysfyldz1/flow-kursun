@@ -292,7 +292,7 @@ final class Microsoft
     public static function reset(): void
     {
         DB::transaction(function () {
-            DB::query("DELETE FROM settings WHERE `key` LIKE 'ms.%' OR `key` LIKE 'docs.%'");
+            DB::query("DELETE FROM settings WHERE `key` LIKE 'ms.%' OR `key` LIKE 'docs.%' OR `key` LIKE 'transfer.%'");
             DB::query('UPDATE projects SET drive_folder_id = NULL');
             DB::query('DELETE FROM document_shares');
             DB::query("DELETE FROM integration_tokens WHERE provider = 'microsoft'");

@@ -88,6 +88,53 @@
                     <button class="btn btn-primary"><?= e(__('app.save')) ?></button>
                 </div>
             </form>
+            <?php $tfProvider = old('transfer_provider', (string) Settings::get('transfer.provider')); ?>
+            <form method="post" action="/settings/microsoft/transfers" class="card form-card">
+                <?= csrf_field() ?>
+                <div class="page-head">
+                    <div>
+                        <h3 class="section-title"><?= e(__('transfers.settings_title')) ?></h3>
+                        <p class="muted small"><?= e(__('transfers.settings_hint', ['days' => \App\Services\TransferService::RETENTION_DAYS])) ?></p>
+                    </div>
+                    <?php if (\App\Services\TransferService::enabled()): ?>
+                        <span class="badge badge-green"><?= e(__('ms.configured')) ?></span>
+                    <?php endif; ?>
+                </div>
+                <div class="form-grid">
+                    <label class="field">
+                        <span><?= e(__('docs.provider')) ?></span>
+                        <select name="transfer_provider" id="tf-provider">
+                            <option value=""><?= e(__('docs.provider_none')) ?></option>
+                            <?php foreach (\App\Services\DocumentService::PROVIDERS as $pv): ?>
+                                <option value="<?= $pv ?>" <?= $tfProvider === $pv ? 'selected' : '' ?>><?= e(__('docs.provider_' . $pv)) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                    <label class="field" data-tf="sharepoint onedrive">
+                        <span data-tf="sharepoint"><?= e(__('docs.site_url')) ?> *</span>
+                        <span data-tf="onedrive"><?= e(__('docs.onedrive_user')) ?> *</span>
+                        <input name="transfer_target" value="<?= e(old('transfer_target', (string) Settings::get('transfer.target'))) ?>">
+                        <?= error_for('transfer_target') ?>
+                    </label>
+                    <label class="field" data-tf="sharepoint onedrive">
+                        <span><?= e(__('docs.root')) ?></span>
+                        <input name="transfer_root" value="<?= e(old('transfer_root', (string) Settings::get('transfer.root', 'Flow Transfer'))) ?>">
+                    </label>
+                </div>
+                <?php $cronRun = Settings::get('cron.last_run'); ?>
+                <p class="muted small"><?= e($cronRun ? __('transfers.cron_last', ['date' => format_date($cronRun, true)]) : __('transfers.cron_never')) ?></p>
+                <div class="form-actions">
+                    <button class="btn btn-primary"><?= e(__('app.save')) ?></button>
+                </div>
+            </form>
+            <script>
+            (() => {
+                const sel = document.getElementById('tf-provider');
+                const sync = () => document.querySelectorAll('[data-tf]').forEach(el => { el.hidden = !el.dataset.tf.split(' ').includes(sel.value); });
+                sel.addEventListener('change', sync);
+                sync();
+            })();
+            </script>
             <form method="post" action="/settings/microsoft/calendar" class="card form-card">
                 <?= csrf_field() ?>
                 <h3 class="section-title"><?= e(__('cal.settings_title')) ?></h3>

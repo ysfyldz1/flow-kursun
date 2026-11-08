@@ -27,13 +27,13 @@ final class Mailer
     }
 
     /** Hata durumunda false döner; ayrıntı mail_log'dadır. $throw ile hata çağırana iletilir (test gönderimi). */
-    public static function send(string $to, string $subject, string $html, bool $throw = false): bool
+    public static function send(string $to, string $subject, string $html, bool $throw = false, ?string $replyTo = null): bool
     {
         $driver = self::driver();
         try {
             match ($driver) {
-                'graph' => self::viaGraph($to, $subject, $html),
-                'smtp'  => self::viaSmtp($to, $subject, $html),
+                'graph' => self::viaGraph($to, $subject, $html, $replyTo),
+                'smtp'  => self::viaSmtp($to, $subject, $html, $replyTo),
                 default => self::viaLog($to, $subject, $html),
             };
             self::log($driver, $to, $subject, null);
@@ -51,7 +51,7 @@ final class Mailer
      * views/mail/<view>.php şablonunu alıcının dilinde işleyip gönderir; arayüz dili sonra geri alınır.
      * Konu, lang dosyasındaki "mail.<view>_subject" anahtarından gelir.
      */
-    public static function sendView(string $to, string $locale, string $view, array $data = []): bool
+    public static function sendView(string $to, string $locale, string $view, array $data = [], ?string $replyTo = null): bool
     {
         $previous = Lang::locale();
         Lang::set($locale);
@@ -62,7 +62,7 @@ final class Mailer
         } finally {
             Lang::set($previous);
         }
-        return self::send($to, $subject, $html);
+        return self::send($to, $subject, $html, false, $replyTo);
     }
 
     /** Gerçekten dışarı giden bir yol seçili mi (günlüğe yazma değil). */
@@ -71,7 +71,7 @@ final class Mailer
         return self::driver() !== 'log';
     }
 
-    private static function viaGraph(string $to, string $subject, string $html): void
+    private static function viaGraph(string $to, string $subject, string $html, ?string $replyTo): void
     {
         $from = (string) Settings::get('mail.from_address');
         if ($from === '') {
@@ -82,6 +82,7 @@ final class Mailer
                 'subject'      => $subject,
                 'body'         => ['contentType' => 'HTML', 'content' => $html],
                 'toRecipients' => [['emailAddress' => ['address' => $to]]],
+                'replyTo'      => $replyTo ? [['emailAddress' => ['address' => $replyTo]]] : [],
             ],
             'saveToSentItems' => false,
         ]);
@@ -94,7 +95,7 @@ final class Mailer
     }
 
     /** Bağımlılıksız küçük SMTP istemcisi: STARTTLS / SSL ve AUTH LOGIN destekler. */
-    private static function viaSmtp(string $to, string $subject, string $html): void
+    private static function viaSmtp(string $to, string $subject, string $html, ?string $replyTo): void
     {
         $host = (string) Settings::get('mail.smtp_host');
         $port = (int) Settings::get('mail.smtp_port', 587);
@@ -156,6 +157,9 @@ final class Mailer
                 'Content-Type: text/html; charset=UTF-8',
                 'Content-Transfer-Encoding: base64',
             ];
+            if ($replyTo) {
+                $headers[] = "Reply-To: <$replyTo>";
+            }
             $cmd(implode("\r\n", $headers) . "\r\n\r\n" . chunk_split(base64_encode($html)) . '.', 250);
             $cmd('QUIT', 221);
         } finally {

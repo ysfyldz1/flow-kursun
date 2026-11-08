@@ -13,6 +13,10 @@ Microsoft 365 kiracısı kullanılır; Flow'u kuran tarafın hesabına bağıml�
 - `storage/` yazılabilir olmalı. `storage/app.key` her kurulumda **yeniden üretilir** (sırlar bununla şifrelenir);
   başka bir kurulumdan kopyalanmaz.
 - Veritabanı: `php bin/migrate.php`, ilk yönetici: `php bin/create-admin.php`.
+- **Günlük cron zorunlu** (cPanel → Cron Jobs, günde bir kez): `/usr/local/bin/php /home/KULLANICI/flow/bin/cron.php`.
+  Süresi dolan dosya transferlerinin dosyalarını depodan siler. Çalıştığı Ayarlar → Microsoft 365 → Dosya Transferi deposu
+  bölümündeki "Son otomatik temizlik" satırından görülür. Dosya Transferi deposu belgelerden ayrı seçilir; ek Azure izni gerekmez
+  (`Sites.ReadWrite.All` + `Files.ReadWrite.All` yeterlidir).
 
 ## 2. Microsoft 365 (Entra) uygulama kaydı
 

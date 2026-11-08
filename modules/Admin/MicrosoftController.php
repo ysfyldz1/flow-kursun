@@ -116,6 +116,40 @@ final class MicrosoftController
         redirect('/settings/microsoft');
     }
 
+    /** Transfer deposu belgelerden ayrıdır. Eski transferler kendi depolarını bildiği için değişiklikten etkilenmez. */
+    public function transfers(): void
+    {
+        $provider = (string) ($_POST['transfer_provider'] ?? '');
+        $target = trim((string) ($_POST['transfer_target'] ?? ''));
+        $root = trim((string) ($_POST['transfer_root'] ?? '')) ?: 'Flow Transfer';
+
+        if (!in_array($provider, DocumentService::PROVIDERS, true)) {
+            Settings::set(['transfer.provider' => null, 'transfer.drive_id' => null]);
+            flash('success', __('app.saved'));
+            redirect('/settings/microsoft');
+        }
+        $error = match (true) {
+            $target === ''                                                            => __('validation.required'),
+            $provider === 'onedrive' && !filter_var($target, FILTER_VALIDATE_EMAIL)  => __('validation.email'),
+            default                                                                  => null,
+        };
+        if (!$error) {
+            try {
+                $driveId = DocumentService::resolveDrive($provider, $target);
+            } catch (Throwable $e) {
+                $error = __('docs.drive_not_found', ['error' => $e->getMessage()]);
+            }
+        }
+        if ($error) {
+            fail(new ValidationException(['transfer_target' => $error]), '/settings/microsoft');
+        }
+
+        Settings::set(['transfer.provider' => $provider, 'transfer.target' => $target, 'transfer.root' => $root, 'transfer.drive_id' => $driveId]);
+        Audit::log('settings.transfers', 'settings', null, ['provider' => $provider, 'target' => $target, 'root' => $root]);
+        flash('success', __('docs.connected'));
+        redirect('/settings/microsoft');
+    }
+
     public function calendar(): void
     {
         $on = !empty($_POST['calendar_outlook']);

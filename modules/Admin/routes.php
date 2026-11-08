@@ -30,6 +30,7 @@ $router->get('/settings/microsoft', [MicrosoftController::class, 'edit'], ['can'
 $router->post('/settings/microsoft', [MicrosoftController::class, 'update'], ['can' => 'settings.manage']);
 $router->post('/settings/microsoft/test', [MicrosoftController::class, 'test'], ['can' => 'settings.manage']);
 $router->post('/settings/microsoft/documents', [MicrosoftController::class, 'documents'], ['can' => 'settings.manage']);
+$router->post('/settings/microsoft/transfers', [MicrosoftController::class, 'transfers'], ['can' => 'settings.manage']);
 $router->post('/settings/microsoft/calendar', [MicrosoftController::class, 'calendar'], ['can' => 'settings.manage']);
 $router->post('/settings/microsoft/reset', [MicrosoftController::class, 'reset'], ['can' => 'settings.manage']);
 
