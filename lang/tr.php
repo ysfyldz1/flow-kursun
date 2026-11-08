@@ -36,7 +36,13 @@ return [
 
     // Pano
     'dash.hello'          => 'Hoş geldin, :name',
-    'dash.subtitle'       => 'Ofisinizin güncel durumu tek bakışta.',
+    'dash.day_1'           => 'Pazartesi',
+    'dash.day_2'           => 'Salı',
+    'dash.day_3'           => 'Çarşamba',
+    'dash.day_4'           => 'Perşembe',
+    'dash.day_5'           => 'Cuma',
+    'dash.day_6'           => 'Cumartesi',
+    'dash.day_7'           => 'Pazar',
     'dash.active_clients' => 'Aktif müvekkil',
     'dash.hint_clients'   => 'Kayıtlı müvekkilleriniz',
     'dash.open_projects'  => 'Açık proje',

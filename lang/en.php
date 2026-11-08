@@ -36,7 +36,13 @@ return [
 
     // Dashboard
     'dash.hello'          => 'Welcome, :name',
-    'dash.subtitle'       => 'Your office at a glance.',
+    'dash.day_1'           => 'Monday',
+    'dash.day_2'           => 'Tuesday',
+    'dash.day_3'           => 'Wednesday',
+    'dash.day_4'           => 'Thursday',
+    'dash.day_5'           => 'Friday',
+    'dash.day_6'           => 'Saturday',
+    'dash.day_7'           => 'Sunday',
     'dash.active_clients' => 'Active clients',
     'dash.hint_clients'   => 'Your registered clients',
     'dash.open_projects'  => 'Open projects',

@@ -1,8 +1,17 @@
-<?php use App\Services\TimeService; ?>
+<?php
+use App\Core\Lang;
+use App\Services\TimeService;
+
+$month = __('cal.month_' . date('n'));
+$today = Lang::locale() === 'tr' ? date('j') . " $month " . date('Y') : "$month " . date('j, Y');
+?>
 <div class="page-head">
     <div>
         <h1><?= e(__('dash.hello', ['name' => explode(' ', auth()['name'])[0]])) ?></h1>
-        <p class="muted"><?= e(__('dash.subtitle')) ?></p>
+    </div>
+    <div class="dash-date">
+        <strong><?= e(__('dash.day_' . date('N'))) ?></strong>
+        <span class="muted"><?= e($today) ?></span>
     </div>
 </div>
 
