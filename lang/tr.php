@@ -172,6 +172,7 @@ return [
     'org.logo_remove'     => 'Logoyu kaldır',
     'org.logo_type'       => 'Logo PNG, JPG veya WEBP olmalı.',
     'org.logo_size'       => 'Logo en fazla 2 MB olabilir.',
+    'org.logo_upload_failed' => 'Logo yüklenemedi, lütfen yeniden deneyin.',
 
     'validation.number'   => 'Geçerli bir tutar girin.',
 

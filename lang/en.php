@@ -172,6 +172,7 @@ return [
     'org.logo_remove'     => 'Remove logo',
     'org.logo_type'       => 'The logo must be PNG, JPG or WEBP.',
     'org.logo_size'       => 'The logo can be at most 2 MB.',
+    'org.logo_upload_failed' => 'The logo could not be uploaded. Please try again.',
 
     'validation.number'   => 'Enter a valid amount.',
 

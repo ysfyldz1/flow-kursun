@@ -59,6 +59,8 @@ final class OrganizationController
             } elseif ($logo['size'] > 2 * 1024 * 1024) {
                 $errors['logo'] = __('org.logo_size');
             }
+        } elseif ($logo && $logo['error'] !== UPLOAD_ERR_NO_FILE) {
+            $errors['logo'] = __('org.logo_upload_failed');
         }
 
         if ($errors) {
@@ -80,10 +82,15 @@ final class OrganizationController
         ];
 
         if ($ext) {
-            foreach (glob(BASE_PATH . '/storage/uploads/logo.*') as $old) {
-                unlink($old);
+            $target = BASE_PATH . "/storage/uploads/logo.$ext";
+            if (!move_uploaded_file($logo['tmp_name'], $target)) {
+                fail(new ValidationException(['logo' => __('org.logo_upload_failed')]), '/settings/organization');
             }
-            move_uploaded_file($logo['tmp_name'], BASE_PATH . "/storage/uploads/logo.$ext");
+            foreach (glob(BASE_PATH . '/storage/uploads/logo.*') as $old) {
+                if (basename($old) !== "logo.$ext") {
+                    unlink($old);
+                }
+            }
             $values['org.logo'] = "logo.$ext";
         } elseif (!empty($_POST['remove_logo'])) {
             foreach (glob(BASE_PATH . '/storage/uploads/logo.*') as $old) {
@@ -118,8 +125,15 @@ final class OrganizationController
         if (!$path || !is_file($path)) {
             abort(404);
         }
+        // Adres sabit (/logo); logo değişince eskisi görünmesin diye tarayıcı her seferinde doğrular
+        $etag = '"' . filemtime($path) . '-' . filesize($path) . '"';
+        header('Cache-Control: no-cache');
+        header('ETag: ' . $etag);
+        if (($_SERVER['HTTP_IF_NONE_MATCH'] ?? '') === $etag) {
+            http_response_code(304);
+            return;
+        }
         header('Content-Type: ' . mime_content_type($path));
-        header('Cache-Control: public, max-age=86400');
         readfile($path);
     }
 }
