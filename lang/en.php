@@ -349,6 +349,7 @@ return [
     'billing.new'              => 'New statement',
     'billing.new_hint'         => "The client's unbilled time entries and fixed fees for the period are added to a draft.",
     'billing.statement'        => 'Statement of Services',
+    'billing.pdf_page'         => 'Page',
     'billing.draft'            => 'Draft',
     'billing.number'           => 'Statement no',
     'billing.issue_date'       => 'Issue date',

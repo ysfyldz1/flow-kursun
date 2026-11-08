@@ -349,6 +349,7 @@ return [
     'billing.new'              => 'Yeni hizmet dökümü',
     'billing.new_hint'         => 'Seçilen müvekkilin, döneme ait faturalanmamış zaman kayıtları ve sabit ücretleri taslağa aktarılır.',
     'billing.statement'        => 'Hizmet Dökümü',
+    'billing.pdf_page'         => 'Sayfa',
     'billing.draft'            => 'Taslak',
     'billing.number'           => 'Döküm no',
     'billing.issue_date'       => 'Düzenleme tarihi',
