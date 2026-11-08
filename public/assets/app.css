@@ -70,6 +70,9 @@ button { font: inherit; cursor: pointer; }
 .lang-switch button { border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: 3px 9px; font-size: 12px; font-weight: 600; color: var(--muted); }
 .lang-switch button.active { background: var(--primary); border-color: var(--primary); color: #fff; }
 .lang-switch-center { justify-content: center; margin-top: 18px; }
+.auth-forgot { align-self: flex-end; font-size: 13px; margin-top: -6px; }
+.auth-back { align-self: center; font-size: 13px; }
+.auth-lead { margin: -8px 0 18px; }
 
 /* Sayfa */
 .page { max-width: 1440px; margin: 0 auto; padding: 28px 20px 48px; }

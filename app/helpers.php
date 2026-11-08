@@ -91,7 +91,7 @@ function old(string $key, string $default = ''): string
 function fail(\App\Core\ValidationException $e, string $to): never
 {
     $_SESSION['_errors'] = $e->errors;
-    $_SESSION['_old'] = array_diff_key($_POST, array_flip(['password', '_csrf']));
+    $_SESSION['_old'] = array_diff_key($_POST, array_flip(['password', 'password_confirm', 'current_password', '_csrf']));
     redirect($to);
 }
 

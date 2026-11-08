@@ -23,6 +23,7 @@ final class Auth
     {
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) $user['id'];
+        $_SESSION['session_epoch'] = (int) ($user['session_epoch'] ?? 0);
         DB::update('users', ['last_login_at' => date('Y-m-d H:i:s')], 'id = ?', [$user['id']]);
         self::$user = null;
         self::$permissions = null;
@@ -48,11 +49,25 @@ final class Auth
     {
         if (self::$user === null && !empty($_SESSION['user_id'])) {
             self::$user = DB::one('SELECT * FROM users WHERE id = ? AND is_active = 1', [$_SESSION['user_id']]);
+            // Şifre başka yerden değiştiyse bu oturum kapanır
+            if (self::$user !== null && (int) (self::$user['session_epoch'] ?? 0) !== (int) ($_SESSION['session_epoch'] ?? 0)) {
+                self::$user = null;
+            }
             if (self::$user === null) {
                 unset($_SESSION['user_id']);
             }
         }
         return self::$user;
+    }
+
+    /** Kişi kendi şifresini değiştirdiğinde o anki oturumu açık tutar. */
+    public static function keepSession(int $userId, int $epoch): void
+    {
+        if ((int) ($_SESSION['user_id'] ?? 0) === $userId) {
+            session_regenerate_id(true);
+            $_SESSION['session_epoch'] = $epoch;
+            self::$user = null;
+        }
     }
 
     /** Rol koda gömülü değil; rolün yetki listesine bakılır. */

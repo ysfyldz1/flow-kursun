@@ -6,9 +6,12 @@ namespace Modules\Auth;
 
 use App\Core\Auth;
 use App\Core\DB;
+use App\Core\ValidationException;
 use App\Core\View;
 use App\Services\Audit;
+use App\Services\Mailer;
 use App\Services\Microsoft;
+use App\Services\PasswordService;
 
 final class AuthController
 {
@@ -168,6 +171,58 @@ final class AuthController
             'user'       => auth(),
             'connection' => Microsoft::isConfigured() ? Microsoft::connection((int) Auth::id()) : false,
         ]);
+    }
+
+    public function changePassword(): void
+    {
+        if (!auth()['password']) {
+            abort(404);
+        }
+        try {
+            PasswordService::change(auth(), (string) ($_POST['current_password'] ?? ''), (string) ($_POST['password'] ?? ''), (string) ($_POST['password_confirm'] ?? ''));
+        } catch (ValidationException $e) {
+            fail($e, '/account');
+        }
+        flash('success', __('auth.password_changed'));
+        redirect('/account');
+    }
+
+    public function showForgot(): void
+    {
+        if (!Mailer::delivers()) {
+            abort(404);
+        }
+        View::render('Auth::forgot', ['title' => __('auth.forgot_title')], 'auth');
+    }
+
+    public function forgot(): void
+    {
+        if (!Mailer::delivers()) {
+            abort(404);
+        }
+        PasswordService::sendReset((string) ($_POST['email'] ?? ''));
+        flash('success', __('auth.forgot_sent'));
+        redirect('/login');
+    }
+
+    public function showReset(string $token): void
+    {
+        $user = PasswordService::findByToken($token);
+        if ($user) {
+            \App\Core\Lang::set($user['locale']);
+        }
+        View::render('Auth::reset', ['title' => __('auth.reset_title'), 'user' => $user, 'token' => $token], 'auth');
+    }
+
+    public function reset(string $token): void
+    {
+        try {
+            PasswordService::reset($token, (string) ($_POST['password'] ?? ''), (string) ($_POST['password_confirm'] ?? ''));
+        } catch (ValidationException $e) {
+            fail($e, "/reset-password/$token");
+        }
+        flash('success', __('auth.reset_done'));
+        redirect('/login');
     }
 
     public function logout(): void

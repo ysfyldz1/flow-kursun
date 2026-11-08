@@ -39,12 +39,11 @@ final class UserService
     public static function update(int $id, array $input, string $channel = 'web'): void
     {
         $data = self::validate($input, $id);
-        if (!empty($input['password'])) {
-            $data['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
-        }
         DB::update('users', $data, 'id = ?', [$id]);
+        if (!empty($input['password'])) {
+            PasswordService::set($id, $input['password']);
+        }
         LeaveService::setApprovers($id, (array) ($input['leave_approvers'] ?? []));
-        unset($data['password']);
         Audit::log('user.updated', 'user', $id, $data, $channel);
     }
 

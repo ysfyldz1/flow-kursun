@@ -21,6 +21,9 @@ $orgName = Settings::get('org.name', config('app.name'));
             <?php if ($msg = flash('error')): ?>
                 <div class="alert alert-error"><?= e($msg) ?></div>
             <?php endif; ?>
+            <?php if ($msg = flash('success')): ?>
+                <div class="alert alert-success"><?= e($msg) ?></div>
+            <?php endif; ?>
 
             <?php if (\App\Services\Microsoft::loginEnabled()): ?>
                 <a href="/auth/microsoft" class="btn btn-outline btn-block">
@@ -40,6 +43,9 @@ $orgName = Settings::get('org.name', config('app.name'));
                     <span><?= e(__('auth.password')) ?></span>
                     <input type="password" name="password" required autocomplete="current-password">
                 </label>
+                <?php if (\App\Services\Mailer::delivers()): ?>
+                    <a href="/forgot-password" class="auth-forgot"><?= e(__('auth.forgot_link')) ?></a>
+                <?php endif; ?>
                 <button type="submit" class="btn btn-primary btn-block"><?= e(__('auth.submit')) ?></button>
             </form>
 
