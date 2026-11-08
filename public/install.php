@@ -49,7 +49,7 @@ $host = preg_replace('/[^a-z0-9.:\-]/i', '', (string) ($_SERVER['HTTP_HOST'] ?? 
 $isLocal = (bool) preg_match('/^(localhost|127\.0\.0\.1)(:\d+)?$|\.test$/', $host);
 
 $checks = ['PHP 8.3+' => PHP_VERSION_ID >= 80300];
-foreach (['pdo_mysql', 'curl', 'zip', 'mbstring', 'gd', 'fileinfo', 'sodium'] as $ext) {
+foreach (['pdo_mysql', 'curl', 'zip', 'mbstring', 'gd', 'fileinfo', 'openssl'] as $ext) {
     $checks[$ext] = extension_loaded($ext);
 }
 $checks['HTTPS'] = $isHttps || $isLocal;

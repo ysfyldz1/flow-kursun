@@ -10,7 +10,7 @@ Kurulum: dosyalar sunucuya alınır (cPanel Git Version Control ile depo site kl
 
 ## 1. Sunucu
 
-- PHP 8.3+, MySQL/MariaDB (utf8mb4), PHP eklentileri: pdo_mysql, curl, zip, mbstring, gd, fileinfo.
+- PHP 8.3+, MySQL/MariaDB (utf8mb4), PHP eklentileri: pdo_mysql, curl, zip, mbstring, gd, fileinfo, openssl.
 - **HTTPS zorunlu.** Microsoft, `http` yönlendirme adresini yalnız `localhost`'ta kabul eder; PWA kurulumu da HTTPS ister.
   Geliştirmede Laragon'da SSL açılır, `config.php` içinde `app.url` = `https://<alan-adı>` yapılır.
 - `vendor/` git'te yoktur (dompdf vb.): sunucuda `composer install` çalıştırılır ya da `vendor/` ayrıca yüklenir.
