@@ -747,14 +747,15 @@ button.pick-row { width: 100%; border: 0; background: none; font: inherit; text-
 @keyframes auth-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .auth-split .auth-card { animation: none; } }
 @media (max-width: 760px) {
-    .auth-split { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-    .auth-aside { padding: 22px 20px; gap: 10px; }
-    .auth-ring-1, .auth-ring-2 { display: none; }
+    .auth-split { grid-template-columns: 1fr; grid-template-rows: auto 1fr; background: var(--primary); }
+    .auth-aside { padding: 22px 20px 4px; gap: 0; background-image: none !important; }
+    .auth-aside.has-image::before, .auth-ring, .auth-aside-bottom { display: none; }
+    .auth-aside-top { text-align: center; }
     .auth-aside-top strong { font-size: 15px; }
     .auth-aside-top span { font-size: 12px; }
-    .auth-aside-bottom h2 { font-size: 21px; }
-    .auth-aside-bottom p { display: none; }
-    .auth-main { place-items: start center; padding: 28px 20px; }
+    .auth-main { place-items: start center; padding: 18px 16px 32px; }
+    .auth-split .auth-card { background: var(--surface); border-radius: 16px; padding: 28px 22px; max-width: 420px; box-shadow: 0 12px 32px rgba(0, 0, 0, .18); }
+    .auth-split .auth-brand { margin-bottom: 28px; }
 }
 /* Kurulum rehberi */
 .guide { line-height: 1.6; overflow-wrap: anywhere; }
