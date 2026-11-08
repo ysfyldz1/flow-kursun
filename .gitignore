@@ -5,3 +5,7 @@
 !/storage/logs/.gitkeep
 /vendor/
 /storage/app.key
+/storage/install.key
+/storage/install.pending
+/storage/installed.lock
+/dist/

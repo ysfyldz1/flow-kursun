@@ -5,28 +5,10 @@
 
 require __DIR__ . '/../app/bootstrap.php';
 
-use App\Core\DB;
+use App\Services\Migrator;
 
-$pdo = DB::pdo();
-$pdo->exec('CREATE TABLE IF NOT EXISTS migrations (
-    name VARCHAR(190) PRIMARY KEY,
-    ran_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
-
-$done = array_column(DB::all('SELECT name FROM migrations'), 'name');
-$files = glob(BASE_PATH . '/database/migrations/*.sql');
-sort($files);
-
-$count = 0;
-foreach ($files as $file) {
-    $name = basename($file);
-    if (in_array($name, $done, true)) {
-        continue;
-    }
+$ran = Migrator::run();
+foreach ($ran as $name) {
     echo "→ $name\n";
-    $pdo->exec(file_get_contents($file));
-    DB::insert('migrations', ['name' => $name]);
-    $count++;
 }
-
-echo $count ? "$count migration uygulandı.\n" : "Yeni migration yok.\n";
+echo $ran ? count($ran) . " migration uygulandı.\n" : "Yeni migration yok.\n";

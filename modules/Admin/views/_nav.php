@@ -6,6 +6,8 @@ $items = [
     ['/settings/holidays',     'calendar', 'holidays.title', 'settings.manage'],
     ['/settings/microsoft',    'globe',    'ms.title',    'settings.manage'],
     ['/settings/mail',         'bell',     'mail.title',  'settings.manage'],
+    ['/settings/system',       'sliders',  'system.title', 'settings.manage'],
+    ['/settings/setup',        'check',    'guide.title', 'settings.manage'],
 ];
 ?>
 <aside class="subnav card">

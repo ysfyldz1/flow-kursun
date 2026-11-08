@@ -1,8 +1,12 @@
 # Flow kurulum notları
 
-Bu dosya yeni bir kurum için Flow kurulurken izlenecek adımlardır. `bin/install.php` (yapılacak) bu adımları
-sırayla ekranda gösterecek; ayrıntı ve gerekçe burada tutulur. Kurulumda yapılan her şey için kurumun **kendi**
-Microsoft 365 kiracısı kullanılır; Flow'u kuran tarafın hesabına bağımlılık yoktur.
+Bu dosya yeni bir kurum için Flow kurulurken izlenecek adımlardır ve Ayarlar → Kurulum rehberi'nde de görünür.
+Temel özellikler Microsoft 365 olmadan çalışır; 2. ve 3. bölümler kurum hazır olduğunda yapılır. Kurulumda yapılan her şey için
+kurumun **kendi** Microsoft 365 kiracısı kullanılır; Flow'u kuran tarafın hesabına bağımlılık yoktur.
+
+Kurulum: dosyalar sunucuya alınır (cPanel Git Version Control ile depo site klasörüne klonlanır, `vendor/` bir kez ayrı yüklenir:
+`php bin/release.php vendor`), cPanel'de boş veritabanı ve kullanıcı açılır, site adresinde sihirbaz açılır. Tek kullanımlık kod
+`storage/install.key` dosyasındadır. Güncelleme: cPanel'de **Update from Remote**, ardından Ayarlar → Sistem → **Güncellemeleri uygula**.
 
 ## 1. Sunucu
 

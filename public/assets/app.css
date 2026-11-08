@@ -714,6 +714,14 @@ button.link { background: none; border: 0; padding: 0; font: inherit; cursor: po
 .od-modal .od-list { flex: 1; min-height: 240px; }
 button.pick-row { width: 100%; border: 0; background: none; font: inherit; text-align: left; color: inherit; }
 .od-icon { width: 16px; text-align: center; }
+/* Kurulum rehberi */
+.guide { line-height: 1.6; overflow-wrap: anywhere; }
+.guide h2 { font-size: 20px; margin: 0 0 12px; }
+.guide h3 { font-size: 16px; margin: 24px 0 8px; }
+.guide h4 { font-size: 14px; margin: 16px 0 6px; }
+.guide li { margin-bottom: 6px; }
+.guide ol, .guide ul, .guide-list { padding-left: 20px; }
+.guide code, .guide-list code { font-size: 12px; background: var(--bg); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
 /* Dosya Transferi */
 .tf-wrap [hidden] { display: none !important; }
 .tf-table { overflow-x: auto; }

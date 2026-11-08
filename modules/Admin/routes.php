@@ -34,6 +34,10 @@ $router->post('/settings/microsoft/transfers', [MicrosoftController::class, 'tra
 $router->post('/settings/microsoft/calendar', [MicrosoftController::class, 'calendar'], ['can' => 'settings.manage']);
 $router->post('/settings/microsoft/reset', [MicrosoftController::class, 'reset'], ['can' => 'settings.manage']);
 
+$router->get('/settings/system', [\Modules\Admin\SystemController::class, 'index'], ['can' => 'settings.manage']);
+$router->post('/settings/system/update', [\Modules\Admin\SystemController::class, 'update'], ['can' => 'settings.manage']);
+$router->get('/settings/setup', [\Modules\Admin\SystemController::class, 'guide'], ['can' => 'settings.manage']);
+
 $router->get('/settings/mail', [MailController::class, 'edit'], ['can' => 'settings.manage']);
 $router->post('/settings/mail', [MailController::class, 'update'], ['can' => 'settings.manage']);
 $router->post('/settings/mail/test', [MailController::class, 'test'], ['can' => 'settings.manage']);

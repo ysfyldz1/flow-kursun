@@ -26,8 +26,15 @@ if (is_file(BASE_PATH . '/vendor/autoload.php')) {
 require BASE_PATH . '/app/helpers.php';
 
 $configFile = BASE_PATH . '/config.php';
-if (!is_file($configFile)) {
-    exit('config.php bulunamadı. config.example.php dosyasını kopyalayın.');
+if (defined('FLOW_INSTALLER')) {
+    return;   // kurulum sihirbazı ayarları kendisi yükler
+}
+if (!is_file($configFile) || is_file(BASE_PATH . '/storage/install.pending')) {
+    if (PHP_SAPI === 'cli') {
+        exit("Flow henüz kurulmadı; tarayıcıdan /install.php adresini açın.\n");
+    }
+    header('Location: /install.php');
+    exit;
 }
 App\Core\Config::load(require $configFile);
 
