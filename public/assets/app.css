@@ -801,4 +801,4 @@ button.pick-row { width: 100%; border: 0; background: none; font: inherit; text-
 .tf-file { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px; margin-top: 8px; background: var(--surface); color: var(--text); }
 .tf-file:hover { border-color: var(--primary); }
 .tf-file-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
-.od-send { position: sticky; top: 80px; }
+.od-send { position: sticky; top: 80px; }.field .input-group select { width: 90px; flex: 0 0 90px; }
