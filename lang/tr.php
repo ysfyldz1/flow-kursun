@@ -392,6 +392,8 @@ return [
     'billing.type_expense'     => 'Masraf',
     'billing.type_other'       => 'Diğer',
     'billing.subtotal'         => 'Ara toplam',
+    'billing.discount'         => 'İskonto',
+    'billing.after_discount'   => 'İskonto sonrası',
     'billing.vat'              => 'KDV',
     'billing.withholding'      => 'Stopaj',
     'billing.total_due'        => 'Ödenecek tutar',

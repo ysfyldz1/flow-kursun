@@ -386,6 +386,7 @@ a.cell-main:hover strong { color: var(--primary); }
 .st-totals .grand td { border-top: 2px solid var(--text); font-size: 17px; font-weight: 700; padding-top: 10px; }
 .st-totals .balance td { font-weight: 700; color: var(--primary); }
 .pct-input { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; color: var(--muted); }
+.pct-input select { height: 30px; border: 1px solid var(--border); border-radius: 7px; padding: 0 2px; font: inherit; background: var(--surface); }
 .pct-input input { width: 54px; height: 30px; border: 1px solid var(--border); border-radius: 7px; padding: 0 6px; font: inherit; text-align: right; }
 .pct-input input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
 .st-actions { margin: 0; padding: 16px; justify-content: space-between; }

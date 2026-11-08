@@ -265,6 +265,11 @@ final class StatementService
         if ($wh === false || $wh > 100) {
             $errors['withholding_rate'] = __('validation.number');
         }
+        $discountType = ($in['discount_type'] ?? '') === 'amount' ? 'amount' : 'percent';
+        $discount = parse_money($in['discount_value'] ?? '');
+        if ($discount === false || ($discountType === 'percent' && $discount > 100)) {
+            $errors['discount_value'] = __('validation.number');
+        }
         $due = (string) ($in['due_date'] ?? '') ?: null;
         if ($due !== null && !self::validDate($due)) {
             $errors['due_date'] = __('validation.date');
@@ -288,7 +293,7 @@ final class StatementService
             throw new ValidationException($errors);
         }
 
-        DB::transaction(function () use ($id, $s, $in, $vat, $wh, $due, $lines, $channel) {
+        DB::transaction(function () use ($id, $s, $in, $vat, $wh, $due, $lines, $discountType, $discount, $channel) {
             foreach ($lines as $lineId => $l) {
                 $line = DB::one('SELECT * FROM statement_lines WHERE id = ? AND statement_id = ?', [$lineId, $id]);
                 if (!$line) {
@@ -303,6 +308,8 @@ final class StatementService
             DB::update('statements', [
                 'vat_rate'         => $vat ?? 0,
                 'withholding_rate' => $wh ?? 0,
+                'discount_type'    => $discount ? $discountType : null,
+                'discount_value'   => $discount ?: null,
                 'due_date'         => $due,
                 'notes'            => trim((string) ($in['notes'] ?? '')) ?: null,
                 'show_bank'        => !empty($in['show_bank']) ? 1 : 0,
@@ -508,15 +515,21 @@ final class StatementService
 
     private static function recalculate(int $id): void
     {
-        $s = DB::one('SELECT vat_rate, withholding_rate FROM statements WHERE id = ?', [$id]);
+        $s = DB::one('SELECT vat_rate, withholding_rate, discount_type, discount_value FROM statements WHERE id = ?', [$id]);
         $subtotal = round((float) DB::value('SELECT COALESCE(SUM(amount), 0) FROM statement_lines WHERE statement_id = ? AND is_info = 0', [$id]), 2);
-        $vat = round($subtotal * (float) $s['vat_rate'] / 100, 2);
-        $wh = round($subtotal * (float) $s['withholding_rate'] / 100, 2);
+        // Tutar olarak girilen iskonto, satırlar azalsa da ara toplamı geçmez
+        $discount = $s['discount_type'] === 'amount'
+            ? min((float) $s['discount_value'], $subtotal)
+            : round($subtotal * (float) $s['discount_value'] / 100, 2);
+        $net = round($subtotal - $discount, 2);
+        $vat = round($net * (float) $s['vat_rate'] / 100, 2);
+        $wh = round($net * (float) $s['withholding_rate'] / 100, 2);
         DB::update('statements', [
             'subtotal'           => $subtotal,
+            'discount_amount'    => $discount,
             'vat_amount'         => $vat,
             'withholding_amount' => $wh,
-            'total'              => round($subtotal + $vat - $wh, 2),
+            'total'              => round($net + $vat - $wh, 2),
         ], 'id = ?', [$id]);
     }
 

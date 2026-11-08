@@ -392,6 +392,8 @@ return [
     'billing.type_expense'     => 'Expense',
     'billing.type_other'       => 'Other',
     'billing.subtotal'         => 'Subtotal',
+    'billing.discount'         => 'Discount',
+    'billing.after_discount'   => 'After discount',
     'billing.vat'              => 'VAT',
     'billing.withholding'      => 'Withholding tax',
     'billing.total_due'        => 'Amount due',

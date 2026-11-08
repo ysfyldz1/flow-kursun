@@ -128,6 +128,26 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                 </div>
                 <table class="st-totals">
                     <tr><td><?= e(__('billing.subtotal')) ?></td><td class="num"><?= e($money($s['subtotal'])) ?></td></tr>
+                    <?php if ($canEdit || (float) $s['discount_amount'] > 0): ?>
+                        <tr>
+                            <td><?= e(__('billing.discount')) ?>
+                                <?php if ($canEdit): ?>
+                                    <span class="pct-input">
+                                        <select name="discount_type">
+                                            <option value="percent">%</option>
+                                            <option value="amount" <?= $s['discount_type'] === 'amount' ? 'selected' : '' ?>><?= e($s['currency']) ?></option>
+                                        </select>
+                                        <input name="discount_value" value="<?= e(old('discount_value', $s['discount_value'] !== null ? money_input($s['discount_value']) : '')) ?>" inputmode="decimal">
+                                    </span>
+                                    <?= error_for('discount_value') ?>
+                                <?php elseif ($s['discount_type'] === 'percent'): ?>(%<?= e($pct($s['discount_value'])) ?>)<?php endif; ?>
+                            </td>
+                            <td class="num">−<?= e($money($s['discount_amount'])) ?></td>
+                        </tr>
+                    <?php endif; ?>
+                    <?php if ((float) $s['discount_amount'] > 0): ?>
+                        <tr><td><?= e(__('billing.after_discount')) ?></td><td class="num"><?= e($money((float) $s['subtotal'] - (float) $s['discount_amount'])) ?></td></tr>
+                    <?php endif; ?>
                     <tr>
                         <td><?= e(__('billing.vat')) ?>
                             <?php if ($canEdit): ?><span class="pct-input">% <input name="vat_rate" value="<?= e($pct($s['vat_rate'])) ?>" inputmode="decimal"></span><?php else: ?>(%<?= e($pct($s['vat_rate'])) ?>)<?php endif; ?>

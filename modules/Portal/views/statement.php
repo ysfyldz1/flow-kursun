@@ -31,6 +31,10 @@ $banks = trim((string) Settings::get('billing.bank_accounts'));
         <section class="card">
             <table class="st-totals portal-summary">
                 <tr><td><?= e(__('billing.subtotal')) ?></td><td class="num"><?= e($money($s['subtotal'])) ?></td></tr>
+                <?php if ((float) $s['discount_amount'] > 0): ?>
+                    <tr><td><?= e(__('billing.discount')) ?></td><td class="num">−<?= e($money($s['discount_amount'])) ?></td></tr>
+                    <tr><td><?= e(__('billing.after_discount')) ?></td><td class="num"><?= e($money((float) $s['subtotal'] - (float) $s['discount_amount'])) ?></td></tr>
+                <?php endif; ?>
                 <?php if ((float) $s['vat_rate'] > 0): ?><tr><td><?= e(__('billing.vat')) ?></td><td class="num"><?= e($money($s['vat_amount'])) ?></td></tr><?php endif; ?>
                 <?php if ((float) $s['withholding_rate'] > 0): ?><tr><td><?= e(__('billing.withholding')) ?></td><td class="num">−<?= e($money($s['withholding_amount'])) ?></td></tr><?php endif; ?>
                 <tr class="grand"><td><?= e(__('billing.total_due')) ?></td><td class="num"><?= e($money($s['total'])) ?></td></tr>

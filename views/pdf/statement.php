@@ -159,6 +159,10 @@ $line = '#cbd5e1';
         <td>
             <table class="totals">
                 <tr><td class="k"><?= e(__('billing.subtotal')) ?></td><td class="num"><?= $money($s['subtotal']) ?></td></tr>
+                <?php if ((float) $s['discount_amount'] > 0): ?>
+                    <tr><td class="k"><?= e(__('billing.discount')) ?><?= $s['discount_type'] === 'percent' ? ' (%' . $rate($s['discount_value']) . ')' : '' ?></td><td class="num">−<?= $money($s['discount_amount']) ?></td></tr>
+                    <tr><td class="k"><?= e(__('billing.after_discount')) ?></td><td class="num"><?= $money((float) $s['subtotal'] - (float) $s['discount_amount']) ?></td></tr>
+                <?php endif; ?>
                 <?php if ((float) $s['vat_rate'] > 0): ?>
                     <tr><td class="k"><?= e(__('billing.vat')) ?> (%<?= $rate($s['vat_rate']) ?>)</td><td class="num"><?= $money($s['vat_amount']) ?></td></tr>
                 <?php endif; ?>
