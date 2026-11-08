@@ -55,6 +55,23 @@
                     <small class="muted"><?= e(__('org.app_icon_hint')) ?></small>
                     <?= error_for('app_icon') ?>
                 </div>
+                <div class="field">
+                    <span><?= e(__('org.login_image')) ?></span>
+                    <?php if (Settings::get('org.login_image')): ?>
+                        <div class="logo-preview">
+                            <img src="/login-image?v=<?= time() ?>" alt="">
+                            <label class="check"><input type="checkbox" name="remove_login_image" value="1"><span><?= e(__('org.login_image_remove')) ?></span></label>
+                        </div>
+                    <?php endif; ?>
+                    <input type="file" name="login_image" accept="image/png,image/jpeg,image/webp">
+                    <small class="muted"><?= e(__('org.login_image_hint')) ?></small>
+                    <?= error_for('login_image') ?>
+                </div>
+                <label class="field">
+                    <span><?= e(__('org.login_tagline')) ?></span>
+                    <input name="org_login_tagline" maxlength="120" value="<?= e(old('org_login_tagline', (string) Settings::get('org.login_tagline'))) ?>">
+                    <small class="muted"><?= e(__('org.login_tagline_hint')) ?></small>
+                </label>
                 <label class="field">
                     <span><?= e(__('org.address')) ?></span>
                     <textarea name="org_address" rows="3"><?= e(old('org_address', (string) Settings::get('org.address'))) ?></textarea>

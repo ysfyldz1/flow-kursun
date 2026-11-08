@@ -165,6 +165,14 @@ function format_date(?string $date, bool $withTime = false): string
     return date($withTime ? $format . ' H:i' : $format, $ts);
 }
 
+/** Bugünün gün adı ve uzun tarihi, arayüz dilinde: ['Pazar', '8 Kasım 2026'] */
+function today_label(): array
+{
+    $month = __('cal.month_' . date('n'));
+    $date = Lang::locale() === 'tr' ? date('j') . " $month " . date('Y') : "$month " . date('j, Y');
+    return [__('dash.day_' . date('N')), $date];
+}
+
 /** Süre her zaman 6 dakikanın katına yukarı yuvarlanır (0,1 saat). */
 function round_minutes(int $minutes): int
 {

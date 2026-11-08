@@ -63,6 +63,19 @@ final class OrganizationController
             $errors['logo'] = __('org.logo_upload_failed');
         }
 
+        $loginImage = $_FILES['login_image'] ?? null;
+        $loginExt = null;
+        if ($loginImage && $loginImage['error'] === UPLOAD_ERR_OK) {
+            $loginExt = self::LOGO_TYPES[mime_content_type($loginImage['tmp_name'])] ?? null;
+            if (!$loginExt) {
+                $errors['login_image'] = __('org.logo_type');
+            } elseif ($loginImage['size'] > 5 * 1024 * 1024) {
+                $errors['login_image'] = __('org.login_image_size');
+            }
+        } elseif ($loginImage && $loginImage['error'] !== UPLOAD_ERR_NO_FILE) {
+            $errors['login_image'] = __('org.logo_upload_failed');
+        }
+
         if ($errors) {
             fail(new ValidationException($errors), '/settings/organization');
         }
@@ -74,6 +87,7 @@ final class OrganizationController
             'org.primary_color'        => strtolower($color),
             'org.address'              => $text('org_address'),
             'org.tax_info'             => $text('org_tax_info'),
+            'org.login_tagline'        => $text('org_login_tagline'),
             'billing.vat_rate'         => (string) ($vat ?? 0),
             'billing.withholding_rate' => (string) ($wh ?? 0),
             'billing.due_days'         => $dueDays,
@@ -99,6 +113,23 @@ final class OrganizationController
             $values['org.logo'] = null;
         }
 
+        if ($loginExt) {
+            if (!move_uploaded_file($loginImage['tmp_name'], BASE_PATH . "/storage/uploads/login-image.$loginExt")) {
+                fail(new ValidationException(['login_image' => __('org.logo_upload_failed')]), '/settings/organization');
+            }
+            foreach (glob(BASE_PATH . '/storage/uploads/login-image.*') as $old) {
+                if (basename($old) !== "login-image.$loginExt") {
+                    unlink($old);
+                }
+            }
+            $values['org.login_image'] = "login-image.$loginExt";
+        } elseif (!empty($_POST['remove_login_image'])) {
+            foreach (glob(BASE_PATH . '/storage/uploads/login-image.*') as $old) {
+                unlink($old);
+            }
+            $values['org.login_image'] = null;
+        }
+
         // Uygulama ikonu: yüklenirse tüm boyutlar üretilir; kaldırılırsa ya da varsayılan ikon kullanılıyorken
         // ad/renk değişirse varsayılan yeniden üretilir
         $icon = $_FILES['app_icon'] ?? null;
@@ -120,12 +151,22 @@ final class OrganizationController
     /** Logo web kökü dışında durur; buradan sunulur. */
     public function logo(): void
     {
-        $file = Settings::get('org.logo');
+        $this->serve('org.logo');
+    }
+
+    public function loginImage(): void
+    {
+        $this->serve('org.login_image');
+    }
+
+    private function serve(string $setting): void
+    {
+        $file = Settings::get($setting);
         $path = $file ? BASE_PATH . '/storage/uploads/' . basename($file) : null;
         if (!$path || !is_file($path)) {
             abort(404);
         }
-        // Adres sabit (/logo); logo değişince eskisi görünmesin diye tarayıcı her seferinde doğrular
+        // Adres sabit; görsel değişince eskisi görünmesin diye tarayıcı her seferinde doğrular
         $etag = '"' . filemtime($path) . '-' . filesize($path) . '"';
         header('Cache-Control: no-cache');
         header('ETag: ' . $etag);

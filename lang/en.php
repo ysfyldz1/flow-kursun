@@ -33,6 +33,11 @@ return [
     'auth.throttled'      => 'Too many failed attempts. Please try again in a few minutes.',
     'auth.microsoft'      => 'Sign in with Microsoft',
     'auth.or'             => 'or',
+    'auth.greet_morning'  => 'Good morning',
+    'auth.greet_day'      => 'Good afternoon',
+    'auth.greet_evening'  => 'Good evening',
+    'auth.greet_night'    => 'Good night',
+    'auth.show_password'  => 'Show password',
 
     // Dashboard
     'dash.hello'          => 'Welcome, :name',
@@ -179,6 +184,12 @@ return [
     'org.logo_type'       => 'The logo must be PNG, JPG or WEBP.',
     'org.logo_size'       => 'The logo can be at most 2 MB.',
     'org.logo_upload_failed' => 'The logo could not be uploaded. Please try again.',
+    'org.login_image'     => 'Sign-in screen image',
+    'org.login_image_hint' => 'Optional. A landscape photo at least 1600 pixels wide is recommended; up to 5 MB.',
+    'org.login_image_size' => 'The image can be at most 5 MB.',
+    'org.login_image_remove' => 'Remove image',
+    'org.login_tagline'   => 'Sign-in screen tagline',
+    'org.login_tagline_hint' => 'Optional; shown under the organization name.',
 
     'validation.number'   => 'Enter a valid amount.',
 

@@ -33,6 +33,11 @@ return [
     'auth.throttled'      => 'Çok fazla hatalı deneme. Lütfen birkaç dakika sonra tekrar deneyin.',
     'auth.microsoft'      => 'Microsoft ile giriş yap',
     'auth.or'             => 'veya',
+    'auth.greet_morning'  => 'Günaydın',
+    'auth.greet_day'      => 'İyi günler',
+    'auth.greet_evening'  => 'İyi akşamlar',
+    'auth.greet_night'    => 'İyi geceler',
+    'auth.show_password'  => 'Şifreyi göster',
 
     // Pano
     'dash.hello'          => 'Hoş geldin, :name',
@@ -179,6 +184,12 @@ return [
     'org.logo_type'       => 'Logo PNG, JPG veya WEBP olmalı.',
     'org.logo_size'       => 'Logo en fazla 2 MB olabilir.',
     'org.logo_upload_failed' => 'Logo yüklenemedi, lütfen yeniden deneyin.',
+    'org.login_image'     => 'Giriş ekranı görseli',
+    'org.login_image_hint' => 'İsteğe bağlı. Yatay, en az 1600 piksel genişlikte fotoğraf önerilir; en fazla 5 MB.',
+    'org.login_image_size' => 'Görsel en fazla 5 MB olabilir.',
+    'org.login_image_remove' => 'Görseli kaldır',
+    'org.login_tagline'   => 'Giriş ekranı sloganı',
+    'org.login_tagline_hint' => 'İsteğe bağlı; kurum adının altında görünür.',
 
     'validation.number'   => 'Geçerli bir tutar girin.',
 

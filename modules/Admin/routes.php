@@ -25,6 +25,7 @@ $router->post('/settings/roles/{id}/delete', [RoleController::class, 'delete'], 
 $router->get('/settings/organization', [OrganizationController::class, 'edit'], ['can' => 'settings.manage']);
 $router->post('/settings/organization', [OrganizationController::class, 'update'], ['can' => 'settings.manage']);
 $router->get('/logo', [OrganizationController::class, 'logo'], ['auth' => false]);
+$router->get('/login-image', [OrganizationController::class, 'loginImage'], ['auth' => false]);
 
 $router->get('/settings/microsoft', [MicrosoftController::class, 'edit'], ['can' => 'settings.manage']);
 $router->post('/settings/microsoft', [MicrosoftController::class, 'update'], ['can' => 'settings.manage']);
