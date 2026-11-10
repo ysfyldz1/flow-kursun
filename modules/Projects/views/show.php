@@ -88,7 +88,7 @@ $billingValue = match ($p['billing_type']) {
                             <td class="cell-main"><strong><?= e(__('expenses.cat_' . $x['category'])) ?></strong><span><?= e($x['description']) ?> · <?= e($x['user_name']) ?></span></td>
                             <td class="cell-actions">
                                 <strong><?= e(format_money((float) $x['amount'], $x['currency'])) ?></strong><br>
-                                <span class="muted small"><?= e(__($x['statement_id'] ? 'time.billed' : ($x['is_billable'] ? 'expenses.state_unbilled' : 'expenses.state_internal'))) ?></span>
+                                <span class="muted small"><?= e(__($x['statement_id'] ? 'time.billed' : ($x['from_advance'] ? 'adv.state_advance' : ($x['is_billable'] ? 'expenses.state_unbilled' : 'expenses.state_internal')))) ?></span>
                             </td>
                         </tr>
                     <?php endforeach; ?>

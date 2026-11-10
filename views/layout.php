@@ -20,6 +20,7 @@ $nav = [
     ['group' => 'nav.finance', 'icon' => 'wallet', 'items' => [
         ['/billing',   'receipt', 'nav.billing',   ['statements.manage', 'payments.manage']],
         ['/expenses',  'wallet',  'nav.expenses',  ['expenses.own', 'expenses.all']],
+        ['/advances',  'wallet',  'adv.title',     'payments.manage'],
         ['/reports',   'chart',   'nav.reports',   'reports.view'],
     ]],
     ['group' => 'nav.office', 'icon' => 'building', 'items' => [

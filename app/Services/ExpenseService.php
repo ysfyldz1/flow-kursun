@@ -29,7 +29,9 @@ final class ExpenseService
             $params[] = (int) $f['project_id'];
         }
         if (($f['state'] ?? '') === 'unbilled') {
-            $where[] = 'e.is_billable = 1 AND e.statement_id IS NULL';
+            $where[] = 'e.is_billable = 1 AND e.from_advance = 0 AND e.statement_id IS NULL';
+        } elseif (($f['state'] ?? '') === 'advance') {
+            $where[] = 'e.from_advance = 1';
         } elseif (($f['state'] ?? '') === 'billed') {
             $where[] = 'e.statement_id IS NOT NULL';
         } elseif (($f['state'] ?? '') === 'internal') {
@@ -161,6 +163,8 @@ final class ExpenseService
             'amount'       => $amount,
             'currency'     => $project['currency'],
             'is_billable'  => (int) !empty($in['is_billable']),
+            // Avanslı müvekkilin masrafı avanstan düşülür, döküme girmez
+            'from_advance' => (int) \Modules\Advances\AdvanceService::coversExpense((int) $project['client_id'], !empty($in['is_billable']), $current),
         ];
     }
 

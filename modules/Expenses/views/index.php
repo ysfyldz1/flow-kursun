@@ -2,7 +2,7 @@
 use App\Core\View;
 use App\Services\ExpenseService;
 
-$states = ['' => 'app.all', 'unbilled' => 'expenses.state_unbilled', 'billed' => 'expenses.state_billed', 'internal' => 'expenses.state_internal'];
+$states = ['' => 'app.all', 'unbilled' => 'expenses.state_unbilled', 'billed' => 'expenses.state_billed', 'internal' => 'expenses.state_internal', 'advance' => 'adv.state_advance'];
 $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filters));
 ?>
 <div class="page-head">
@@ -80,6 +80,8 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
                             <td>
                                 <?php if ($x['statement_id']): ?>
                                     <span class="badge badge-blue"><?= e($x['statement_number'] ?: __('billing.draft')) ?></span>
+                                <?php elseif ($x['from_advance']): ?>
+                                    <span class="badge badge-green"><?= e(__('adv.state_advance')) ?></span>
                                 <?php elseif (!$x['is_billable']): ?>
                                     <span class="badge badge-gray"><?= e(__('expenses.state_internal')) ?></span>
                                 <?php else: ?>

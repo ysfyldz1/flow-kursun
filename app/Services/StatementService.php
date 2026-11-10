@@ -110,7 +110,7 @@ final class StatementService
                 WHERE t.statement_id IS NULL AND t.is_billable = 1 AND p.billing_type <> 'non_billable'
                 UNION ALL
                 SELECT e.client_id, e.currency, 0, 1, 0, e.amount, e.expense_date
-                FROM expenses e WHERE e.statement_id IS NULL AND e.is_billable = 1
+                FROM expenses e WHERE e.statement_id IS NULL AND e.is_billable = 1 AND e.from_advance = 0
              ) x
              JOIN clients c ON c.id = x.client_id
              GROUP BY c.id, c.code, c.name, x.currency
@@ -220,7 +220,7 @@ final class StatementService
             // Yansıtılacak masraflar (faturalanmaz projelerin masrafları da dahil)
             $expenses = DB::all(
                 'SELECT e.*, u.name AS user_name FROM expenses e JOIN users u ON u.id = e.user_id
-                 WHERE e.client_id = ? AND e.currency = ? AND e.statement_id IS NULL AND e.is_billable = 1
+                 WHERE e.client_id = ? AND e.currency = ? AND e.statement_id IS NULL AND e.is_billable = 1 AND e.from_advance = 0
                    AND e.expense_date <= ? ' . ($start ? 'AND e.expense_date >= ?' : '') . '
                  ORDER BY e.project_id, e.expense_date, e.id',
                 $start ? [$client['id'], $currency, $end, $start] : [$client['id'], $currency, $end]

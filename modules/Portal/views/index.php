@@ -33,6 +33,13 @@ $closed = array_filter($statements, fn ($s) => StatementService::balance($s) <= 
             <div class="stat-value stat-money"><?= e(format_money((float) $b['balance'], $b['currency'])) ?></div>
         </div>
     <?php endforeach; ?>
+    <?php foreach (\Modules\Advances\AdvanceService::balances(PortalAuth::clientId()) as $b): ?>
+        <a href="/portal/advance?currency=<?= e($b['currency']) ?>" class="card stat">
+            <span class="stat-icon <?= (float) $b['balance'] < 0 ? 'tone-red' : 'tone-green' ?>"><?= icon('wallet') ?></span>
+            <div class="stat-text"><strong><?= e(__('adv.balance_in', ['currency' => $b['currency']])) ?></strong><span><?= e(__('adv.see_ledger')) ?> →</span></div>
+            <div class="stat-value stat-money <?= (float) $b['balance'] < 0 ? 'text-danger' : '' ?>"><?= e(format_money((float) $b['balance'], $b['currency'])) ?></div>
+        </a>
+    <?php endforeach; ?>
 </div>
 
 <?php if ($meetings): ?>

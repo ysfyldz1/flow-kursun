@@ -205,5 +205,25 @@ $row = fn (string $label, ?string $value) => $value
                 <?php endif; ?>
             </dl>
         </section>
+
+        <?php if (can('payments.manage')): ?>
+            <?php $advances = \Modules\Advances\AdvanceService::balances((int) $c['id']); ?>
+            <section class="card widget widget-auto">
+                <header class="widget-head">
+                    <h2><?= e(__('adv.title')) ?></h2>
+                    <a href="/clients/<?= $c['id'] ?>/advance" class="widget-link"><?= e(__($c['uses_advance'] || $advances ? 'adv.open' : 'adv.turn_on')) ?> →</a>
+                </header>
+                <?php if (!$c['uses_advance'] && !$advances): ?>
+                    <div class="card-body muted small"><?= e(__('adv.off_hint')) ?></div>
+                <?php else: ?>
+                    <dl class="dl">
+                        <?php foreach ($advances as $b): ?>
+                            <div class="dl-row"><dt><?= e(__('adv.balance_in', ['currency' => $b['currency']])) ?></dt><dd class="<?= (float) $b['balance'] < 0 ? 'text-danger' : '' ?>"><strong><?= e(format_money((float) $b['balance'], $b['currency'])) ?></strong></dd></div>
+                        <?php endforeach; ?>
+                        <?php if (!$c['uses_advance']): ?><div class="dl-row"><dt></dt><dd class="muted small"><?= e(__('adv.off')) ?></dd></div><?php endif; ?>
+                    </dl>
+                <?php endif; ?>
+            </section>
+        <?php endif; ?>
     </div>
 </div>

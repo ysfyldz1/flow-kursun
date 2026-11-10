@@ -51,7 +51,7 @@ final class StatementPdf
         return ($s['number'] ?: 'taslak-' . $s['id']) . '.pdf';
     }
 
-    private static function logoDataUri(): ?string
+    public static function logoDataUri(): ?string
     {
         $file = Settings::get('org.logo');
         $path = $file ? BASE_PATH . '/storage/uploads/' . basename($file) : null;
