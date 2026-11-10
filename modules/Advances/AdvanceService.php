@@ -158,6 +158,36 @@ final class AdvanceService
         Audit::log('advance.deleted', 'client', $clientId, $row, $channel);
     }
 
+    /**
+     * Masraf formu ipucu: avanslı müvekkilin projeleri için projenin para birimindeki kalan avans.
+     * Düzenlenen masraf zaten avanstan düşülmüşse kendi tutarı geri eklenir.
+     * @return array<int, array{balance: float, currency: string}>
+     */
+    public static function projectHints(array $projectIds, ?array $entry = null): array
+    {
+        $ids = array_values(array_filter(array_map('intval', $projectIds)));
+        if (!$ids) {
+            return [];
+        }
+        $rows = DB::all(
+            'SELECT p.id, p.client_id, p.currency FROM projects p JOIN clients c ON c.id = p.client_id
+             WHERE c.uses_advance = 1 AND p.id IN (' . implode(',', array_fill(0, count($ids), '?')) . ')',
+            $ids
+        );
+        $balances = [];
+        $hints = [];
+        foreach ($rows as $r) {
+            $cid = (int) $r['client_id'];
+            $balances[$cid] ??= array_column(self::balances($cid), 'balance', 'currency');
+            $balance = (float) ($balances[$cid][$r['currency']] ?? 0);
+            if ($entry && (int) $entry['from_advance'] === 1 && (int) $entry['client_id'] === $cid && $entry['currency'] === $r['currency']) {
+                $balance += (float) $entry['amount'];
+            }
+            $hints[(int) $r['id']] = ['balance' => round($balance, 2), 'currency' => $r['currency']];
+        }
+        return $hints;
+    }
+
     /** Masraf kaydında: avanslı müvekkilin yansıtılacak masrafı avanstan düşülür. */
     public static function coversExpense(int $clientId, bool $billable, ?array $current): bool
     {
