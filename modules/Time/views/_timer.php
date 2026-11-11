@@ -1,4 +1,4 @@
-<section class="card form-card timer-card <?= $timer ? 'running' : '' ?>">
+<section class="card form-card timer-card <?= $timer ? 'running' : '' ?>"<?= $timer ? '' : ' data-fold-mobile="' . e(__('time.timer')) . '"' ?>>
     <?php if ($timer): ?>
         <div class="timer-head">
             <span class="timer-dot"></span>

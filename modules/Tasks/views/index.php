@@ -12,7 +12,7 @@ $q = fn (array $over) => '?' . http_build_query($over + ['scope' => $scope, 'sta
 
 <div class="time-layout">
     <div class="stack">
-        <section class="card form-card">
+        <section class="card form-card" data-fold-mobile="<?= e(__('tasks.new')) ?>">
             <h3 class="card-title"><?= e(__('tasks.new')) ?></h3>
             <?= View::partial('Tasks::_form', ['t' => null, 'projects' => $projects, 'users' => $users, 'me' => $me]) ?>
         </section>

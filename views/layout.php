@@ -218,6 +218,21 @@ const mainnav = document.querySelector('.mainnav');
 const fit = () => { mainnav.classList.remove('compact'); if (mainnav.scrollWidth > mainnav.clientWidth) mainnav.classList.add('compact'); };
 addEventListener('resize', fit); fit();
 
+// Telefonda data-fold-mobile formları katlanır; yerine "+ başlık" düğmesi gelir. Hata varsa açık kalır.
+// Proje sayfasından "ekle" ile gelindiyse (?project_id=) form açık kalır.
+if (matchMedia('(max-width: 760px)').matches && !new URLSearchParams(location.search).has('project_id')) {
+    document.querySelectorAll('[data-fold-mobile]').forEach(card => {
+        if (card.querySelector('.field-error')) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-outline fold-toggle';
+        btn.textContent = '+ ' + card.dataset.foldMobile;
+        btn.addEventListener('click', () => { card.classList.remove('is-folded'); btn.remove(); card.querySelector('input:not([type=hidden]), select, textarea')?.focus(); });
+        card.classList.add('is-folded');
+        card.before(btn);
+    });
+}
+
 // Açık açılır menüyü dışarı tıklanınca kapat; menüde biri açılınca diğeri kapanır
 document.addEventListener('click', e => {
     document.querySelectorAll('details.dropdown[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); });

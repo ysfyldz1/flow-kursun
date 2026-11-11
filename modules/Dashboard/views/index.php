@@ -24,7 +24,7 @@ use App\Services\TimeService;
         </summary>
 <?php endif; ?>
 
-<div class="grid grid-<?= max(1, count($stats)) ?>">
+<div class="grid grid-<?= max(1, count($stats)) ?> stats-grid">
     <?php foreach ($stats as $s): ?>
         <div class="card stat">
             <span class="stat-icon tone-<?= $s['tone'] ?>"><?= icon($s['icon']) ?></span>

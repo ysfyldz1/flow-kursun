@@ -41,7 +41,7 @@ $fmtDays = fn (float $d) => rtrim(rtrim(number_format($d, 1, ',', '.'), '0'), ',
         </section>
 
         <?php if (can('leaves.own') || can('leaves.manage')): ?>
-            <section class="card form-card">
+            <section class="card form-card" data-fold-mobile="<?= e(__('leaves.new')) ?>">
                 <h3 class="card-title"><?= e(__('leaves.new')) ?></h3>
                 <?= View::partial('Leaves::_form', ['users' => $users, 'approvers' => $approvers]) ?>
             </section>

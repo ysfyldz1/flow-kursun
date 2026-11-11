@@ -536,6 +536,17 @@ td.strong { font-weight: 700; }
     .tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
     .tabs a { flex: none; white-space: nowrap; }
     .add-line, .add-line.portal-invite-row { grid-template-columns: minmax(0, 1fr); }
+    /* Katlanan formlar (data-fold-mobile) ve pano */
+    .is-folded { display: none !important; }
+    .fold-toggle { width: 100%; justify-content: center; border-style: dashed; }
+    .grid.stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .widget { min-height: 0; }
+    .stats-grid .stat { padding: 12px; gap: 10px; flex-wrap: wrap; }
+    .stats-grid .stat-icon { display: none; }
+    .stats-grid .stat-text span { display: none; }
+    .stats-grid .stat-text strong { font-size: 12px; font-weight: 500; color: var(--muted); }
+    .stats-grid .stat-value { font-size: 22px; }
+    .widget .empty { padding: 18px 16px; min-height: 0; }
     .table-m .m-meta .cell-main { display: inline; }
     .table-m .m-meta .cell-main strong { font-weight: 500; color: var(--text); }
     .table-m .m-meta .cell-main span { display: none; }

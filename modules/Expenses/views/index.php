@@ -14,7 +14,7 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
 
 <div class="time-layout">
     <div class="stack">
-        <section class="card form-card">
+        <section class="card form-card" data-fold-mobile="<?= e(__('expenses.new')) ?>">
             <h3 class="card-title"><?= e(__('expenses.new')) ?></h3>
             <?= View::partial('Expenses::_form', ['entry' => null, 'projects' => $projects]) ?>
         </section>
