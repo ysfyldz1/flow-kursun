@@ -31,7 +31,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
   </Hosts>
   <Requirements>
     <Sets>
-      <Set Name="Mailbox" MinVersion="1.5"/>
+      <Set Name="Mailbox" MinVersion="1.1"/>
     </Sets>
   </Requirements>
   <FormSettings>
@@ -39,6 +39,12 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
       <DesktopSettings>
         <SourceLocation DefaultValue="<?= $x($pane) ?>"/>
         <RequestedHeight>450</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+    <?php // Yazma ekranında da etkinleştiği için (Rule: FormType="Edit") ItemEdit formu zorunlu ?>
+    <Form xsi:type="ItemEdit">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="<?= $x($pane) ?>"/>
       </DesktopSettings>
     </Form>
   </FormSettings>
