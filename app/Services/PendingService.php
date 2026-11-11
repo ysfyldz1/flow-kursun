@@ -33,6 +33,7 @@ final class PendingService
                 array_filter(CalendarService::range($today, $limit, $uid), fn ($e) => $e['type'] === 'deadline' && !$e['done_at'])
             );
             $out[] = self::group('deadlines', 'red', $deadlines, fn ($e) => [
+                'part'  => substr($e['starts_at'], 0, 10) < $today ? 'overdue' : (substr($e['starts_at'], 0, 10) === $today ? 'today' : 'soon'),
                 'title' => $e['title'],
                 'meta'  => self::eventMeta($e),
                 'url'   => '/calendar/' . $e['id'],
@@ -42,6 +43,7 @@ final class PendingService
                 fn ($e) => $e['type'] === 'hearing'
             );
             $out[] = self::group('hearings', 'amber', $hearings, fn ($e) => [
+                'part'  => substr($e['starts_at'], 0, 10) === $today ? 'today' : (substr($e['starts_at'], 0, 10) === date('Y-m-d', strtotime('+1 day')) ? 'tomorrow' : 'next'),
                 'title' => $e['title'],
                 'meta'  => self::eventMeta($e, true),
                 'url'   => '/calendar/' . $e['id'],
@@ -51,6 +53,7 @@ final class PendingService
         if (can('tasks.own') || can('tasks.all')) {
             $tasks = array_filter(TaskService::list('mine'), fn ($t) => $t['due_date'] && $t['due_date'] <= $today);
             $out[] = self::group('tasks', 'red', $tasks, fn ($t) => [
+                'part'  => $t['due_date'] < $today ? 'overdue' : 'today',
                 'title' => $t['title'],
                 'meta'  => ($t['due_date'] < $today ? __('pending.overdue_since', ['date' => format_date($t['due_date'])]) : __('pending.today'))
                            . ($t['project_name'] ? ' · ' . $t['project_name'] : ''),
@@ -97,11 +100,10 @@ final class PendingService
 
         if (can('time.own') && ($day = self::missingTimeDay($uid))) {
             $url = '/time?week=' . $day . '&date=' . $day;
-            $out[] = ['key' => 'time', 'tone' => 'blue', 'count' => 1, 'url' => $url, 'items' => [[
-                'title' => __('pending.time_missing', ['date' => format_date($day)]),
-                'meta'  => '',
-                'url'   => $url,
-            ]]];
+            $text = $day === date('Y-m-d', strtotime('-1 day'))
+                ? __('pending.s_time_yesterday')
+                : __('pending.s_time_day', ['day' => __('dash.day_' . date('N', strtotime($day))), 'date' => format_date($day)]);
+            $out[] = ['key' => 'time', 'tone' => 'blue', 'count' => 1, 'url' => $url, 'text' => $text, 'items' => []];
         }
 
         return array_values(array_filter($out, fn ($g) => $g['count'] > 0));
@@ -171,14 +173,38 @@ final class PendingService
 
     private static function group(string $key, string $tone, array $rows, callable $map): array
     {
-        $rows = array_values($rows);
+        $items = array_map($map, array_values($rows));
         return [
             'key'   => $key,
             'tone'  => $tone,
-            'count' => count($rows),
+            'count' => count($items),
             'url'   => self::listUrl($key),
-            'items' => array_map($map, $rows),
+            'text'  => $items ? self::sentence($key, $items) : '',
+            'items' => $items,
         ];
+    }
+
+    /**
+     * Kişiye not gibi okunan cümle: "Zamanı geçmiş 4, son günü bugün olan 2 göreviniz var."
+     * Alt sayıları olan gruplarda her parça "pending.s_<grup>_<parça>", kalıp "pending.s_<grup>".
+     */
+    private static function sentence(string $key, array $items): string
+    {
+        $counts = array_count_values(array_map(fn ($i) => $i['part'] ?? 'all', $items));
+        if (isset($counts['all'])) {
+            return __('pending.s_' . $key, ['n' => $counts['all']]);
+        }
+        $order = ['overdue', 'today', 'tomorrow', 'next', 'soon'];
+        $parts = [];
+        foreach ($order as $p) {
+            if (!empty($counts[$p])) {
+                $parts[] = __("pending.s_{$key}_{$p}", ['n' => $counts[$p]]);
+            }
+        }
+        $last = array_pop($parts);
+        $joined = $parts ? implode(', ', $parts) . ' ' . __('pending.and') . ' ' . $last : $last;
+        $text = __('pending.s_' . $key, ['parts' => $joined]);
+        return mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
     }
 
     private static function listUrl(string $key): string

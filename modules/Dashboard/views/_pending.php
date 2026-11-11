@@ -1,31 +1,33 @@
-<?php // $pending: PendingService::forCurrentUser() ?>
-<section class="card widget pending-card">
-    <header class="widget-head">
-        <span class="widget-icon"><?= icon('bell') ?></span>
-        <h2><?= e(__('pending.title')) ?></h2>
-    </header>
+<?php // $pending: PendingService::forCurrentUser() — kişiye bırakılmış kısa not gibi ?>
+<section class="card pending-note">
     <?php if (!$pending): ?>
-        <div class="empty"><?= e(__('pending.all_clear')) ?></div>
-    <?php else: ?>
-        <div class="pending-groups">
-            <?php foreach ($pending as $g): ?>
-                <div class="pending-group">
-                    <a href="<?= e($g['url']) ?>" class="pending-head">
-                        <span class="dot tone-<?= $g['tone'] ?>"></span>
-                        <strong><?= e(__('pending.' . $g['key'])) ?></strong>
-                        <span class="badge badge-<?= $g['tone'] ?>"><?= $g['count'] ?></span>
-                    </a>
-                    <?php foreach (array_slice($g['items'], 0, 3) as $i): ?>
-                        <a href="<?= e($i['url']) ?>" class="pending-item">
+        <p class="pending-line"><span class="dot tone-green"></span><span><?= e(__('pending.all_clear')) ?></span></p>
+    <?php endif; ?>
+    <?php foreach ($pending as $g): ?>
+        <?php if (!$g['items']): ?>
+            <p class="pending-line">
+                <span class="dot tone-<?= $g['tone'] ?>"></span>
+                <a href="<?= e($g['url']) ?>"><?= e($g['text']) ?></a>
+            </p>
+        <?php else: ?>
+            <details class="pending-line">
+                <summary>
+                    <span class="dot tone-<?= $g['tone'] ?>"></span>
+                    <span><?= e($g['text']) ?></span>
+                    <span class="pending-toggle"><span class="when-closed"><?= e(__('pending.show')) ?></span><span class="when-open"><?= e(__('pending.hide')) ?></span> <?= icon('chevron-down', 'icon icon-sm') ?></span>
+                </summary>
+                <div class="pending-items">
+                    <?php foreach (array_slice($g['items'], 0, 6) as $i): ?>
+                        <a href="<?= e($i['url']) ?>">
                             <span><?= e($i['title']) ?></span>
                             <?php if ($i['meta']): ?><small class="muted"><?= e($i['meta']) ?></small><?php endif; ?>
                         </a>
                     <?php endforeach; ?>
-                    <?php if ($g['count'] > 3): ?>
-                        <a href="<?= e($g['url']) ?>" class="pending-item muted small"><?= e(__('pending.more', ['count' => $g['count'] - 3])) ?></a>
+                    <?php if ($g['count'] > 6): ?>
+                        <a href="<?= e($g['url']) ?>" class="muted small"><?= e(__('pending.more', ['count' => $g['count'] - 6])) ?> →</a>
                     <?php endif; ?>
                 </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
+            </details>
+        <?php endif; ?>
+    <?php endforeach; ?>
 </section>

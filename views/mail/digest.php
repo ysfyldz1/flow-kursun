@@ -6,7 +6,7 @@ $tones = ['red' => '#dc2626', 'amber' => '#d97706', 'blue' => '#2563eb'];
 <?php foreach ($groups as $g): ?>
     <p style="margin:22px 0 6px;font-weight:600;font-size:15px">
         <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:<?= $tones[$g['tone']] ?>;margin-right:6px"></span>
-        <a href="<?= e($g['url']) ?>" style="color:inherit;text-decoration:none"><?= e(__('pending.' . $g['key'])) ?> (<?= $g['count'] ?>)</a>
+        <a href="<?= e($g['url']) ?>" style="color:inherit;text-decoration:none"><?= e($g['text']) ?></a>
     </p>
     <?php foreach (array_slice($g['items'], 0, 5) as $i): ?>
         <p style="margin:0 0 6px 14px;font-size:14px">
