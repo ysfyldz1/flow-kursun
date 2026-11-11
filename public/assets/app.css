@@ -546,6 +546,12 @@ td.strong { font-weight: 700; }
     .stats-grid .stat-text span { display: none; }
     .stats-grid .stat-text strong { font-size: 12px; font-weight: 500; color: var(--muted); }
     .stats-grid .stat-value { font-size: 22px; }
+    /* Ofis durumu: alt satır (değişim, en eski kayıt) yönetici için bilgi; gizlenmez, değerin altına iner */
+    .stats-detail .stat { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .stats-detail .stat-value { order: 2; }
+    .stats-detail .stat-text { display: contents; }
+    .stats-detail .stat-text strong { order: 1; }
+    .stats-detail .stat-text > span { display: block; order: 3; font-size: 11px; line-height: 1.35; }
     .widget .empty { padding: 18px 16px; min-height: 0; }
     .table-m .m-meta .cell-main { display: inline; }
     .table-m .m-meta .cell-main strong { font-weight: 500; color: var(--text); }

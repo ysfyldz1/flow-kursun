@@ -19,7 +19,7 @@ $pct = fn (?float $v) => $v === null ? '—' : '%' . number_format($v * 100, 0, 
         <a href="/reports" class="widget-link"><?= e(__('nav.reports')) ?> →</a>
     </summary>
 
-    <div class="grid grid-4">
+    <div class="grid grid-4 stats-grid stats-detail">
         <div class="card stat">
             <div class="stat-text">
                 <strong><?= e(__('dash.office_hours')) ?></strong>
