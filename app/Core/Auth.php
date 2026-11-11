@@ -55,9 +55,23 @@ final class Auth
             }
             if (self::$user === null) {
                 unset($_SESSION['user_id']);
+            } elseif (array_key_exists('last_seen_at', self::$user)   // migration 021 uygulanmadan kod gelirse site çökmesin
+                && (!self::$user['last_seen_at'] ||strtotime(self::$user['last_seen_at']) < time() - 600)) {
+                // Özet e-postası "kaç gündür girmedi"yi buradan anlar; her istekte değil, 10 dakikada bir yazılır
+                DB::update('users', ['last_seen_at' => date('Y-m-d H:i:s')], 'id = ?', [self::$user['id']]);
             }
         }
         return self::$user;
+    }
+
+    /** Yalnız komut satırı (cron): yetki kontrolleri ve "benim" sorguları bu kişi için çalışır. */
+    public static function actAs(?array $user): void
+    {
+        if (PHP_SAPI !== 'cli') {
+            throw new \LogicException('actAs yalnız komut satırında');
+        }
+        self::$user = $user;
+        self::$permissions = null;
     }
 
     /** Kişi kendi şifresini değiştirdiğinde o anki oturumu açık tutar. */

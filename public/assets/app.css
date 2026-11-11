@@ -356,6 +356,17 @@ a.cell-main:hover strong { color: var(--primary); }
 .widget-link { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--primary); }
 .widget-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); }
 .widget-row:last-child { border-bottom: 0; }
+.pending-card { margin-bottom: 16px; }
+.pending-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.pending-group { padding: 10px 16px 12px; border-bottom: 1px solid var(--border); }
+.pending-head { display: flex; align-items: center; gap: 8px; padding: 2px 0 6px; color: inherit; text-decoration: none; }
+.pending-head strong { flex: 1; }
+.pending-head .dot { width: 8px; height: 8px; border-radius: 50%; }
+.pending-head .dot.tone-red { background: var(--red); }
+.pending-head .dot.tone-amber { background: var(--amber); }
+.pending-head .dot.tone-blue { background: var(--blue); }
+.pending-item { display: flex; flex-direction: column; padding: 4px 0 4px 16px; color: inherit; text-decoration: none; line-height: 1.35; }
+.pending-item:hover span { text-decoration: underline; }
 .widget-row:hover { background: #fafbfc; }
 
 /* Izgara hücreleri içeriğe göre taşmasın; alanlar hücreyi doldursun */

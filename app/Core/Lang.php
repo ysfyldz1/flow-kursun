@@ -27,6 +27,9 @@ final class Lang
     {
         $line = self::$lines[$key] ?? $key;
         foreach ($replace as $k => $v) {
+            if (is_array($v)) {
+                continue;   // e-posta görünümü verisindeki listeler konu satırına girmez
+            }
             $line = str_replace(':' . $k, (string) $v, $line);
         }
         return $line;

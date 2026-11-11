@@ -50,6 +50,7 @@ final class DashboardController
 
         View::render('Dashboard::index', [
             'office'     => $office,
+            'pending'    => \App\Services\PendingService::forCurrentUser(),
             'title'      => __('nav.dashboard'),
             'stats'      => $stats,
             'recentTime' => $time ? TimeService::recent(Auth::id()) : null,

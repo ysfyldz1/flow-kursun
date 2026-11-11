@@ -93,6 +93,7 @@ final class OrganizationController
             'billing.due_days'         => $dueDays,
             'billing.bank_accounts'    => $text('bank_accounts'),
             'portal.show_hours'        => !empty($_POST['portal_show_hours']) ? '1' : '0',
+            'reminders.digest_days'    => (string) max(0, min(30, (int) ($_POST['digest_days'] ?? 3))),
             'time.format'              => ($_POST['time_format'] ?? '') === 'hm' ? 'hm' : 'decimal',
         ];
 

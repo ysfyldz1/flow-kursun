@@ -3,6 +3,10 @@ use App\Services\TimeService;
 
 // $entry: düzenlenen kayıt ya da null; $projects; $userId (kimin adına)
 $last = $entry ? [] : ($_SESSION['_time_last'] ?? []);
+// Bekleyenlerdeki "zaman girilmemiş" bağlantısı o günü seçili açar
+if (!$entry && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($_GET['date'] ?? '')) && $_GET['date'] <= date('Y-m-d')) {
+    $last['work_date'] = $_GET['date'];
+}
 $val = fn (string $k, string $default = '') => old($k, (string) ($entry[$k] ?? $last[$k] ?? $default));
 $duration = old('duration', $entry ? TimeService::formatMinutes((int) $entry['raw_minutes']) : '');
 $billable = has_errors() ? !empty($GLOBALS['__old']['is_billable']) : (bool) ($entry['is_billable'] ?? true);

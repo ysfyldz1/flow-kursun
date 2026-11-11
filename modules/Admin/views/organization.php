@@ -115,6 +115,15 @@
                 </label>
             </div>
 
+            <h3 class="section-title"><?= e(__('org.reminders_section')) ?></h3>
+            <div class="form-grid form-grid-3">
+                <label class="field">
+                    <span><?= e(__('org.digest_days')) ?></span>
+                    <input name="digest_days" inputmode="numeric" value="<?= e(old('digest_days', (string) Settings::get('reminders.digest_days', 3))) ?>">
+                    <small class="muted"><?= e(__('org.digest_days_hint')) ?></small>
+                </label>
+            </div>
+
             <h3 class="section-title"><?= e(__('portal.title')) ?></h3>
             <label class="check">
                 <input type="checkbox" name="portal_show_hours" value="1" <?= Settings::get('portal.show_hours', '1') === '1' ? 'checked' : '' ?>>

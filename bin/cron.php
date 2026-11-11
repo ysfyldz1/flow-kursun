@@ -16,5 +16,8 @@ if (PHP_SAPI !== 'cli') {
 $transfers = TransferService::cleanup();
 echo sprintf("Transfer: %d süresi dolan, %d yarım kalan silindi, %d hata\n", $transfers['expired'], $transfers['abandoned'], $transfers['failed']);
 
+$reminders = \App\Services\ReminderService::run();
+echo sprintf("Hatırlatma: %d kesin süre uyarısı, %d özet e-postası\n", $reminders['deadline'], $reminders['digest']);
+
 // Ayarlar ekranı cron'un gerçekten çalıştığını buradan gösterir
 Settings::set(['cron.last_run' => date('Y-m-d H:i:s')]);

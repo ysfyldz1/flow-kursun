@@ -13,6 +13,8 @@ use App\Services\TimeService;
     </div>
 </div>
 
+<?= \App\Core\View::partial('Dashboard::_pending', ['pending' => $pending]) ?>
+
 <?php if ($office): ?>
     <?= \App\Core\View::partial('Dashboard::_office', ['o' => $office]) ?>
     <details class="fold" data-fold="mine" open>
