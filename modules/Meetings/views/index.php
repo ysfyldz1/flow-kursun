@@ -16,7 +16,7 @@
     <?php if (!$rows): ?>
         <div class="empty empty-lg"><?= e(__('meetings.empty')) ?></div>
     <?php else: ?>
-        <table class="table">
+        <table class="table table-m">
             <thead>
                 <tr>
                     <th><?= e(__('meetings.company')) ?></th>
@@ -28,13 +28,13 @@
             <tbody>
             <?php foreach ($rows as $m): ?>
                 <tr class="row-link" onclick="location.href='/meetings/<?= $m['id'] ?>'">
-                    <td class="cell-main">
+                    <td class="cell-main m-title">
                         <a href="/meetings/<?= $m['id'] ?>"><strong><?= e($m['client_name']) ?></strong></a>
                         <span><?= e($m['client_code']) ?><?= $m['project_number'] ? ' · ' . e($m['project_number']) : '' ?></span>
                     </td>
-                    <td class="nowrap"><?= e(format_date($m['meeting_at'], true)) ?></td>
-                    <td class="num"><?= (int) $m['response_count'] ?> / <?= (int) $m['shareholder_count'] ?></td>
-                    <td><?= \App\Core\View::partial('Meetings::_status', ['m' => $m]) ?></td>
+                    <td class="nowrap m-meta"><?= e(format_date($m['meeting_at'], true)) ?></td>
+                    <td class="num m-meta"><?= (int) $m['response_count'] ?> / <?= (int) $m['shareholder_count'] ?></td>
+                    <td class="m-value"><?= \App\Core\View::partial('Meetings::_status', ['m' => $m]) ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

@@ -25,7 +25,7 @@ $enabled = TransferService::enabled();
         <div class="empty empty-lg"><?= e(__('transfers.empty')) ?></div>
     <?php else: ?>
         <div class="tf-table">
-            <table class="table">
+            <table class="table table-m">
                 <thead>
                     <tr>
                         <th><?= e(__('transfers.col_transfer')) ?></th>
@@ -39,15 +39,15 @@ $enabled = TransferService::enabled();
                 <tbody>
                     <?php foreach ($rows as $t): ?>
                         <tr>
-                            <td>
+                            <td class="m-title">
                                 <a href="/transfers/<?= (int) $t['id'] ?>"><strong><?= e($t['title']) ?></strong></a>
                                 <div class="muted small"><?= e(format_date($t['created_at'], true)) ?><?= can('transfers.all') ? ' · ' . e($t['creator_name']) : '' ?><?= $t['password_hash'] ? ' · ' . e(__('transfers.protected')) : '' ?></div>
                             </td>
-                            <td><?= e($t['recipient_email'] ?: '—') ?></td>
-                            <td class="nowrap"><?= e(__('transfers.summary', ['count' => (int) $t['file_count'], 'size' => format_bytes((int) $t['total_size'])])) ?></td>
-                            <td><?= (int) $t['download_count'] ?></td>
-                            <td class="nowrap"><?= e($t['expires_at'] ? format_date($t['expires_at']) : __('transfers.expiry_0')) ?></td>
-                            <td><?= View::partial('Transfers::_status', ['t' => $t]) ?></td>
+                            <td class="<?= $t['recipient_email'] ? 'm-meta' : 'm-empty' ?>"><?= e($t['recipient_email'] ?: '—') ?></td>
+                            <td class="nowrap m-meta"><?= e(__('transfers.summary', ['count' => (int) $t['file_count'], 'size' => format_bytes((int) $t['total_size'])])) ?></td>
+                            <td class="m-hide"><?= (int) $t['download_count'] ?></td>
+                            <td class="nowrap m-hide"><?= e($t['expires_at'] ? format_date($t['expires_at']) : __('transfers.expiry_0')) ?></td>
+                            <td class="m-value"><?= View::partial('Transfers::_status', ['t' => $t]) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

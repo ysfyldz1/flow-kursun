@@ -39,15 +39,15 @@ $row = fn (string $label, ?string $value) => $value
             <?php if (!$projects): ?>
                 <div class="empty"><?= e(__('clients.no_projects')) ?></div>
             <?php else: ?>
-                <table class="table">
+                <table class="table table-m">
                     <?php foreach ($projects as $p): ?>
                         <tr class="row-link" onclick="location='/projects/<?= $p['id'] ?>'">
-                            <td><span class="code"><?= e($p['number']) ?></span></td>
-                            <td class="cell-main">
+                            <td class="m-meta"><span class="code"><?= e($p['number']) ?></span></td>
+                            <td class="cell-main m-title">
                                 <strong><?= e($p['name']) ?></strong>
                                 <span><?= e(__('projects.type_' . $p['type'])) ?><?= $p['responsible_name'] ? ' · ' . e($p['responsible_name']) : '' ?></span>
                             </td>
-                            <td class="cell-actions"><?= \App\Core\View::partial('Projects::_status', ['status' => $p['status']]) ?></td>
+                            <td class="cell-actions m-value"><?= \App\Core\View::partial('Projects::_status', ['status' => $p['status']]) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </table>
@@ -63,15 +63,15 @@ $row = fn (string $label, ?string $value) => $value
             <?php if (!$c['contacts']): ?>
                 <div class="empty"><?= e(__('dash.empty')) ?></div>
             <?php else: ?>
-                <table class="table">
+                <table class="table table-m">
                     <?php foreach ($c['contacts'] as $p): ?>
                         <tr>
-                            <td class="cell-main">
+                            <td class="cell-main m-title">
                                 <strong><?= e($p['name']) ?> <?php if ($p['is_primary']): ?><span class="badge badge-blue"><?= e(__('clients.primary')) ?></span><?php endif; ?></strong>
                                 <span><?= e($p['title'] ?? '') ?></span>
                             </td>
-                            <td><?= $p['email'] ? '<a href="mailto:' . e($p['email']) . '" class="link">' . e($p['email']) . '</a>' : '' ?></td>
-                            <td class="muted"><?= e($p['phone'] ?? '') ?></td>
+                            <td class="m-meta"><?= $p['email'] ? '<a href="mailto:' . e($p['email']) . '" class="link">' . e($p['email']) . '</a>' : '' ?></td>
+                            <td class="muted <?= $p['phone'] ? 'm-meta' : 'm-empty' ?>"><?= e($p['phone'] ?? '') ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </table>
@@ -118,11 +118,11 @@ $row = fn (string $label, ?string $value) => $value
                     </div>
                 <?php endif; ?>
                 <?php if ($portalUsers): ?>
-                    <table class="table">
+                    <table class="table table-m">
                         <?php foreach ($portalUsers as $pu): ?>
                             <tr class="<?= $pu['is_active'] ? '' : 'row-muted' ?>">
-                                <td class="cell-main"><strong><?= e($pu['name']) ?></strong><span><?= e($pu['email']) ?></span></td>
-                                <td>
+                                <td class="cell-main m-title"><strong><?= e($pu['name']) ?></strong><span><?= e($pu['email']) ?></span></td>
+                                <td class="m-value">
                                     <?php if (!$pu['is_active']): ?>
                                         <span class="badge badge-gray"><?= e(__('users.inactive')) ?></span>
                                     <?php elseif (!$pu['password']): ?>
@@ -131,8 +131,8 @@ $row = fn (string $label, ?string $value) => $value
                                         <span class="badge badge-green"><?= e(__('users.active')) ?></span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="muted small"><?= $pu['last_login_at'] ? e(__('users.last_login')) . ': ' . e(format_date($pu['last_login_at'], true)) : '' ?></td>
-                                <td class="cell-actions">
+                                <td class="muted small m-meta"><?= $pu['last_login_at'] ? e(__('users.last_login')) . ': ' . e(format_date($pu['last_login_at'], true)) : '' ?></td>
+                                <td class="cell-actions m-actions">
                                     <?php if ($pu['is_active'] && !$pu['password']): ?>
                                         <form method="post" action="/clients/<?= $c['id'] ?>/portal">
                                             <?= csrf_field() ?>

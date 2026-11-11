@@ -34,7 +34,7 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
     <?php if (!$clients): ?>
         <div class="empty empty-lg"><?= e(__('clients.empty')) ?></div>
     <?php else: ?>
-        <table class="table">
+        <table class="table table-m">
             <thead>
                 <tr>
                     <th><?= e(__('clients.code')) ?></th>
@@ -48,17 +48,17 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
             <tbody>
             <?php foreach ($clients as $c): ?>
                 <tr class="row-link <?= $c['is_active'] ? '' : 'row-muted' ?>" onclick="location='/clients/<?= $c['id'] ?>'">
-                    <td><span class="code"><?= e($c['code']) ?></span></td>
-                    <td>
+                    <td class="m-value"><span class="code"><?= e($c['code']) ?></span></td>
+                    <td class="m-title">
                         <a href="/clients/<?= $c['id'] ?>" class="cell-main">
                             <strong><?= e($c['name']) ?></strong>
                             <span><?= e(__('clients.type_' . $c['type'])) ?><?= $c['city'] ? ' · ' . e($c['city']) : '' ?></span>
                         </a>
                     </td>
-                    <td><?= $c['contact_name'] ? e($c['contact_name']) : '<span class="muted">—</span>' ?></td>
-                    <td class="muted"><?= e($c['tax_id'] ?? '—') ?></td>
-                    <td><?= e($c['currency']) ?></td>
-                    <td>
+                    <td class="<?= $c['contact_name'] ? 'm-meta' : 'm-empty' ?>"><?= $c['contact_name'] ? e($c['contact_name']) : '<span class="muted">—</span>' ?></td>
+                    <td class="muted m-hide"><?= e($c['tax_id'] ?? '—') ?></td>
+                    <td class="m-meta"><?= e($c['currency']) ?></td>
+                    <td class="<?= $c['is_active'] ? 'm-hide' : 'm-meta' ?>">
                         <span class="badge <?= $c['is_active'] ? 'badge-green' : 'badge-gray' ?>">
                             <?= e(__($c['is_active'] ? 'users.active' : 'users.inactive')) ?>
                         </span>

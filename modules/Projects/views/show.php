@@ -54,12 +54,12 @@ $billingValue = match ($p['billing_type']) {
             <?php if (!$entries): ?>
                 <div class="empty"><?= e(__('projects.no_time')) ?></div>
             <?php else: ?>
-                <table class="table">
+                <table class="table table-m">
                     <?php foreach ($entries as $t): ?>
                         <tr>
-                            <td class="muted nowrap"><?= e(format_date($t['work_date'])) ?></td>
-                            <td class="cell-main"><strong><?= e($t['user_name']) ?></strong><span><?= e(mb_strimwidth($t['description'], 0, 120, '…')) ?></span></td>
-                            <td class="cell-actions">
+                            <td class="muted nowrap m-meta"><?= e(format_date($t['work_date'])) ?></td>
+                            <td class="cell-main m-title"><strong><?= e($t['user_name']) ?></strong><span><?= e(mb_strimwidth($t['description'], 0, 120, '…')) ?></span></td>
+                            <td class="cell-actions m-value">
                                 <strong><?= TimeService::formatMinutes((int) $t['minutes']) ?></strong>
                                 <?php if (!$t['is_billable']): ?><br><span class="muted small"><?= e(__('time.non_billable')) ?></span><?php endif; ?>
                             </td>
@@ -81,12 +81,12 @@ $billingValue = match ($p['billing_type']) {
             <?php if (!$expenses): ?>
                 <div class="empty"><?= e(__('expenses.none_for_project')) ?></div>
             <?php else: ?>
-                <table class="table">
+                <table class="table table-m">
                     <?php foreach ($expenses as $x): ?>
                         <tr>
-                            <td class="muted nowrap"><?= e(format_date($x['expense_date'])) ?></td>
-                            <td class="cell-main"><strong><?= e(__('expenses.cat_' . $x['category'])) ?></strong><span><?= e($x['description']) ?> · <?= e($x['user_name']) ?></span></td>
-                            <td class="cell-actions">
+                            <td class="muted nowrap m-meta"><?= e(format_date($x['expense_date'])) ?></td>
+                            <td class="cell-main m-title"><strong><?= e(__('expenses.cat_' . $x['category'])) ?></strong><span><?= e($x['description']) ?> · <?= e($x['user_name']) ?></span></td>
+                            <td class="cell-actions m-value">
                                 <strong><?= e(format_money((float) $x['amount'], $x['currency'])) ?></strong><br>
                                 <span class="muted small"><?= e(__($x['statement_id'] ? 'time.billed' : ($x['from_advance'] ? 'adv.state_advance' : ($x['is_billable'] ? 'expenses.state_unbilled' : 'expenses.state_internal')))) ?></span>
                             </td>

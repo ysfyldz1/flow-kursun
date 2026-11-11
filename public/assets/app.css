@@ -357,6 +357,7 @@ a.cell-main:hover strong { color: var(--primary); }
 .meter span { display: block; height: 100%; background: var(--green); }
 .meter .meter-warn { background: var(--amber); }
 .nowrap { white-space: nowrap; }
+.m-label { display: none; }   /* yalnız telefondaki kart satırda görünen etiket */
 .widget-link { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--primary); }
 .widget-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); }
 .widget-row:last-child { border-bottom: 0; }
@@ -512,6 +513,35 @@ td.strong { font-weight: 700; }
     .bottomnav-menu .icon { width: 24px; height: 24px; }
     /* Geniş tablolar kart içinde yatay kaysın */
     .card > .table, .card > form > .table, .st-lines { display: block; overflow-x: auto; white-space: nowrap; }
+    /* Kart satır: table-m tabloları telefonda satır başına bir blok olur.
+       Hücre rolleri: m-title (solda kalın), m-value (sağda), m-meta (alt satırda · ile), m-hide (gizli) */
+    .card > .table-m, .card > form > .table-m, .table-m { display: block; overflow: visible; white-space: normal; }
+    .table-m thead { display: none; }
+    .table-m tbody { display: block; }
+    .table-m tr { display: flex; flex-wrap: wrap; align-items: baseline; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .table-m tr:last-child { border-bottom: 0; }
+    .table-m tr::after { content: ''; order: 3; flex-basis: 100%; }
+    .table-m td { display: block; padding: 0; border: 0; }
+    .table-m .m-title { order: 1; flex: 1 1 50%; min-width: 0; overflow-wrap: anywhere; }   /* taban %50: satır sonu (::after) başlıkla aynı satıra sığmasın */
+    .table-m .m-value { order: 2; flex: none; margin-left: 12px; text-align: right; white-space: nowrap; }
+    .table-m .m-value + .m-value { margin-left: 8px; }
+    .table-m .m-meta { order: 4; margin-top: 3px; font-size: 12px; color: var(--muted); }
+    .table-m .m-meta ~ .m-meta::before { content: '·'; margin: 0 6px; color: var(--muted); }
+    .table-m .m-meta .badge { font-size: 11px; }
+    .table-m .m-hide, .table-m .m-empty { display: none; }
+    .table-m .m-label { display: inline; }
+    .table-m td.cell-main { display: flex; }
+    .table-m .m-meta:has(> .badge:only-child)::before { content: none; }
+    .table-m .m-meta:has(> .badge:only-child) { margin-left: 8px; }
+    .tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+    .tabs a { flex: none; white-space: nowrap; }
+    .add-line, .add-line.portal-invite-row { grid-template-columns: minmax(0, 1fr); }
+    .table-m .m-meta .cell-main { display: inline; }
+    .table-m .m-meta .cell-main strong { font-weight: 500; color: var(--text); }
+    .table-m .m-meta .cell-main span { display: none; }
+    .table-m .m-actions { order: 5; flex-basis: 100%; margin-top: 8px; text-align: left; }
+    .table-m .m-value .muted.small, .table-m .m-value .link.small { font-size: 11px; }
+    .table-m .cell-main span { font-size: 12px; }
     .toolbar { gap: 8px; }
     .search { width: 100%; margin-left: 0; }
     .toasts { top: auto; bottom: calc(80px + env(safe-area-inset-bottom)); right: 12px; left: 12px; width: auto; }

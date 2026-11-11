@@ -69,7 +69,7 @@ $fmtDays = fn (float $d) => rtrim(rtrim(number_format($d, 1, ',', '.'), '0'), ',
         <?php if (!$rows): ?>
             <div class="empty empty-lg"><?= e(__($tab === 'approve' ? 'leaves.empty_approve' : 'leaves.empty')) ?></div>
         <?php else: ?>
-            <table class="table">
+            <table class="table table-m">
                 <thead>
                     <tr>
                         <?php if ($tab !== 'mine'): ?><th><?= e(__('leaves.employee')) ?></th><?php endif; ?>
@@ -83,12 +83,12 @@ $fmtDays = fn (float $d) => rtrim(rtrim(number_format($d, 1, ',', '.'), '0'), ',
                 <?php foreach ($rows as $l): ?>
                     <tr class="row-link" onclick="location.href='/leaves/<?= $l['id'] ?>'">
                         <?php if ($tab !== 'mine'): ?>
-                            <td class="cell-main"><strong><?= e($l['user_name']) ?></strong><span><?= e($l['user_title'] ?? '') ?></span></td>
+                            <td class="cell-main m-title"><strong><?= e($l['user_name']) ?></strong><span><?= e($l['user_title'] ?? '') ?></span></td>
                         <?php endif; ?>
-                        <td><a href="/leaves/<?= $l['id'] ?>" class="link"><?= e(__('leaves.type_' . $l['type'])) ?></a></td>
-                        <td class="nowrap"><?= e(format_date($l['start_date'])) ?><?= $l['end_date'] !== $l['start_date'] ? ' – ' . e(format_date($l['end_date'])) : '' ?></td>
-                        <td class="num"><?= e($fmtDays((float) $l['days'])) ?></td>
-                        <td><?= View::partial('Leaves::_status', ['l' => $l]) ?></td>
+                        <td class="<?= $tab !== 'mine' ? 'm-meta' : 'm-title' ?>"><a href="/leaves/<?= $l['id'] ?>" class="link"><?= e(__('leaves.type_' . $l['type'])) ?></a></td>
+                        <td class="nowrap m-meta"><?= e(format_date($l['start_date'])) ?><?= $l['end_date'] !== $l['start_date'] ? ' – ' . e(format_date($l['end_date'])) : '' ?></td>
+                        <td class="num m-meta"><?= e($fmtDays((float) $l['days'])) ?></td>
+                        <td class="m-value"><?= View::partial('Leaves::_status', ['l' => $l]) ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

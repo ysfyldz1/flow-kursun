@@ -53,7 +53,7 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
             <?php if (!$rows): ?>
                 <div class="empty empty-lg"><?= e(__('expenses.empty')) ?></div>
             <?php else: ?>
-                <table class="table">
+                <table class="table table-m">
                     <thead>
                         <tr>
                             <th><?= e(__('time.date')) ?></th>
@@ -67,17 +67,17 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
                     <tbody>
                     <?php foreach ($rows as $x): ?>
                         <tr>
-                            <td class="muted nowrap"><?= e(format_date($x['expense_date'])) ?></td>
-                            <td class="cell-main">
+                            <td class="muted nowrap m-meta"><?= e(format_date($x['expense_date'])) ?></td>
+                            <td class="cell-main m-title">
                                 <strong><?= e(__('expenses.cat_' . $x['category'])) ?></strong>
                                 <span><?= e($x['description']) ?><?= $users ? ' · ' . e($x['user_name']) : '' ?></span>
                             </td>
-                            <td><a href="/projects/<?= $x['project_id'] ?>" class="cell-main"><strong><?= e($x['project_name']) ?></strong><span><?= e($x['project_number']) ?> · <?= e($x['client_name']) ?></span></a></td>
-                            <td class="num">
+                            <td class="m-meta m-sub"><a href="/projects/<?= $x['project_id'] ?>" class="cell-main"><strong><?= e($x['project_name']) ?></strong><span><?= e($x['project_number']) ?> · <?= e($x['client_name']) ?></span></a></td>
+                            <td class="num m-value">
                                 <strong><?= e(format_money((float) $x['amount'], $x['currency'])) ?></strong>
                                 <?php if ($x['receipt_file']): ?><br><a href="/expenses/<?= $x['id'] ?>/receipt" target="_blank" class="link small"><?= e(__('expenses.receipt')) ?> ↗</a><?php endif; ?>
                             </td>
-                            <td>
+                            <td class="m-meta">
                                 <?php if ($x['statement_id']): ?>
                                     <span class="badge badge-blue"><?= e($x['statement_number'] ?: __('billing.draft')) ?></span>
                                 <?php elseif ($x['from_advance']): ?>
@@ -88,7 +88,7 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
                                     <span class="badge badge-amber"><?= e(__('expenses.state_unbilled')) ?></span>
                                 <?php endif; ?>
                             </td>
-                            <td class="cell-actions">
+                            <td class="cell-actions m-actions">
                                 <?php if (ExpenseService::canModify($x)): ?>
                                     <a href="/expenses/<?= $x['id'] ?>/edit" class="btn btn-sm btn-outline"><?= e(__('clients.edit')) ?></a>
                                     <form method="post" action="/expenses/<?= $x['id'] ?>/delete" onsubmit="return confirm('<?= e(__('app.confirm_delete')) ?>')">

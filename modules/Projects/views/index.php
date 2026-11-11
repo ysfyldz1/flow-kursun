@@ -35,7 +35,7 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
     <?php if (!$projects): ?>
         <div class="empty empty-lg"><?= e(__('projects.empty')) ?></div>
     <?php else: ?>
-        <table class="table">
+        <table class="table table-m">
             <thead>
                 <tr>
                     <th><?= e(__('projects.number')) ?></th>
@@ -49,17 +49,17 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
             <tbody>
             <?php foreach ($projects as $p): ?>
                 <tr class="row-link" onclick="location='/projects/<?= $p['id'] ?>'">
-                    <td><span class="code"><?= e($p['number']) ?></span></td>
-                    <td>
+                    <td class="m-meta"><span class="code"><?= e($p['number']) ?></span></td>
+                    <td class="m-title">
                         <a href="/projects/<?= $p['id'] ?>" class="cell-main">
                             <strong><?= e($p['name']) ?></strong>
                             <span><?= e(__('projects.type_' . $p['type'])) ?><?= $p['case_number'] ? ' · ' . e($p['case_number']) : '' ?></span>
                         </a>
                     </td>
-                    <td><?= e($p['client_name']) ?></td>
-                    <td><?= $p['responsible_name'] ? e($p['responsible_name']) : '<span class="muted">—</span>' ?></td>
-                    <td class="muted"><?= e(format_date($p['opened_at'])) ?></td>
-                    <td><?= View::partial('Projects::_status', ['status' => $p['status']]) ?></td>
+                    <td class="m-meta"><?= e($p['client_name']) ?></td>
+                    <td class="<?= $p['responsible_name'] ? 'm-meta' : 'm-empty' ?>"><?= $p['responsible_name'] ? e($p['responsible_name']) : '<span class="muted">—</span>' ?></td>
+                    <td class="muted m-hide"><?= e(format_date($p['opened_at'])) ?></td>
+                    <td class="m-value"><?= View::partial('Projects::_status', ['status' => $p['status']]) ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
