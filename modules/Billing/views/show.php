@@ -88,7 +88,8 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                                     <?= error_for("lines.{$l['id']}.rate") ?>
                                 <?php elseif ($l['user_name']): ?><div class="muted small"><?= e($l['user_name']) ?><?= $l['rate'] !== null ? ' · ' . e($money($l['rate'])) . '/' . e(__('projects.hour')) : '' ?></div><?php endif; ?>
                             </td>
-                            <td class="num">
+                            <td class="num st-hours">
+                                <?php if ($l['hours'] !== null || ($canEdit && $l['type'] === 'time')): ?><span class="m-label"><?= e(__('billing.hours')) ?></span><?php endif; ?>
                                 <?php if ($canEdit && $l['type'] === 'time'): ?>
                                     <input name="lines[<?= $l['id'] ?>][hours]" value="<?= e(old("lines.{$l['id']}.hours", TimeService::hours((int) round($l['hours'] * 60)))) ?>" inputmode="decimal" class="cell-input num hours-input">
                                     <?= error_for("lines.{$l['id']}.hours") ?>
@@ -96,7 +97,8 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                                     <?= $l['hours'] !== null ? TimeService::hours((int) round($l['hours'] * 60)) : '' ?>
                                 <?php endif; ?>
                             </td>
-                            <td class="num">
+                            <td class="num st-amount">
+                                <span class="m-label"><?= e(__('time.amount')) ?></span>
                                 <?php if ($l['is_info']): ?>
                                     <span class="muted small"><?= e(__('billing.included')) ?></span>
                                 <?php elseif ($canEdit): ?>

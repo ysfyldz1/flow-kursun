@@ -513,7 +513,7 @@ td.strong { font-weight: 700; }
     .bottomnav-menu { flex: 0 0 auto; width: 48px; height: 48px; margin: 0 6px; border: 0; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(15, 23, 42, .18); }
     .bottomnav-menu .icon { width: 24px; height: 24px; }
     /* Geniş tablolar kart içinde yatay kaysın */
-    .card > .table, .card > form > .table, .st-lines { display: block; overflow-x: auto; white-space: nowrap; }
+    .card > .table, .card > form > .table { display: block; overflow-x: auto; white-space: nowrap; }
     /* Kart satır: table-m tabloları telefonda satır başına bir blok olur.
        Hücre rolleri: m-title (solda kalın), m-value (sağda), m-meta (alt satırda · ile), m-hide (gizli) */
     .card > .table-m, .card > form > .table-m, .table-m { display: block; overflow: visible; white-space: normal; }
@@ -568,6 +568,21 @@ td.strong { font-weight: 700; }
     .table-m .m-meta .cell-main { display: inline; }
     .table-m .m-meta .cell-main strong { font-weight: 500; color: var(--text); }
     .table-m .m-meta .cell-main span { display: none; }
+    /* Döküm satırları: tarih, açıklama (+kişi/ücret) tam genişlik; altta Saat | Tutar | sil */
+    .card > form > .table.st-lines, .st-lines { display: block; overflow: visible; white-space: normal; }
+    .st-lines thead { display: none; }
+    .st-lines tbody { display: block; }
+    .st-lines tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 4px 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); align-items: end; }
+    .st-lines td { display: block; padding: 0; border: 0; }
+    .st-lines td:nth-child(1), .st-lines td:nth-child(2), .st-lines .group-row td { grid-column: 1 / -1; }
+    .st-lines .group-row { padding: 0; }
+    .st-lines td:nth-child(1):empty { display: none; }
+    .st-lines td:nth-child(1) { font-size: 12px; }
+    .st-lines .st-hours, .st-lines .st-amount { text-align: left; }
+    .st-lines .m-label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+    .st-lines .st-hours .cell-input, .st-lines .st-amount .cell-input { border-color: var(--border); text-align: right; }
+    .st-lines .line-rate { padding-left: 0; flex-wrap: wrap; }
+    .st-lines .cell-input.autosize { display: block; border-color: var(--border); margin: 2px 0 4px; }
     .table-m .m-meta > div { display: inline; }
     .table-m .m-meta > div + div::before { content: ' · '; }
     .table-m .m-actions { order: 5; flex-basis: 100%; margin-top: 8px; text-align: left; }

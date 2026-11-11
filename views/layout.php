@@ -233,6 +233,34 @@ if (matchMedia('(max-width: 760px)').matches && !new URLSearchParams(location.se
     });
 }
 
+// Aynı sayfada kalan filtre/sekme (yalnız sorgu değişir) sayfayı yeniden yükler; kaydırma yerinde kalsın.
+// Konum bir kez kullanılır; başka sayfaya gidince ya da yenilemede uygulanmaz.
+(() => {
+    const key = 'scroll:' + location.pathname;
+    let saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem(key)); sessionStorage.removeItem(key); } catch (e) {}
+    if (saved && Date.now() - saved.t < 15000) {
+        history.scrollRestoration = 'manual';
+        scrollTo(0, saved.y);
+    }
+    const remember = () => { try { sessionStorage.setItem(key, JSON.stringify({ y: scrollY, t: Date.now() })); } catch (e) {} };
+    document.addEventListener('click', e => {
+        const a = e.target.closest('a[href]');
+        if (!a || a.target || e.ctrlKey || e.metaKey) return;
+        const u = new URL(a.href, location.href);
+        if (u.origin === location.origin && u.pathname === location.pathname && u.search !== location.search && !u.hash) remember();
+    });
+    document.addEventListener('submit', e => {
+        const f = e.target;
+        if ((f.method || 'get').toLowerCase() === 'get' && new URL(f.action || location.href, location.href).pathname === location.pathname) remember();
+    });
+    // onchange="this.form.submit()" submit olayı üretmez; filtre seçimi değişince de hatırla
+    document.addEventListener('change', e => {
+        const f = e.target.form;
+        if (f && (f.method || 'get').toLowerCase() === 'get' && new URL(f.action || location.href, location.href).pathname === location.pathname) remember();
+    });
+})();
+
 // Yatay kayan şeritlerde (ayar menüsü, rapor/liste sekmeleri) seçili öğe görünür olsun
 document.querySelectorAll('.subnav a.active, .report-tabs a.active, .tabs a.active').forEach(a => {
     const bar = a.parentElement;
