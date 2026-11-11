@@ -23,7 +23,7 @@ $age = fn (string $d) => (int) floor((time() - strtotime($d)) / 86400);
     <?php if (!$rows): ?>
         <div class="empty empty-lg"><?= e(__('reports.nothing_unbilled')) ?></div>
     <?php else: ?>
-        <table class="table">
+        <table class="table table-m">
             <thead>
                 <tr>
                     <th><?= e(__('clients.name')) ?></th>
@@ -38,19 +38,19 @@ $age = fn (string $d) => (int) floor((time() - strtotime($d)) / 86400);
             <tbody>
             <?php foreach ($rows as $r): $days = $age($r['oldest']); ?>
                 <tr>
-                    <td><a href="/clients/<?= $r['client_id'] ?>" class="cell-main"><strong><?= e($r['client_name']) ?></strong><span><?= e($r['client_code']) ?></span></a></td>
-                    <td><a href="/projects/<?= $r['project_id'] ?>" class="cell-main"><strong><?= e($r['project_name']) ?></strong><span><?= e($r['number']) ?> · <?= e(__('projects.billing_' . $r['billing_type'])) ?></span></a></td>
-                    <td class="num"><?= (int) $r['entries'] ?></td>
-                    <td class="num"><strong><?= TimeService::hours((int) $r['minutes']) ?></strong></td>
+                    <td class="m-title"><a href="/clients/<?= $r['client_id'] ?>" class="cell-main"><strong><?= e($r['client_name']) ?></strong><span><?= e($r['client_code']) ?></span></a></td>
+                    <td class="m-meta"><a href="/projects/<?= $r['project_id'] ?>" class="cell-main"><strong><?= e($r['project_name']) ?></strong><span><?= e($r['number']) ?> · <?= e(__('projects.billing_' . $r['billing_type'])) ?></span></a></td>
+                    <td class="num m-hide"><?= (int) $r['entries'] ?></td>
+                    <td class="num m-meta"><strong><?= TimeService::hours((int) $r['minutes']) ?></strong><span class="m-label"> <?= e(__('projects.hours')) ?></span></td>
                     <?php if ($money): ?>
-                        <td class="num">
+                        <td class="num m-value">
                             <?= $r['billing_type'] === 'hourly' ? e(format_money((float) $r['amount'], $r['currency'])) : '<span class="muted small">' . e(__('projects.billing_' . $r['billing_type'])) . '</span>' ?>
                             <?php if ($r['missing_rate']): ?><br><span class="text-warn small"><?= e(__('reports.missing_rate', ['count' => $r['missing_rate']])) ?></span><?php endif; ?>
                         </td>
                     <?php endif; ?>
-                    <td><span class="<?= $days > 60 ? 'text-danger' : ($days > 30 ? 'text-warn' : 'muted') ?>"><?= e(format_date($r['oldest'])) ?> · <?= e(__('reports.days_ago', ['days' => $days])) ?></span></td>
+                    <td class="m-meta"><span class="<?= $days > 60 ? 'text-danger' : ($days > 30 ? 'text-warn' : 'muted') ?>"><?= e(format_date($r['oldest'])) ?> · <?= e(__('reports.days_ago', ['days' => $days])) ?></span></td>
                     <?php if (can('statements.manage')): ?>
-                        <td class="cell-actions">
+                        <td class="cell-actions m-actions">
                             <form method="post" action="/billing">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="client_id" value="<?= $r['client_id'] ?>">

@@ -10,7 +10,7 @@
         </div>
 
         <div class="card">
-            <table class="table">
+            <table class="table table-m">
                 <thead>
                     <tr>
                         <th><?= e(__('roles.name')) ?></th>
@@ -21,14 +21,14 @@
                 <tbody>
                 <?php foreach ($roles as $r): ?>
                     <tr>
-                        <td>
+                        <td class="m-title">
                             <a href="/settings/roles/<?= $r['id'] ?>" class="cell-main">
                                 <strong><?= e(localized($r)) ?></strong>
                                 <?php if ($r['is_system']): ?><span><?= e(__('roles.system')) ?></span><?php endif; ?>
                             </a>
                         </td>
-                        <td><?= (int) $r['user_count'] ?></td>
-                        <td class="cell-actions">
+                        <td class="m-value"><?= (int) $r['user_count'] ?><span class="m-label"> <?= e(__('roles.users_short')) ?></span></td>
+                        <td class="cell-actions <?= $r['is_system'] ? 'm-empty' : 'm-actions' ?>">
                             <?php if (!$r['is_system']): ?>
                                 <form method="post" action="/settings/roles/<?= $r['id'] ?>/delete" onsubmit="return confirm('<?= e(__('app.confirm_delete')) ?>')">
                                     <?= csrf_field() ?>

@@ -558,10 +558,18 @@ td.strong { font-weight: 700; }
     span.only-mobile { display: inline; }
     .only-desktop { display: none; }
     .only-mobile + .viz > svg { display: none; }
-    .viz-row .viz-body:has(> .only-mobile) { flex-direction: column; }   /* kısaltılmış kopya varsa asıl grafiğin yalnız SVG'si gizlenir */
+    .viz-row .viz-body:has(> .only-mobile) { flex-direction: column; }
+    /* Ayar menüsü: dikey liste yerine yatay kayan şerit */
+    .subnav { position: static; flex-direction: row; overflow-x: auto; scrollbar-width: none; padding: 6px; gap: 4px; }
+    .subnav-title { display: none; }
+    .subnav a { flex: none; white-space: nowrap; padding: 7px 10px; font-size: 13px; }
+    .report-tabs { overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+    .report-tabs a { flex: none; white-space: nowrap; }   /* kısaltılmış kopya varsa asıl grafiğin yalnız SVG'si gizlenir */
     .table-m .m-meta .cell-main { display: inline; }
     .table-m .m-meta .cell-main strong { font-weight: 500; color: var(--text); }
     .table-m .m-meta .cell-main span { display: none; }
+    .table-m .m-meta > div { display: inline; }
+    .table-m .m-meta > div + div::before { content: ' · '; }
     .table-m .m-actions { order: 5; flex-basis: 100%; margin-top: 8px; text-align: left; }
     .table-m .m-value .muted.small, .table-m .m-value .link.small { font-size: 11px; }
     .table-m .cell-main span { font-size: 12px; }

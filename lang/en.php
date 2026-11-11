@@ -1438,6 +1438,12 @@ return [
     'mail.transfer_downloaded_body' => '":title" was downloaded for the first time.',
 
     // Pending items and reminders
+    // Mobile card-row labels
+    'roles.users_short'          => 'users',
+    'leaves.entitlement_short'   => 'Entitled',
+    'leaves.used_short'          => 'Used',
+    'leaves.remaining_short'     => 'Left',
+
     'pending.title'              => 'Needs attention',
     'pending.all_clear'          => 'Nothing pending.',
     'pending.deadlines'          => 'Deadlines',

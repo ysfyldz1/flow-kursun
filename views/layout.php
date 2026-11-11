@@ -233,6 +233,12 @@ if (matchMedia('(max-width: 760px)').matches && !new URLSearchParams(location.se
     });
 }
 
+// Yatay kayan şeritlerde (ayar menüsü, rapor/liste sekmeleri) seçili öğe görünür olsun
+document.querySelectorAll('.subnav a.active, .report-tabs a.active, .tabs a.active').forEach(a => {
+    const bar = a.parentElement;
+    if (bar.scrollWidth > bar.clientWidth) bar.scrollLeft = a.offsetLeft - (bar.clientWidth - a.offsetWidth) / 2;
+});
+
 // Açık açılır menüyü dışarı tıklanınca kapat; menüde biri açılınca diğeri kapanır
 document.addEventListener('click', e => {
     document.querySelectorAll('details.dropdown[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); });

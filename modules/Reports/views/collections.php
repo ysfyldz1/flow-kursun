@@ -23,7 +23,7 @@
     <?php if (!$rows): ?>
         <div class="empty empty-lg"><?= e(__('reports.empty')) ?></div>
     <?php else: ?>
-        <table class="table">
+        <table class="table table-m">
             <thead>
                 <tr>
                     <th><?= e(__('clients.name')) ?></th>
@@ -35,10 +35,10 @@
             <tbody>
             <?php foreach ($rows as $r): ?>
                 <tr>
-                    <td><a href="/clients/<?= $r['client_id'] ?>" class="cell-main"><strong><?= e($r['client_name']) ?></strong><span><?= e($r['client_code']) ?></span></a></td>
-                    <td class="num"><?= (float) $r['invoiced'] > 0 ? e(format_money((float) $r['invoiced'], $r['currency'])) : '<span class="muted">—</span>' ?></td>
-                    <td class="num"><strong><?= (float) $r['collected'] > 0 ? e(format_money((float) $r['collected'], $r['currency'])) : '<span class="muted">—</span>' ?></strong></td>
-                    <td class="num"><?= (int) $r['payments'] ?: '—' ?></td>
+                    <td class="m-title"><a href="/clients/<?= $r['client_id'] ?>" class="cell-main"><strong><?= e($r['client_name']) ?></strong><span><?= e($r['client_code']) ?></span></a></td>
+                    <td class="num m-meta"><span class="m-label"><?= e(__('reports.invoiced')) ?> </span><?= (float) $r['invoiced'] > 0 ? e(format_money((float) $r['invoiced'], $r['currency'])) : '<span class="muted">—</span>' ?></td>
+                    <td class="num m-value"><strong><?= (float) $r['collected'] > 0 ? e(format_money((float) $r['collected'], $r['currency'])) : '<span class="muted">—</span>' ?></strong></td>
+                    <td class="num m-hide"><?= (int) $r['payments'] ?: '—' ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

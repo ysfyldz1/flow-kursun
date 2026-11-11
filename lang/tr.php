@@ -1438,6 +1438,12 @@ return [
     'mail.transfer_downloaded_body' => 'Gönderdiğiniz ":title" ilk kez indirildi.',
 
     // Bekleyenler ve hatırlatmalar
+    // Telefondaki kart satır etiketleri
+    'roles.users_short'          => 'kullanıcı',
+    'leaves.entitlement_short'   => 'Hak',
+    'leaves.used_short'          => 'Kullanılan',
+    'leaves.remaining_short'     => 'Kalan',
+
     'pending.title'              => 'Bekleyenler',
     'pending.all_clear'          => 'Bekleyen bir şey yok.',
     'pending.deadlines'          => 'Kesin süreler',

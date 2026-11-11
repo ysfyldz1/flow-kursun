@@ -21,7 +21,7 @@
     <?php if (!$rows): ?>
         <div class="empty empty-lg"><?= e(__('reports.no_receivables')) ?></div>
     <?php else: ?>
-        <table class="table">
+        <table class="table table-m">
             <thead>
                 <tr>
                     <th><?= e(__('clients.name')) ?></th>
@@ -31,9 +31,10 @@
             <tbody>
             <?php foreach ($rows as $r): ?>
                 <tr class="row-link" onclick="location='/billing?client_id=<?= $r['client_id'] ?>&status=open'">
-                    <td class="cell-main"><strong><?= e($r['client_name']) ?></strong><span><?= e($r['client_code']) ?> · <?= e(__('portal.open_count', ['count' => $r['statements']])) ?></span></td>
+                    <td class="cell-main m-title"><strong><?= e($r['client_name']) ?></strong><span><?= e($r['client_code']) ?> · <?= e(__('portal.open_count', ['count' => $r['statements']])) ?></span></td>
                     <?php foreach ($buckets as $b): $v = (float) $r[$b]; ?>
-                        <td class="num <?= $b === 'total' ? 'strong' : '' ?> <?= in_array($b, ['d60', 'd90', 'd90plus'], true) && $v > 0 ? 'text-danger' : '' ?>">
+                        <td class="num <?= $b === 'total' ? 'strong m-value' : ($v > 0 ? 'm-meta' : 'm-empty') ?> <?= in_array($b, ['d60', 'd90', 'd90plus'], true) && $v > 0 ? 'text-danger' : '' ?>">
+                            <?php if ($b !== 'total'): ?><span class="m-label"><?= e(__('reports.bucket_' . $b)) ?> </span><?php endif; ?>
                             <?= $v > 0 ? e(format_money($v, $r['currency'])) : '<span class="muted">—</span>' ?>
                         </td>
                     <?php endforeach; ?>

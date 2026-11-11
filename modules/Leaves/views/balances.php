@@ -10,7 +10,7 @@ $fmtDays = fn (float $d) => rtrim(rtrim(number_format($d, 1, ',', '.'), '0'), ',
 </div>
 
 <div class="card">
-    <table class="table">
+    <table class="table table-m">
         <thead>
             <tr>
                 <th><?= e(__('leaves.employee')) ?></th>
@@ -25,13 +25,13 @@ $fmtDays = fn (float $d) => rtrim(rtrim(number_format($d, 1, ',', '.'), '0'), ',
         <tbody>
         <?php foreach ($rows as $r): ?>
             <tr>
-                <td class="cell-main"><strong><?= e($r['name']) ?></strong><span><?= e($r['title'] ?? '') ?></span></td>
-                <td class="nowrap"><?= $r['hire_date'] ? e(format_date($r['hire_date'])) : '<span class="text-warn">' . e(__('leaves.hire_missing')) . '</span>' ?></td>
-                <td class="num"><?= e($fmtDays($r['entitlement'])) ?><?= $r['manual'] ? ' <span class="muted small" title="' . e(__('users.leave_entitlement_hint')) . '">✎</span>' : '' ?></td>
-                <td class="num"><?= e($fmtDays($r['used'])) ?></td>
-                <td class="num"><strong class="<?= $r['remaining'] < 0 ? 'text-warn' : '' ?>"><?= e($fmtDays($r['remaining'])) ?></strong></td>
-                <td class="num"><?= e($fmtDays($r['excuse_year'])) ?></td>
-                <td class="cell-actions">
+                <td class="cell-main m-title"><strong><?= e($r['name']) ?></strong><span><?= e($r['title'] ?? '') ?></span></td>
+                <td class="nowrap m-meta"><?= $r['hire_date'] ? e(format_date($r['hire_date'])) : '<span class="text-warn">' . e(__('leaves.hire_missing')) . '</span>' ?></td>
+                <td class="num m-meta"><span class="m-label"><?= e(__('leaves.entitlement_short')) ?> </span><?= e($fmtDays($r['entitlement'])) ?><?= $r['manual'] ? ' <span class="muted small" title="' . e(__('users.leave_entitlement_hint')) . '">✎</span>' : '' ?></td>
+                <td class="num m-meta"><span class="m-label"><?= e(__('leaves.used_short')) ?> </span><?= e($fmtDays($r['used'])) ?></td>
+                <td class="num m-value"><span class="m-label"><?= e(__('leaves.remaining_short')) ?> </span><strong class="<?= $r['remaining'] < 0 ? 'text-warn' : '' ?>"><?= e($fmtDays($r['remaining'])) ?></strong></td>
+                <td class="num m-hide"><?= e($fmtDays($r['excuse_year'])) ?></td>
+                <td class="cell-actions m-hide">
                     <?php if (can('users.manage')): ?><a href="/settings/users/<?= $r['id'] ?>" class="btn btn-sm btn-outline"><?= e(__('clients.edit')) ?></a><?php endif; ?>
                 </td>
             </tr>

@@ -60,7 +60,7 @@ $link = fn (array $r) => match ($filters['group']) {
     <?php if (!$rows): ?>
         <div class="empty empty-lg"><?= e(__('reports.empty')) ?></div>
     <?php else: ?>
-        <table class="table">
+        <table class="table table-m">
             <thead>
                 <tr>
                     <th><?= e(__('reports.group_' . $filters['group'])) ?></th>
@@ -74,19 +74,19 @@ $link = fn (array $r) => match ($filters['group']) {
             <tbody>
             <?php foreach ($rows as $r): $pct = $r['minutes'] ? round($r['billable_minutes'] / $r['minutes'] * 100) : 0; ?>
                 <tr>
-                    <td><a href="<?= e($link($r)) ?>" class="cell-main"><strong><?= e($r['label']) ?></strong><span><?= e((string) $r['sublabel']) ?></span></a></td>
-                    <td>
+                    <td class="m-title"><a href="<?= e($link($r)) ?>" class="cell-main"><strong><?= e($r['label']) ?></strong><span><?= e((string) $r['sublabel']) ?></span></a></td>
+                    <td class="m-hide">
                         <div class="hbar" title="<?= TimeService::formatMinutes((int) $r['minutes']) ?>">
                             <span class="hbar-total" style="width: <?= round($r['minutes'] / $max * 100, 1) ?>%">
                                 <span class="hbar-billable" style="width: <?= $pct ?>%"></span>
                             </span>
                         </div>
                     </td>
-                    <td class="num"><strong><?= TimeService::hours((int) $r['minutes']) ?></strong></td>
-                    <td class="num"><?= TimeService::hours((int) $r['billable_minutes']) ?></td>
-                    <td class="num <?= $pct < 60 ? 'text-warn' : '' ?>"><?= $pct ?></td>
+                    <td class="num m-value"><strong><?= TimeService::hours((int) $r['minutes']) ?></strong></td>
+                    <td class="num m-meta"><span class="m-label"><?= e(__('time.billable')) ?> </span><?= TimeService::hours((int) $r['billable_minutes']) ?></td>
+                    <td class="num m-meta <?= $pct < 60 ? 'text-warn' : '' ?>"><span class="m-label">%</span><?= $pct ?></td>
                     <?php if ($money): ?>
-                        <td class="num">
+                        <td class="num <?= $r['amounts'] ? 'm-meta' : 'm-empty' ?>">
                             <?php foreach ($r['amounts'] as $cur => $v): ?><div><?= e(format_money($v, $cur)) ?></div><?php endforeach; ?>
                             <?= $r['amounts'] ? '' : '<span class="muted">—</span>' ?>
                         </td>
