@@ -46,7 +46,7 @@ final class AuthController
         unset($_SESSION['_login_lock']);
         $_SESSION['locale'] = Auth::user()['locale'];
         Audit::log('auth.login');
-        redirect('/');
+        redirect(self::intended('/'));
     }
 
     public function microsoft(): void
@@ -119,7 +119,7 @@ final class AuthController
             }
         }
         Audit::log('auth.login', null, null, ['via' => 'microsoft']);
-        redirect('/');
+        redirect(self::intended('/'));
     }
 
     /** Profilde "Microsoft 365 hesabımı bağla": kişinin kendi posta kutusu ve OneDrive'ı için izin istenir. */
@@ -160,7 +160,15 @@ final class AuthController
         } catch (\Throwable $e) {
             flash('error', __('ms.connect_error', ['error' => $e->getMessage()]));
         }
-        redirect('/account');
+        redirect(self::intended('/account'));
+    }
+
+    /** Girişten önce istenen sayfa (Router yazar); yalnız site içi yol kabul edilir, bir kez kullanılır. */
+    private static function intended(string $default): string
+    {
+        $to = (string) ($_SESSION['_intended'] ?? '');
+        unset($_SESSION['_intended']);
+        return preg_match('~^/(?![/\\])~', $to) ? $to : $default;
     }
 
     /** Profil: ad, dil ve Microsoft 365 bağlantısı. */

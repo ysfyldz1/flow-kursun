@@ -151,6 +151,12 @@
                 </div>
             </form>
 
+            <section class="card form-card">
+                <h3 class="section-title"><?= e(__('outlook.settings_title')) ?></h3>
+                <p class="muted small" style="margin-top:0"><?= e(__('outlook.settings_hint')) ?></p>
+                <a href="/settings/microsoft/outlook-manifest.xml" class="btn btn-outline"><?= icon('download', 'icon icon-sm') ?><?= e(__('outlook.download_manifest')) ?></a>
+            </section>
+
             <script>
             (() => {
                 const sel = document.getElementById('docs-provider');

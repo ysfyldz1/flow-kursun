@@ -358,6 +358,7 @@ a.cell-main:hover strong { color: var(--primary); }
 .meter .meter-warn { background: var(--amber); }
 .nowrap { white-space: nowrap; }
 .m-label { display: none; }   /* yalnız telefondaki kart satırda görünen etiket */
+.email-note { color: var(--text) !important; font-size: 12px; }
 .only-mobile { display: none; }
 .widget-link { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--primary); }
 .widget-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); }

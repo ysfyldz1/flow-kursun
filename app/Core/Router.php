@@ -43,6 +43,10 @@ final class Router
                 }
             }
             if (($opts['auth'] ?? true) && !Auth::check()) {
+                // Girişten sonra istenen sayfaya dönülsün (ör. Outlook eklentisinin giriş penceresi)
+                if ($method === 'GET') {
+                    $_SESSION['_intended'] = $uri;
+                }
                 redirect('/login');
             }
             if (!empty($opts['guest']) && Auth::check()) {
@@ -51,7 +55,8 @@ final class Router
             if (!empty($opts['can']) && !Auth::can($opts['can'])) {
                 abort(403);
             }
-            if ($method === 'POST') {
+            // csrf => false: çerez değil Authorization başlığıyla gelen API (Outlook eklentisi)
+            if ($method === 'POST' && ($opts['csrf'] ?? true)) {
                 Csrf::verify();
             }
 

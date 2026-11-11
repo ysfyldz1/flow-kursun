@@ -25,6 +25,7 @@ $chips = $canManage ? ProjectEmailService::clientAddresses((int) $p['client_id']
             <a href="/projects/<?= $p['id'] ?>/documents/<?= e((string) $m['drive_item_id']) ?>/download" class="cell-main" title="<?= e(__('emails.download_hint')) ?>">
                 <strong><?= $m['has_attachments'] ? '📎 ' : '' ?><?= e($m['subject'] ?: __('emails.no_subject')) ?></strong>
                 <span><?= e($m['from_name'] ?: $m['from_email']) ?><?= $m['preview'] ? ' — ' . e(mb_strimwidth($m['preview'], 0, 90, '…')) : '' ?></span>
+                <?php if (!empty($m['note'])): ?><span class="email-note">✎ <?= e($m['note']) ?></span><?php endif; ?>
             </a>
             <div class="cell-main align-right nowrap">
                 <strong><?= e(format_date($m['received_at'], true)) ?></strong>

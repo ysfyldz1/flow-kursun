@@ -17,6 +17,7 @@ final class Scheduler
     public const JOBS = [
         'reminders' => ['daily', 7],
         'transfers' => ['daily', 3],
+        'outlook'   => ['hourly', 0],   // "gönderince kaydet": Gönderilmiş Öğeler'de bulunan e-postalar projeye
     ];
 
     /** Son çalışma bundan eskiyse cron durmuş sayılır (saat) */
@@ -96,6 +97,9 @@ final class Scheduler
             case 'transfers':
                 $r = TransferService::cleanup();
                 return sprintf('%d süresi dolan, %d yarım kalan silindi, %d hata', $r['expired'], $r['abandoned'], $r['failed']);
+            case 'outlook':
+                $r = OutlookService::processPending();
+                return sprintf('%d kaydedildi, %d bekliyor, %d bulunamadı', $r['saved'], $r['waiting'], $r['failed']);
         }
         throw new \LogicException("Bilinmeyen iş: $name");
     }

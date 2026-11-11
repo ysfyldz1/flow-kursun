@@ -64,6 +64,20 @@ Sıra önemlidir:
    izin ekranına takılır. Açıkken Microsoft ile giren kişinin hesabı kendiliğinden bağlanır; Flow şifresiyle girenler
    Profilim → "Microsoft 365 hesabımı bağla" ile bir kez bağlar.
 
+### Outlook eklentisi ("Flow'a kaydet")
+
+Azure'a yeni izin gerekmez: e-posta kişinin kendi bağlı hesabıyla (`Mail.Read`, delegated) okunur. Önkoşul:
+6. madde (kişilerin Microsoft 365 hesabı Flow'a bağlı olmalı) ve **Belgeler** deposu.
+
+1. **Ayarlar → Microsoft 365 → Outlook eklentisi → Manifest'i indir.** Dosya bu kurulumun adresiyle üretilir
+   (`flow-outlook-manifest.xml`); alan adı değişirse yeniden indirilip yüklenir.
+2. Microsoft 365 yönetim merkezi (admin.microsoft.com) → **Ayarlar → Entegre uygulamalar → Özel uygulamaları yükle**
+   → "Office Eklentisi" → manifest dosyasını yükle.
+3. Kullanıcılar: tüm kuruluş ya da belirli kişiler/gruplar seçilir → dağıt. Outlook'ta görünmesi **birkaç saat** sürebilir.
+4. Outlook'ta bir e-posta açılır → şeritte **Flow'a kaydet** → ilk seferde "Flow'a bağlan" (Microsoft ile giriş, bir kez).
+5. Yazarken **Gönderince Flow'a kaydet**: proje seçilir; e-posta gönderildikten sonra saatlik cron Gönderilmiş Öğeler'de
+   bulup kaydeder (cron şart). Bu, Outlook'un Mailbox 1.8 desteğini ister (yeni Outlook, web, güncel klasik Outlook).
+
 Yeni bir kuruma geçerken eski bağlantıdan iz kalmaması için: **Ayarlar → Microsoft 365 → Bağlantıyı sıfırla**
 (ayarlar, belirteçler, kullanıcı eşleşmeleri ve belge klasörü bağlantıları silinir).
 

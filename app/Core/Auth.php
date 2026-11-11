@@ -64,6 +64,16 @@ final class Auth
         return self::$user;
     }
 
+    /**
+     * Oturumsuz istek (Outlook eklentisi API'si): Authorization başlığındaki anahtarla bulunan kişi
+     * yalnız bu istek boyunca geçerlidir; oturuma yazılmaz.
+     */
+    public static function useForRequest(array $user): void
+    {
+        self::$user = $user;
+        self::$permissions = null;
+    }
+
     /** Yalnız komut satırı (cron): yetki kontrolleri ve "benim" sorguları bu kişi için çalışır. */
     public static function actAs(?array $user): void
     {

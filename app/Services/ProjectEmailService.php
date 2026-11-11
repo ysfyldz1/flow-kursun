@@ -16,7 +16,7 @@ use RuntimeException;
 final class ProjectEmailService
 {
     public const FOLDER = 'Yazışmalar';
-    private const SELECT = 'id,subject,from,toRecipients,ccRecipients,receivedDateTime,hasAttachments,bodyPreview,internetMessageId';
+    private const SELECT = 'id,subject,from,toRecipients,ccRecipients,receivedDateTime,hasAttachments,bodyPreview,internetMessageId,conversationId';
 
     public static function forProject(int $projectId): array
     {
@@ -54,8 +54,8 @@ final class ProjectEmailService
         ], Microsoft::graphAs($userId, 'GET', $path)['value'] ?? []);
     }
 
-    /** Seçilen e-postayı projeye kaydeder. Zaten kayıtlıysa false döner. */
-    public static function save(array $project, int $userId, string $messageId): bool
+    /** Seçilen e-postayı projeye kaydeder. Zaten kayıtlıysa false döner. $note: Outlook panelinden kısa not. */
+    public static function save(array $project, int $userId, string $messageId, ?string $note = null): bool
     {
         if (!preg_match('/^[A-Za-z0-9\-_=+\/]+$/', $messageId)) {
             throw new RuntimeException('Invalid message', 404);
@@ -78,6 +78,8 @@ final class ProjectEmailService
         DB::insert('project_emails', [
             'project_id'          => $project['id'],
             'internet_message_id' => mb_substr($imid, 0, 400),
+            'conversation_id'     => isset($m['conversationId']) ? mb_substr((string) $m['conversationId'], 0, 255) : null,
+            'note'                => $note !== null && trim($note) !== '' ? mb_substr(trim($note), 0, 500) : null,
             'subject'             => mb_substr((string) ($m['subject'] ?? ''), 0, 500),
             'from_name'           => mb_substr((string) ($from['name'] ?? ''), 0, 255) ?: null,
             'from_email'          => mb_substr((string) ($from['address'] ?? ''), 0, 255) ?: null,
@@ -92,6 +94,36 @@ final class ProjectEmailService
         ]);
         Audit::log('email.saved', 'project', (int) $project['id'], ['subject' => $m['subject'] ?? '', 'file' => $item['name'] ?? $name]);
         return true;
+    }
+
+    /**
+     * Seçilen ekleri projenin belge klasörüne ayrıca koyar (e-postanın .eml'i ekleri zaten içerir).
+     * Satır içi görseller ve iç içe e-postalar atlanır. Kaydedilen dosya adlarını döner.
+     */
+    public static function saveAttachments(array $project, int $userId, string $messageId, array $names): array
+    {
+        // Outlook'un ek kimlikleri Graph'takilerle aynı değil; eşleştirme dosya adıyla
+        $saved = [];
+        if (!$names ||!preg_match('/^[A-Za-z0-9\-_=+\/]+$/', $messageId)) {
+            return $saved;
+        }
+        $id = rawurlencode($messageId);
+        $folder = DocumentService::projectFolder($project);
+        foreach (Microsoft::graphAs($userId, 'GET', "/me/messages/$id/attachments?\$select=id,name,size,isInline")['value'] ?? [] as $a) {
+            if (!in_array((string) $a['name'], $names, true) ||!empty($a['isInline']) || ($a['@odata.type'] ?? '') !== '#microsoft.graph.fileAttachment') {
+                continue;
+            }
+            if ((int) ($a['size'] ?? 0) > 25 * 1024 * 1024) {
+                continue;   // büyük ekler e-postanın içinde kalır
+            }
+            $content = Microsoft::rawAs($userId, "/me/messages/$id/attachments/" . rawurlencode($a['id']) . '/$value');
+            $item = DocumentService::storeFile($folder, (string) $a['name'], $content);
+            $saved[] = $item['name'] ?? $a['name'];
+        }
+        if ($saved) {
+            Audit::log('email.attachments_saved', 'project', (int) $project['id'], ['files' => $saved]);
+        }
+        return $saved;
     }
 
     /** Listeden ve SharePoint'ten kaldırır. */
