@@ -150,7 +150,7 @@ if ($action === 'code') {
         file_put_contents($lockFile, date('c'));
         unlink($pendingFile);
         unlink($keyFile);
-        $done = ['cron' => PHP_BINDIR . '/php ' . BASE_PATH . '/bin/cron.php'];
+        $done = ['cron' => PHP_BINDIR . '/php ' . BASE_PATH . '/bin/cron.php >/dev/null 2>&1'];
         $_SESSION = [];
     }
 }

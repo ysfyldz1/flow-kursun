@@ -121,7 +121,7 @@
                         <input name="transfer_root" value="<?= e(old('transfer_root', (string) Settings::get('transfer.root', 'Flow Transfer'))) ?>">
                     </label>
                 </div>
-                <?php $cronRun = Settings::get('cron.last_run'); ?>
+                <?php $cronRun = Settings::get('cron.job.transfers'); ?>
                 <p class="muted small"><?= e($cronRun ? __('transfers.cron_last', ['date' => format_date($cronRun, true)]) : __('transfers.cron_never')) ?></p>
                 <div class="form-actions">
                     <button class="btn btn-primary"><?= e(__('app.save')) ?></button>

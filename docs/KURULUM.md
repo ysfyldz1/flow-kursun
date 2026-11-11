@@ -17,7 +17,7 @@ Kurulum: dosyalar sunucuya alınır (cPanel Git Version Control ile depo site kl
 - `storage/` yazılabilir olmalı. `storage/app.key` her kurulumda **yeniden üretilir** (sırlar bununla şifrelenir);
   başka bir kurulumdan kopyalanmaz.
 - Veritabanı: `php bin/migrate.php`, ilk yönetici: `php bin/create-admin.php`.
-- **Günlük cron zorunlu** (cPanel → Cron Jobs, günde bir kez, **sabah 07:00**): `/usr/local/bin/php /home/KULLANICI/flow/bin/cron.php`. Dosya transferi temizliği, kesin süre uyarıları ve özet e-postaları buradan gider; sabah çalışmazsa "son gün bugün" uyarısı geç kalır.
+- **Cron zorunlu, SAATTE BİR** (cPanel → Cron Jobs, dakika `0`, saat `*`, gerisi `*`): `/usr/local/bin/php /home/KULLANICI/public_html/SITE/bin/cron.php >/dev/null 2>&1`. Tam satır bu sunucunun yoluyla Ayarlar → Sistem'de yazar, oradan kopyalayın. Hangi işin ne zaman çalışacağına Flow karar verir (hatırlatmalar 07:00 sonrası, transfer temizliği 03:00 sonrası, günde bir kez); yeni iş eklense de cron satırı değişmez. Cron 3 saattir çalışmadıysa Ayarlar → Sistem kırmızı uyarı gösterir.
   Süresi dolan dosya transferlerinin dosyalarını depodan siler. Çalıştığı Ayarlar → Microsoft 365 → Dosya Transferi deposu
   bölümündeki "Son otomatik temizlik" satırından görülür. Dosya Transferi deposu belgelerden ayrı seçilir; ek Azure izni gerekmez
   (`Sites.ReadWrite.All` + `Files.ReadWrite.All` yeterlidir).

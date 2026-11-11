@@ -1,23 +1,15 @@
 <?php
 
-// Günlük zamanlanmış işler. cPanel → Cron Jobs'a günde bir kez eklenir:
-//   /usr/local/bin/php /home/KULLANICI/flow/bin/cron.php
-// Yeni günlük iş olursa buraya eklenir; kurulumda tek cron yeterli kalır.
+// Zamanlanmış işler. cPanel → Cron Jobs'a SAATTE BİR eklenir (dakika 0, saat *):
+//   /usr/local/bin/php /home/KULLANICI/public_html/SITE/bin/cron.php >/dev/null 2>&1
+// Hangi işin ne zaman çalışacağı App\Services\Scheduler'da; yeni iş için cron satırı değişmez.
 
 require __DIR__ . '/../app/bootstrap.php';
-
-use App\Services\Settings;
-use App\Services\TransferService;
 
 if (PHP_SAPI !== 'cli') {
     exit;
 }
 
-$transfers = TransferService::cleanup();
-echo sprintf("Transfer: %d süresi dolan, %d yarım kalan silindi, %d hata\n", $transfers['expired'], $transfers['abandoned'], $transfers['failed']);
-
-$reminders = \App\Services\ReminderService::run();
-echo sprintf("Hatırlatma: %d kesin süre uyarısı, %d özet e-postası\n", $reminders['deadline'], $reminders['digest']);
-
-// Ayarlar ekranı cron'un gerçekten çalıştığını buradan gösterir
-Settings::set(['cron.last_run' => date('Y-m-d H:i:s')]);
+foreach (\App\Services\Scheduler::run() as $job => $result) {
+    echo "$job: $result\n";
+}

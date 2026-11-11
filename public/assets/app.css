@@ -266,6 +266,7 @@ a.cell-main:hover strong { color: var(--primary); }
 .text-strong { color: var(--text); font-weight: 600; }
 .align-right { align-items: flex-end; text-align: right; }
 .text-warn { color: var(--amber); font-weight: 500; }
+.code-block { margin: 6px 0 0; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; user-select: all; }
 .check-input { width: 16px; height: 16px; accent-color: var(--primary); }
 .dl dt.cell-main span { font-size: 12px; }
 
