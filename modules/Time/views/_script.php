@@ -6,7 +6,7 @@
         let m;
         if (!s) return null;
         if ((m = s.match(/^(\d{1,2}):([0-5]\d)$/))) return +m[1] * 60 + +m[2];
-        if (/^\d+[.,]\d+$/.test(s)) return Math.round(parseFloat(s.replace(',', '.')) * 60);
+        if (/^\d*[.,]\d+$/.test(s)) return Math.round(parseFloat(s.replace(',', '.')) * 60);
         if (/^\d+$/.test(s)) return +s <= 24 ? +s * 60 : +s;
         if ((m = s.match(/^(?:(\d+)\s*(?:s|sa|saat|h)\s*)?(?:(\d+)\s*(?:d|dk|dakika|m|min))?$/)) && (m[1] || m[2])) return (+m[1] || 0) * 60 + (+m[2] || 0);
         return null;
@@ -14,7 +14,9 @@
     const fmt = min => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
     const hint = <?= json_encode(__('time.duration_hint')) ?>;
     const invalid = <?= json_encode(__('time.invalid_duration')) ?>;
-    const rounded = <?= json_encode(__('time.rounded_to')) ?>;
+    const decimal = <?= json_encode(\App\Services\TimeService::decimal()) ?>;
+    const sep = <?= json_encode(\App\Core\Lang::locale() === 'tr' ? ',' : '.') ?>;
+    const rounded = <?= json_encode(__(\App\Services\TimeService::decimal() ? 'time.rounded_to_decimal' : 'time.rounded_to')) ?>;
 
     document.querySelectorAll('[data-duration]').forEach(input => {
         const preview = input.parentElement.querySelector('[data-duration-preview]');
@@ -23,7 +25,7 @@
             if (!input.value.trim()) { preview.textContent = hint; preview.classList.remove('text-warn'); return; }
             if (v === null || v <= 0) { preview.textContent = invalid; preview.classList.add('text-warn'); return; }
             const r = Math.ceil(v / 6) * 6;
-            preview.textContent = rounded.replace(':time', fmt(r)).replace(':hours', (r / 60).toFixed(1));
+            preview.textContent = rounded.replace(':time', fmt(r)).replace(':hours', (r / 60).toFixed(1).replace('.', sep));
             preview.classList.remove('text-warn');
         };
         input.addEventListener('input', update);

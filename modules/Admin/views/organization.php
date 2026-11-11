@@ -101,6 +101,13 @@
                     <input name="due_days" inputmode="numeric" value="<?= e(old('due_days', (string) Settings::get('billing.due_days', 15))) ?>">
                     <?= error_for('due_days') ?>
                 </label>
+                <label class="field">
+                    <span><?= e(__('org.time_format')) ?></span>
+                    <select name="time_format">
+                        <option value="decimal"><?= e(__('org.time_format_decimal')) ?></option>
+                        <option value="hm" <?= Settings::get('time.format', 'decimal') === 'hm' ? 'selected' : '' ?>><?= e(__('org.time_format_hm')) ?></option>
+                    </select>
+                </label>
                 <label class="field field-wide">
                     <span><?= e(__('billing.bank_accounts')) ?></span>
                     <textarea name="bank_accounts" rows="4" placeholder="<?= e(__('org.bank_hint')) ?>"><?= e(old('bank_accounts', (string) Settings::get('billing.bank_accounts'))) ?></textarea>

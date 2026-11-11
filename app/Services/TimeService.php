@@ -25,7 +25,7 @@ final class TimeService
         if (preg_match('/^(\d{1,2}):([0-5]\d)$/', $s, $m)) {
             return (int) $m[1] * 60 + (int) $m[2];
         }
-        if (preg_match('/^\d+([.,]\d+)$/', $s)) {
+        if (preg_match('/^\d*[.,]\d+$/', $s)) {
             return (int) round((float) str_replace(',', '.', $s) * 60);
         }
         if (preg_match('/^\d+$/', $s)) {
@@ -37,9 +37,20 @@ final class TimeService
         return null;
     }
 
+    /** Kurum ayarına göre: ondalık saat (1,5 — 0,1 = 6 dk) ya da saat:dakika (1:30) */
     public static function formatMinutes(int $minutes): string
     {
-        return sprintf('%d:%02d', intdiv($minutes, 60), $minutes % 60);
+        if (!self::decimal()) {
+            return sprintf('%d:%02d', intdiv($minutes, 60), $minutes % 60);
+        }
+        // 6 dk'nın katları tek basamakla tam çıkar; yuvarlanmamış süre (düzenleme formu) iki basamak
+        $h = rtrim(rtrim(number_format($minutes / 60, 2, '.', ''), '0'), '.');
+        return \App\Core\Lang::locale() === 'tr' ? str_replace('.', ',', $h) : $h;
+    }
+
+    public static function decimal(): bool
+    {
+        return Settings::get('time.format', 'decimal') !== 'hm';
     }
 
     public static function hours(int $minutes): string

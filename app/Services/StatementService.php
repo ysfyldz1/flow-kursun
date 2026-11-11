@@ -199,6 +199,15 @@ final class StatementService
                 }
                 $isInfo = $p['billing_type'] !== 'hourly';
                 foreach ($entries as $t) {
+                    // Kayıt girildiğinde ücret tanımlı değildiyse şimdi bulunur (kayda da yazılır)
+                    if (!$isInfo && $t['rate'] === null) {
+                        $r = RateService::resolve((int) $p['id'], (int) $t['user_id']);
+                        if ($r['rate'] !== null) {
+                            $t['rate'] = $r['rate'];
+                            $t['amount'] = round($r['rate'] * $t['minutes'] / 60, 2);
+                            DB::update('time_entries', ['rate' => $t['rate'], 'amount' => $t['amount'], 'rate_source' => $r['source']], 'id = ?', [$t['id']]);
+                        }
+                    }
                     DB::insert('statement_lines', [
                         'statement_id'  => $id,
                         'type'          => 'time',
@@ -287,7 +296,24 @@ final class StatementService
             if ($desc === '') {
                 $errors["lines.$lineId.description"] = __('validation.required');
             }
-            $lines[$lineId] = ['description' => $desc, 'amount' => $amount === false ? null : $amount];
+            $row = ['description' => $desc, 'amount' => $amount === false ? null : $amount];
+            if (array_key_exists('hours', $l)) {
+                $minutes = TimeService::parseDuration((string) $l['hours']);
+                if ($minutes === null || $minutes <= 0) {
+                    $errors["lines.$lineId.hours"] = __('validation.number');
+                } else {
+                    $row['hours'] = round($minutes / 60, 2);
+                }
+            }
+            if (array_key_exists('rate', $l)) {
+                $rate = parse_money($l['rate']);
+                if ($rate === false) {
+                    $errors["lines.$lineId.rate"] = __('validation.number');
+                } else {
+                    $row['rate'] = $rate;
+                }
+            }
+            $lines[$lineId] = $row;
         }
         if ($errors) {
             throw new ValidationException($errors);
@@ -300,8 +326,21 @@ final class StatementService
                     continue;
                 }
                 $data = ['description' => $l['description']];
+                if ($line['type'] === 'time') {
+                    // Saat dökümde düzeltilir; zaman kaydının kendisi (çalışılan süre) değişmez
+                    $data['hours'] = $l['hours'] ?? $line['hours'];
+                }
                 if (!$line['is_info']) {
                     $data['amount'] = $l['amount'];
+                    if ($line['type'] === 'time' && array_key_exists('rate', $l)) {
+                        $data['rate'] = $l['rate'];
+                        // Saat ya da ücret değiştiyse tutar yeniden hesaplanır; yoksa elle girilen tutar kalır
+                        $changed = abs((float) $data['hours'] - (float) $line['hours']) > 0.001
+                            || $l['rate'] !== ($line['rate'] === null ? null : (float) $line['rate']);
+                        if ($changed && $l['rate'] !== null) {
+                            $data['amount'] = round((float) $data['hours'] * $l['rate'], 2);
+                        }
+                    }
                 }
                 DB::update('statement_lines', $data, 'id = ?', [$lineId]);
             }

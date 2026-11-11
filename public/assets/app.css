@@ -378,6 +378,8 @@ a.cell-main:hover strong { color: var(--primary); }
 .cell-input:focus { outline: none; border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--primary-soft); }
 .cell-input.num { text-align: right; }
 .cell-missing { border-color: var(--amber) !important; background: var(--amber-bg); }
+.line-rate { display: flex; align-items: center; gap: 4px; padding-left: 8px; }
+.line-rate .rate-input { width: 90px; padding: 2px 6px; font-size: inherit; border-color: var(--border); }
 .st-footer { display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 18px 16px; border-top: 1px solid var(--border); }
 @media (max-width: 800px) { .st-footer { grid-template-columns: 1fr; } }
 .st-notes { display: flex; flex-direction: column; gap: 12px; }

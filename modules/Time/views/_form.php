@@ -41,7 +41,7 @@ $option = fn ($p) => sprintf(
         </label>
         <label class="field">
             <span><?= e(__('time.duration')) ?> *</span>
-            <input name="duration" value="<?= e($duration) ?>" placeholder="1:30" required autocomplete="off" data-duration>
+            <input name="duration" value="<?= e($duration) ?>" placeholder="<?= TimeService::decimal() ? (\App\Core\Lang::locale() === 'tr' ? '1,5' : '1.5') : '1:30' ?>" required autocomplete="off" data-duration>
             <small class="muted" data-duration-preview><?= e(__('time.duration_hint')) ?></small>
             <?= error_for('duration') ?>
         </label>

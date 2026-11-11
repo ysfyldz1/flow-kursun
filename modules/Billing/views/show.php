@@ -62,7 +62,7 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                     <tr>
                         <th style="width:96px"><?= e(__('time.date')) ?></th>
                         <th><?= e(__('time.description')) ?></th>
-                        <th class="num" style="width:70px"><?= e(__('billing.hours')) ?></th>
+                        <th class="num" style="width:80px"><?= e(__('billing.hours')) ?></th>
                         <th class="num" style="width:150px"><?= e(__('time.amount')) ?></th>
                         <?php if ($canEdit): ?><th style="width:40px"></th><?php endif; ?>
                     </tr>
@@ -81,9 +81,21 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                                 <?php else: ?>
                                     <?= nl2br(e($l['description'])) ?>
                                 <?php endif; ?>
-                                <?php if ($l['user_name']): ?><div class="muted small"><?= e($l['user_name']) ?><?= $l['rate'] !== null ? ' · ' . e($money($l['rate'])) . '/' . e(__('projects.hour')) : '' ?></div><?php endif; ?>
+                                <?php if ($canEdit && $l['type'] === 'time' && !$l['is_info']): ?>
+                                    <div class="muted small line-rate"><?= e($l['user_name']) ?> ·
+                                        <input name="lines[<?= $l['id'] ?>][rate]" value="<?= e(old("lines.{$l['id']}.rate", money_input($l['rate']))) ?>" inputmode="decimal" class="cell-input num rate-input <?= $l['rate'] === null ? 'cell-missing' : '' ?>" placeholder="<?= e(__('billing.rate')) ?>">/<?= e(__('projects.hour')) ?>
+                                    </div>
+                                    <?= error_for("lines.{$l['id']}.rate") ?>
+                                <?php elseif ($l['user_name']): ?><div class="muted small"><?= e($l['user_name']) ?><?= $l['rate'] !== null ? ' · ' . e($money($l['rate'])) . '/' . e(__('projects.hour')) : '' ?></div><?php endif; ?>
                             </td>
-                            <td class="num"><?= $l['hours'] !== null ? TimeService::hours((int) round($l['hours'] * 60)) : '' ?></td>
+                            <td class="num">
+                                <?php if ($canEdit && $l['type'] === 'time'): ?>
+                                    <input name="lines[<?= $l['id'] ?>][hours]" value="<?= e(old("lines.{$l['id']}.hours", TimeService::hours((int) round($l['hours'] * 60)))) ?>" inputmode="decimal" class="cell-input num hours-input">
+                                    <?= error_for("lines.{$l['id']}.hours") ?>
+                                <?php else: ?>
+                                    <?= $l['hours'] !== null ? TimeService::hours((int) round($l['hours'] * 60)) : '' ?>
+                                <?php endif; ?>
+                            </td>
                             <td class="num">
                                 <?php if ($l['is_info']): ?>
                                     <span class="muted small"><?= e(__('billing.included')) ?></span>
@@ -362,5 +374,27 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
 document.querySelectorAll('textarea.autosize').forEach(t => {
     const fit = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; };
     t.addEventListener('input', fit); fit();
+});
+// Saat ya da ücret değişince tutar anında hesaplansın (kaydedince sunucu da aynısını yapar)
+const num = v => {
+    v = v.trim().replace(/\s/g, '');
+    if (/^\d{1,2}:[0-5]\d$/.test(v)) { const [h, m] = v.split(':'); return +h + m / 60; }
+    if (v.includes(',')) v = v.replace(/\./g, '').replace(',', '.');
+    else if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, '');   // "2.500" → binlik ayraç
+    return v === '' ? NaN : Number(v);
+};
+const decimalSep = <?= json_encode(\App\Core\Lang::locale() === 'tr' ? ',' : '.') ?>;
+document.querySelectorAll('.st-lines tr').forEach(tr => {
+    const hours = tr.querySelector('.hours-input'), rate = tr.querySelector('.rate-input'),
+          amount = tr.querySelector('input[name$="[amount]"]');
+    if (!hours || !rate || !amount) return;
+    const calc = () => {
+        const h = num(hours.value), r = num(rate.value);
+        if (isNaN(h) || isNaN(r)) return;
+        amount.value = (Math.round(h * r * 100) / 100).toFixed(2).replace('.', decimalSep);
+        amount.classList.remove('cell-missing');
+    };
+    hours.addEventListener('input', calc);
+    rate.addEventListener('input', calc);
 });
 </script>
