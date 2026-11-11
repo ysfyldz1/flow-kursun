@@ -99,6 +99,7 @@ return [
     'dash.overdue_clients'=> ':count clients',
     'dash.monthly_hours'  => 'Monthly hours',
     'dash.last_12'        => 'Last 12 months',
+    'dash.last_6'         => 'Last 6 months',
     'dash.billable'       => 'Billable',
     'dash.non_billable'   => 'Non-billable',
     'dash.collections'    => 'Invoiced and collected',

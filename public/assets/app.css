@@ -358,6 +358,7 @@ a.cell-main:hover strong { color: var(--primary); }
 .meter .meter-warn { background: var(--amber); }
 .nowrap { white-space: nowrap; }
 .m-label { display: none; }   /* yalnız telefondaki kart satırda görünen etiket */
+.only-mobile { display: none; }
 .widget-link { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--primary); }
 .widget-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); }
 .widget-row:last-child { border-bottom: 0; }
@@ -553,6 +554,11 @@ td.strong { font-weight: 700; }
     .stats-detail .stat-text strong { order: 1; }
     .stats-detail .stat-text > span { display: block; order: 3; font-size: 11px; line-height: 1.35; }
     .widget .empty { padding: 18px 16px; min-height: 0; }
+    .only-mobile { display: block; }
+    span.only-mobile { display: inline; }
+    .only-desktop { display: none; }
+    .only-mobile + .viz > svg { display: none; }
+    .viz-row .viz-body:has(> .only-mobile) { flex-direction: column; }   /* kısaltılmış kopya varsa asıl grafiğin yalnız SVG'si gizlenir */
     .table-m .m-meta .cell-main { display: inline; }
     .table-m .m-meta .cell-main strong { font-weight: 500; color: var(--text); }
     .table-m .m-meta .cell-main span { display: none; }

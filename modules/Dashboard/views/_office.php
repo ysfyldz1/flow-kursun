@@ -47,8 +47,22 @@ $pct = fn (?float $v) => $v === null ? '—' : '%' . number_format($v * 100, 0, 
 
     <div class="grid grid-3-1 viz-row">
         <section class="card widget widget-auto">
-            <header class="widget-head"><h2><?= e(__('dash.monthly_hours')) ?></h2><span class="muted small"><?= e(__('dash.last_12')) ?></span></header>
+            <header class="widget-head"><h2><?= e(__('dash.monthly_hours')) ?></h2><span class="muted small only-desktop"><?= e(__('dash.last_12')) ?></span><span class="muted small only-mobile"><?= e(__('dash.last_6')) ?></span></header>
             <div class="viz-body">
+                <?php // Telefonda 12 ay okunmuyor: son 6 ay ayrı, dar çizilir; açıklama ve 12 aylık tablo asıl grafikte ?>
+                <div class="only-mobile">
+                    <?= View::partial('charts/columns', [
+                        'rows'    => array_slice($o['monthly'], -6, null, true),
+                        'series'  => ['billable' => __('dash.billable'), 'other' => __('dash.non_billable')],
+                        'stacked' => true,
+                        'fmt'     => $hours,
+                        'xLabel'  => $monthName,
+                        'xShort'  => $monthShort,
+                        'caption' => __('dash.monthly_hours'),
+                        'width'   => 360,
+                        'legend'  => false,
+                    ]) ?>
+                </div>
                 <?= View::partial('charts/columns', [
                     'rows'    => $o['monthly'],
                     'series'  => ['billable' => __('dash.billable'), 'other' => __('dash.non_billable')],

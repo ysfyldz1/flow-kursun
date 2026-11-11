@@ -99,6 +99,7 @@ return [
     'dash.overdue_clients'=> ':count müvekkil',
     'dash.monthly_hours'  => 'Aylık saat',
     'dash.last_12'        => 'Son 12 ay',
+    'dash.last_6'         => 'Son 6 ay',
     'dash.billable'       => 'Faturalanabilir',
     'dash.non_billable'   => 'Faturalanmaz',
     'dash.collections'    => 'Düzenlenen ve tahsil edilen',

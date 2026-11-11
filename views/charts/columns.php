@@ -3,7 +3,9 @@
  * Dikey sütun grafiği (SVG). $rows: [x-etiketi => [seri => değer]], $series: [seri => etiket] (sıra = renk sırası),
  * $stacked: yığılmış mı (değilse yan yana), $fmt: değer biçimi (ipucu ve eksen), $caption: tablo başlığı.
  * Sütun ucu 4px yuvarlak, taban düz; yığında dilimler arası 2px boşluk; üzerine gelince ipucu.
+ * $legend = false: yalnız SVG (telefon için ikinci, kısaltılmış kopya; açıklama ve tablo asıl grafikte).
  */
+$legend ??= true;
 $W = $width ?? 640; $H = 230; $padL = 52; $padR = 8; $padT = 10; $padB = 26;
 $plotW = $W - $padL - $padR; $plotH = $H - $padT - $padB;
 $keys = array_keys($series);
@@ -65,6 +67,7 @@ $bar = function (float $x, float $y0, float $w, float $h, bool $round) {
             </g>
         <?php $n++; endforeach; ?>
     </svg>
+    <?php if ($legend): ?>
     <figcaption class="viz-legend">
         <?php foreach ($keys as $si => $k): ?><span><i class="viz-sw viz-s<?= $si + 1 ?>"></i><?= e($series[$k]) ?></span><?php endforeach; ?>
         <details class="viz-table">
@@ -79,4 +82,5 @@ $bar = function (float $x, float $y0, float $w, float $h, bool $round) {
             </table>
         </details>
     </figcaption>
+    <?php endif; ?>
 </figure>
