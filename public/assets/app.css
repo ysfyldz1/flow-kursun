@@ -227,6 +227,9 @@ a.cell-main:hover strong { color: var(--primary); }
 .grid-3-1 { grid-template-columns: 2fr 1fr; align-items: start; }
 @media (max-width: 1000px) { .grid-3-1 { grid-template-columns: 1fr; } }
 .stack { display: flex; flex-direction: column; gap: 16px; }
+/* Izgara/yığın kutuları içerikleri kadar genişlemesin; yoksa telefonda tüm sayfa yana kayar.
+   Geniş içerik (tablo) kendi kartında kayar. */
+.grid > *, .stack > *, .with-subnav > *, .time-layout > * { min-width: 0; }
 .widget-auto { min-height: 0; }
 .widget-auto .empty { padding: 28px; }
 .card-body { padding: 16px; line-height: 1.55; }
@@ -490,7 +493,9 @@ td.strong { font-weight: 700; }
     .topbar-inner { gap: 12px; }
     .topbar-actions { margin-left: auto; }
     .topbar-actions .icon-btn[title] { display: none; }
-    .page { padding: 18px 14px calc(84px + env(safe-area-inset-bottom)); }
+    .page { padding: 18px 14px calc(84px + env(safe-area-inset-bottom)); overflow-x: clip; }   /* son güvence: sayfa asla yana kaymaz */
+    .widget-head { flex-wrap: wrap; row-gap: 8px; }
+    .totals-row { gap: 12px 20px; }
     .page-head { flex-direction: column; align-items: stretch; }
     .page-head h1 { font-size: 21px; }
     .head-actions { flex-wrap: wrap; }
