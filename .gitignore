@@ -9,3 +9,4 @@
 /storage/install.pending
 /storage/installed.lock
 /dist/
+/storage/cron.lock
