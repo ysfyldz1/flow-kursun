@@ -44,6 +44,7 @@ final class UserService
             PasswordService::set($id, $input['password']);
         }
         LeaveService::setApprovers($id, (array) ($input['leave_approvers'] ?? []));
+        TimeService::recalcRates('user_id', $id);
         Audit::log('user.updated', 'user', $id, $data, $channel);
     }
 

@@ -41,6 +41,56 @@
         sync();
     });
 
+    // Kurşun: aşama seçimi. Proje değişince o projenin aşamaları listelenir; aşaması yoksa alan gizlenir.
+    const pt = <?= json_encode([
+        'none' => __('phases.choose_none'), 'notApproved' => __('phases.not_approved_short'),
+        'remaining' => __('phases.hint_remaining'), 'pct' => __('phases.hint_pct'),
+        'over' => __('phases.hint_over'), 'overShort' => __('phases.hint_over_short'),
+        'oos' => __('phases.hint_oos'), 'noneHint' => __('phases.hint_none'),
+        'overdue' => __('phases.overdue'), 'completed' => __('phases.completed'),
+    ], JSON_UNESCAPED_UNICODE) ?>;
+    document.querySelectorAll('.time-form').forEach(form => {
+        const field = form.querySelector('[data-phase-field]');
+        if (!field) return;
+        const project = form.querySelector('[data-project]');
+        const select = field.querySelector('[data-phase]');
+        const hint = field.querySelector('[data-phase-hint]');
+        const map = JSON.parse(field.dataset.phases || '{}');
+        let wanted = field.dataset.selected;
+        const showHint = () => {
+            const ph = (map[project.value] || []).find(p => String(p.id) === select.value);
+            hint.className = 'muted';
+            if (!ph) { hint.textContent = pt.noneHint; return; }
+            const tags = [ph.overdue ? pt.overdue : '', ph.completed ? pt.completed : ''].filter(Boolean).join(' · ');
+            let text = '';
+            if (ph.oos) text = pt.oos;
+            else if (ph.state === 'over') { text = ph.over ? pt.over.replace(':amount', ph.over) : pt.overShort; hint.className = 'text-red'; }
+            else if (ph.state) {
+                text = ph.remaining ? pt.remaining.replace(':amount', ph.remaining).replace(':pct', ph.pct) : pt.pct.replace(':pct', ph.pct);
+                if (ph.state === 'warn') hint.className = 'text-warn';
+            }
+            hint.textContent = [tags, text].filter(Boolean).join(' · ');
+        };
+        const fill = () => {
+            const list = map[project.value] || [];
+            field.hidden = !list.length;
+            select.innerHTML = '';
+            select.add(new Option(pt.none, ''));
+            list.forEach(p => {
+                const o = new Option(p.name + (p.active ? '' : ' (' + pt.notApproved + ')'), p.id);
+                // Onaylanmamış opsiyonel aşama seçilemez; zaten o aşamadaki kayıt düzenleniyorsa korunur
+                o.disabled = !p.active && String(p.id) !== wanted;
+                select.add(o);
+            });
+            select.value = list.some(p => String(p.id) === wanted) ? wanted : '';
+            wanted = '';
+            showHint();
+        };
+        project.addEventListener('change', fill);
+        select.addEventListener('change', showHint);
+        fill();
+    });
+
     // Çalışan sayaç (sunucu saatine göre)
     const clock = document.querySelector('.timer-clock');
     if (clock) {

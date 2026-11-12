@@ -115,6 +115,7 @@ final class ProjectService
             }
             DB::update('projects', $data, 'id = ?', [$id]);
             self::syncMembers($id, $members, $data['responsible_user_id']);
+            TimeService::recalcRates('project_id', $id);
             Audit::log('project.updated', 'project', $id, $data, $channel);
         });
     }

@@ -79,6 +79,9 @@ $dayNames = explode(',', __('time.day_names'));
                                 <span class="code"><?= e($t['project_number']) ?></span>
                                 <a href="/projects/<?= $t['project_id'] ?>" class="link"><?= e($t['project_name']) ?></a>
                                 <span class="muted">· <?= e($t['client_name']) ?></span>
+                                <?php if ($t['phase_name'] !== null): ?>
+                                    <span class="badge <?= $t['phase_oos'] ? 'badge-amber' : 'badge-gray' ?>"><?= e($t['phase_oos'] ? __('phases.out_of_scope') : $t['phase_name']) ?></span>
+                                <?php endif; ?>
                             </div>
                             <p class="entry-desc"><?= nl2br(e($t['description'])) ?></p>
                         </div>

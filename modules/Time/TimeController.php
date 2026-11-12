@@ -61,8 +61,9 @@ final class TimeController
         $entry = TimeService::find($id);
         // Kayıt engellenmez; onaylı izinli güne girildiyse not düşülür
         flash('success', __('time.saved') . (\App\Services\LeaveService::isOnLeave((int) $entry['user_id'], $entry['work_date']) ? ' ' . __('leaves.time_on_leave') : ''));
+        $this->phaseWarning($entry);
         // Aynı güne art arda giriş kolay olsun diye tarih ve proje hatırlanır
-        $_SESSION['_time_last'] = ['work_date' => $_POST['work_date'] ?? '', 'project_id' => $_POST['project_id'] ?? ''];
+        $_SESSION['_time_last'] = ['work_date' => $_POST['work_date'] ?? '', 'project_id' => $_POST['project_id'] ?? '', 'phase_id' => $_POST['phase_id'] ?? ''];
         redirect($this->back());
     }
 
@@ -88,6 +89,7 @@ final class TimeController
         }
         flash('success', __('app.saved'));
         $entry = TimeService::find((int) $id);
+        $this->phaseWarning($entry);
         redirect('/time?week=' . $entry['work_date'] . ((int) $entry['user_id'] !== Auth::id() ? '&user=' . $entry['user_id'] : ''));
     }
 
@@ -128,6 +130,14 @@ final class TimeController
     {
         TimeService::discardTimer(Auth::id());
         redirect($this->back());
+    }
+
+    /** Kurşun: aşama bütçesi eşiği geçtiyse ya da aşıldıysa kayıt engellenmez, uyarı gösterilir. */
+    private function phaseWarning(array $entry): void
+    {
+        if ($entry['phase_id'] && ($w = \App\Services\PhaseService::warningFor((int) $entry['phase_id']))) {
+            flash('warning', $w);
+        }
     }
 
     private function back(): string

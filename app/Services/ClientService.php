@@ -86,6 +86,7 @@ final class ClientService
         DB::transaction(function () use ($id, $data, $contacts, $rates, $channel) {
             DB::update('clients', $data, 'id = ?', [$id]);
             self::syncChildren($id, $contacts, $rates);
+            TimeService::recalcRates('client_id', $id);
             Audit::log('client.updated', 'client', $id, $data, $channel);
         });
     }

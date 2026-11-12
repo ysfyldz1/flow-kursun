@@ -74,10 +74,12 @@ final class TimeService
     public static function week(int $userId, string $monday): array
     {
         return DB::all(
-            'SELECT t.*, p.number AS project_number, p.name AS project_name, c.name AS client_name
+            'SELECT t.*, p.number AS project_number, p.name AS project_name, c.name AS client_name,
+                    ph.name AS phase_name, ph.is_out_of_scope AS phase_oos
              FROM time_entries t
              JOIN projects p ON p.id = t.project_id
              JOIN clients c ON c.id = t.client_id
+             LEFT JOIN project_phases ph ON ph.id = t.phase_id
              WHERE t.user_id = ? AND t.work_date BETWEEN ? AND DATE_ADD(?, INTERVAL 6 DAY)
              ORDER BY t.work_date DESC, t.id DESC',
             [$userId, $monday, $monday]
@@ -87,7 +89,9 @@ final class TimeService
     public static function forProject(int $projectId, int $limit = 20): array
     {
         return DB::all(
-            'SELECT t.*, u.name AS user_name FROM time_entries t JOIN users u ON u.id = t.user_id
+            'SELECT t.*, u.name AS user_name, ph.name AS phase_name, ph.is_out_of_scope AS phase_oos
+             FROM time_entries t JOIN users u ON u.id = t.user_id
+             LEFT JOIN project_phases ph ON ph.id = t.phase_id
              WHERE t.project_id = ? ORDER BY t.work_date DESC, t.id DESC LIMIT ' . (int) $limit,
             [$projectId]
         );
@@ -133,6 +137,41 @@ final class TimeService
     {
         return $entry['statement_id'] === null
             && ((int) $entry['user_id'] === Auth::id() || Auth::can('time.all'));
+    }
+
+    /**
+     * Kurşun: ücret sonradan girilir/değişirse faturalanmamış kayıtların ücreti ve tutarı yeniden çözülür.
+     * $scope: user_id, client_id ya da project_id. Dökümdeki (statement_id dolu) kayıtlara dokunulmaz.
+     * @return int değişen kayıt sayısı
+     */
+    public static function recalcRates(string $scope, int $id): int
+    {
+        if (!in_array($scope, ['user_id', 'client_id', 'project_id'], true)) {
+            throw new \InvalidArgumentException($scope);
+        }
+        $rows = DB::all(
+            "SELECT t.id, t.project_id, t.user_id, t.minutes, t.is_billable, t.rate, t.amount, p.billing_type
+             FROM time_entries t JOIN projects p ON p.id = t.project_id
+             WHERE t.$scope = ? AND t.statement_id IS NULL",
+            [$id]
+        );
+        $cache = [];
+        $changed = 0;
+        foreach ($rows as $t) {
+            $key = $t['project_id'] . ':' . $t['user_id'];
+            $r = $cache[$key] ??= RateService::resolve((int) $t['project_id'], (int) $t['user_id']);
+            $amount = ($t['is_billable'] && $t['billing_type'] === 'hourly' && $r['rate'] !== null)
+                ? round($r['rate'] * $t['minutes'] / 60, 2)
+                : null;
+            $sameRate = ($t['rate'] === null ? null : (float) $t['rate']) === $r['rate'];
+            $sameAmount = ($t['amount'] === null ? null : (float) $t['amount']) === $amount;
+            if ($sameRate && $sameAmount) {
+                continue;
+            }
+            DB::update('time_entries', ['rate' => $r['rate'], 'amount' => $amount, 'rate_source' => $r['source']], 'id = ?', [$t['id']]);
+            $changed++;
+        }
+        return $changed;
     }
 
     public static function create(array $input, string $channel = 'web'): int
@@ -250,6 +289,19 @@ final class TimeService
             $errors['description'] = __('time.description_required');
         }
 
+        // Kurşun: aşama isteğe bağlı; seçildiyse bu projenin aktif (onaylı) aşaması olmalı.
+        // Alan formda hiç yoksa (sayaç, Outlook) mevcut aşama korunur.
+        $phaseId = array_key_exists('phase_id', $in)
+            ? ((int) $in['phase_id'] ?: null)
+            : (($current && (int) $current['project_id'] === $projectId) ? ($current['phase_id'] !== null ? (int) $current['phase_id'] : null) : null);
+        if ($phaseId !== null && $project) {
+            $ph = DB::one('SELECT is_optional, approved_at FROM project_phases WHERE id = ? AND project_id = ?', [$phaseId, $projectId]);
+            $keeps = $current && (int) ($current['phase_id'] ?? 0) === $phaseId;
+            if (!$ph || ($ph['is_optional'] && $ph['approved_at'] === null && !$keeps)) {
+                $errors['phase_id'] = __('phases.invalid_choice');
+            }
+        }
+
         if ($errors) {
             throw new ValidationException($errors);
         }
@@ -273,6 +325,7 @@ final class TimeService
         return [
             'user_id'     => $userId,
             'project_id'  => $projectId,
+            'phase_id'    => $phaseId,
             'client_id'   => (int) $project['client_id'],
             'work_date'   => $date,
             'minutes'     => $minutes,

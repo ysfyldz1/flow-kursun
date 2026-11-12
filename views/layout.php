@@ -177,7 +177,7 @@ $pinned = array_slice(array_values(array_merge(
     <?php if (has_errors()): ?>
         <?= View::partial('_toast', ['type' => 'error', 'message' => __('validation.check_form')]) ?>
     <?php endif; ?>
-    <?php foreach (['success', 'error'] as $type): ?>
+    <?php foreach (['success', 'warning', 'error'] as $type): ?>
         <?php if ($msg = flash($type)): ?><?= View::partial('_toast', ['type' => $type, 'message' => $msg]) ?><?php endif; ?>
     <?php endforeach; ?>
 </div>

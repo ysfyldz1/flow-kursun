@@ -52,6 +52,57 @@ final class PhaseService
         return array_values(array_filter(self::forProject($projectId), fn ($ph) => $ph['is_active']));
     }
 
+    /**
+     * Zaman formu için: aşaması olan projelerin aşamaları, istemcide seçim ve uyarı göstermek üzere.
+     * Tutarlar yalnız ücret yetkisi olana gider; oran herkese.
+     * @return array<int, list<array>> project_id => aşamalar
+     */
+    public static function optionsForProjects(array $projectIds): array
+    {
+        $projectIds = array_values(array_unique(array_map('intval', $projectIds)));
+        if (!$projectIds) {
+            return [];
+        }
+        $with = array_map('intval', array_column(DB::all(
+            'SELECT DISTINCT project_id FROM project_phases WHERE project_id IN (' . implode(',', array_fill(0, count($projectIds), '?')) . ')',
+            $projectIds
+        ), 'project_id'));
+        $rates = Auth::can('rates.view');
+        $out = [];
+        foreach ($with as $pid) {
+            $currency = (string) DB::value('SELECT currency FROM projects WHERE id = ?', [$pid]);
+            $no = 0;
+            foreach (self::forProject($pid) as $ph) {
+                $out[$pid][] = [
+                    'id'        => (int) $ph['id'],
+                    'name'      => ($ph['is_out_of_scope'] ? '' : ++$no . '. ') . $ph['name'],
+                    'active'    => $ph['is_active'],
+                    'oos'       => (bool) $ph['is_out_of_scope'],
+                    'overdue'   => $ph['is_overdue'],
+                    'completed' => (bool) $ph['completed_at'],
+                    'state'     => $ph['budget_state'],
+                    'pct'       => $ph['used_pct'],
+                    'remaining' => $rates && $ph['remaining'] !== null ? format_money((float) $ph['remaining'], $currency) : null,
+                    'over'      => $rates && $ph['over'] ? format_money($ph['over'], $currency) : null,
+                ];
+            }
+        }
+        return $out;
+    }
+
+    /** Kayıt sonrası gösterilecek bütçe uyarısı (yoksa null). */
+    public static function warningFor(int $phaseId): ?string
+    {
+        $projectId = (int) DB::value('SELECT project_id FROM project_phases WHERE id = ?', [$phaseId]);
+        $ph = $projectId ? self::find($projectId, $phaseId) : null;
+        if (!$ph || !$ph['budget_state'] || $ph['budget_state'] === 'ok') {
+            return null;
+        }
+        return $ph['budget_state'] === 'over'
+            ? __('phases.saved_over', ['name' => $ph['name']])
+            : __('phases.saved_warn', ['name' => $ph['name'], 'pct' => $ph['used_pct']]);
+    }
+
     public static function hasPhases(int $projectId): bool
     {
         return (bool) DB::value('SELECT 1 FROM project_phases WHERE project_id = ? LIMIT 1', [$projectId]);

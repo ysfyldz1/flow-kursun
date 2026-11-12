@@ -96,7 +96,7 @@ $billingValue = match ($p['billing_type']) {
                     <?php foreach ($entries as $t): ?>
                         <tr>
                             <td class="muted nowrap m-meta"><?= e(format_date($t['work_date'])) ?></td>
-                            <td class="cell-main m-title"><strong><?= e($t['user_name']) ?></strong><span><?= e(mb_strimwidth($t['description'], 0, 120, '…')) ?></span></td>
+                            <td class="cell-main m-title"><strong><?= e($t['user_name']) ?><?php if ($t['phase_name'] !== null): ?> <span class="badge <?= $t['phase_oos'] ? 'badge-amber' : 'badge-gray' ?>"><?= e($t['phase_oos'] ? __('phases.out_of_scope') : $t['phase_name']) ?></span><?php endif; ?></strong><span><?= e(mb_strimwidth($t['description'], 0, 120, '…')) ?></span></td>
                             <td class="cell-actions m-value">
                                 <strong><?= TimeService::formatMinutes((int) $t['minutes']) ?></strong>
                                 <?php if (!$t['is_billable']): ?><br><span class="muted small"><?= e(__('time.non_billable')) ?></span><?php endif; ?>

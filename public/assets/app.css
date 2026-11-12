@@ -930,3 +930,5 @@ button.pick-row { width: 100%; border: 0; background: none; font: inherit; text-
 .phase-mini-row:first-child { border-top: 0; }
 .phase-mini-row .cell-main { min-width: 0; }
 @media (max-width: 640px) { .phase-facts { gap: 14px 22px; } .phase-card { padding: 14px; } }
+.toast-warning .toast-icon, .toast-warning .toast-bar { background: var(--amber); }
+.toast-warning .toast-bar { animation-duration: 8s; }

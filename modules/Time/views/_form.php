@@ -37,6 +37,17 @@ $option = fn ($p) => sprintf(
         <?= error_for('project_id') ?>
     </label>
 
+    <?php // Kurşun: aşama seçimi; yalnız aşaması olan projede görünür (script doldurur)
+    $phaseMap = \App\Services\PhaseService::optionsForProjects(array_column($projects, 'id')); ?>
+    <label class="field" data-phase-field hidden
+           data-phases="<?= e(json_encode($phaseMap, JSON_UNESCAPED_UNICODE)) ?>"
+           data-selected="<?= (int) $val('phase_id') ?>">
+        <span><?= e(__('phases.field')) ?></span>
+        <select name="phase_id" data-phase></select>
+        <small class="muted" data-phase-hint></small>
+        <?= error_for('phase_id') ?>
+    </label>
+
     <div class="form-grid">
         <label class="field">
             <span><?= e(__('time.date')) ?> *</span>
