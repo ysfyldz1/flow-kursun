@@ -10,3 +10,4 @@
 /storage/installed.lock
 /dist/
 /storage/cron.lock
+/storage/sessions/

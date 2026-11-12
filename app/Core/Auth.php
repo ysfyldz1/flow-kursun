@@ -24,6 +24,7 @@ final class Auth
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) $user['id'];
         $_SESSION['session_epoch'] = (int) ($user['session_epoch'] ?? 0);
+        SessionPolicy::begin();
         DB::update('users', ['last_login_at' => date('Y-m-d H:i:s')], 'id = ?', [$user['id']]);
         self::$user = null;
         self::$permissions = null;

@@ -12,15 +12,7 @@ require __DIR__ . '/../app/bootstrap.php';
 use App\Core\Lang;
 use App\Core\Router;
 
-session_name(config('session.name', 'flow_session'));
-session_set_cookie_params([
-    'lifetime' => (int) config('session.lifetime', 28800),
-    'path'     => '/',
-    'secure'   => !empty($_SERVER['HTTPS']),
-    'httponly' => true,
-    'samesite' => 'Lax',
-]);
-session_start();
+\App\Core\SessionPolicy::start();
 
 // Dil: girişte kullanıcının tercihi oturuma yazılır; yoksa kurum varsayılanı
 Lang::set($_SESSION['locale'] ?? config('app.locale', 'tr'));
@@ -43,6 +35,7 @@ array_walk_recursive($_POST, function ($v) {
 });
 
 try {
+    \App\Core\SessionPolicy::enforce();
     if (!isset($_SESSION['locale'])) {
         Lang::set((string) \App\Services\Settings::get('org.locale', config('app.locale', 'tr')));
     }

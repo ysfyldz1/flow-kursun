@@ -124,6 +124,20 @@
                 </label>
             </div>
 
+            <h3 class="section-title"><?= e(__('org.session_section')) ?></h3>
+            <div class="form-grid form-grid-3">
+                <label class="field">
+                    <span><?= e(__('org.session_idle')) ?></span>
+                    <input name="session_idle_minutes" inputmode="numeric" value="<?= e((string) \App\Core\SessionPolicy::idleMinutes()) ?>">
+                    <small class="muted"><?= e(__('org.session_idle_hint')) ?></small>
+                </label>
+                <label class="field">
+                    <span><?= e(__('org.session_max')) ?></span>
+                    <input name="session_max_hours" inputmode="numeric" value="<?= e((string) \App\Core\SessionPolicy::maxHours()) ?>">
+                    <small class="muted"><?= e(__('org.session_max_hint')) ?></small>
+                </label>
+            </div>
+
             <h3 class="section-title"><?= e(__('portal.title')) ?></h3>
             <label class="check">
                 <input type="checkbox" name="portal_show_hours" value="1" <?= Settings::get('portal.show_hours', '1') === '1' ? 'checked' : '' ?>>

@@ -30,6 +30,7 @@ return [
     'auth.password'       => 'Password',
     'auth.submit'         => 'Sign in',
     'auth.failed'         => 'Incorrect email or password.',
+    'auth.session_expired' => 'Your session has expired. Please sign in again.',
     'auth.throttled'      => 'Too many failed attempts. Please try again in a few minutes.',
     'auth.microsoft'      => 'Sign in with Microsoft',
     'auth.or'             => 'or',
@@ -1540,4 +1541,9 @@ return [
     'org.reminders_section'      => 'Reminders',
     'org.digest_days'            => 'Summary email (working days)',
     'org.digest_days_hint'       => 'Sent to people who have not signed in for this many working days and have pending items. 0 = off. Deadline alerts are always sent.',
+    'org.session_section'        => 'Session',
+    'org.session_idle'           => 'Sign out when idle (minutes)',
+    'org.session_idle_hint'      => 'The session ends after this long with no activity. Default 120.',
+    'org.session_max'            => 'Maximum session (hours)',
+    'org.session_max_hint'       => 'People must sign in again this many hours after signing in, even if active. Up to 24, default 12.',
 ];

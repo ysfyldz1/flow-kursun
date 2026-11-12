@@ -28,6 +28,7 @@ final class PortalAuth
         session_regenerate_id(true);
         $_SESSION['portal_user_id'] = (int) $user['id'];
         $_SESSION['locale'] = $user['locale'];
+        SessionPolicy::begin();
         DB::update('portal_users', ['last_login_at' => date('Y-m-d H:i:s')], 'id = ?', [$user['id']]);
         self::$user = null;
     }

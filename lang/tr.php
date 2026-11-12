@@ -30,6 +30,7 @@ return [
     'auth.password'       => 'Şifre',
     'auth.submit'         => 'Giriş yap',
     'auth.failed'         => 'E-posta veya şifre hatalı.',
+    'auth.session_expired' => 'Oturumunuzun süresi doldu, lütfen yeniden giriş yapın.',
     'auth.throttled'      => 'Çok fazla hatalı deneme. Lütfen birkaç dakika sonra tekrar deneyin.',
     'auth.microsoft'      => 'Microsoft ile giriş yap',
     'auth.or'             => 'veya',
@@ -1540,4 +1541,9 @@ return [
     'org.reminders_section'      => 'Hatırlatmalar',
     'org.digest_days'            => 'Özet e-postası (iş günü)',
     'org.digest_days_hint'       => 'Bu kadar iş günü giriş yapmayan ve bekleyeni olan kişiye özet gider. 0 = kapalı. Kesin süre uyarıları her zaman gider.',
+    'org.session_section'        => 'Oturum',
+    'org.session_idle'           => 'Hareketsizlikte çıkış (dakika)',
+    'org.session_idle_hint'      => 'Bu kadar süre hiçbir şey yapılmazsa oturum kapanır. Varsayılan 120.',
+    'org.session_max'            => 'En uzun oturum (saat)',
+    'org.session_max_hint'       => 'Girişten bu kadar saat sonra, kullanılsa da yeniden giriş istenir. En fazla 24, varsayılan 12.',
 ];

@@ -95,6 +95,8 @@ final class OrganizationController
             'portal.show_hours'        => !empty($_POST['portal_show_hours']) ? '1' : '0',
             'reminders.digest_days'    => (string) max(0, min(30, (int) ($_POST['digest_days'] ?? 3))),
             'time.format'              => ($_POST['time_format'] ?? '') === 'hm' ? 'hm' : 'decimal',
+            'session.idle_minutes'     => (string) max(5, min(1440, (int) ($_POST['session_idle_minutes'] ?? 120))),
+            'session.max_hours'        => (string) max(1, min(24, (int) ($_POST['session_max_hours'] ?? 12))),
         ];
 
         if ($ext) {
