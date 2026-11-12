@@ -29,8 +29,8 @@ $h = fn ($m) => TimeService::hours((int) $m);
     <div class="section-head">
         <h2><?= e($client['name']) ?></h2>
         <?php if (array_filter($projects, fn ($p) => $p['state'] === 'open')): ?>
-            <form method="post" action="/billing" onsubmit="return confirm(<?= e(json_encode(__('billing.all_projects_confirm'), JSON_UNESCAPED_UNICODE)) ?>)">
-                <?= csrf_field() ?>
+            <form method="get" action="/billing/preview">
+                <input type="hidden" name="back" value="/billing/new?client_id=<?= $client['id'] ?>">
                 <input type="hidden" name="client_id" value="<?= $client['id'] ?>">
                 <input type="hidden" name="currency" value="<?= e($client['currency']) ?>">
                 <button class="btn btn-sm btn-outline"><?= e(__('billing.all_projects_one')) ?></button>

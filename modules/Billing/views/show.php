@@ -10,17 +10,22 @@ $cur = $s['currency'];
 $money = fn ($v) => $v === null ? '—' : format_money((float) $v, $cur);
 $pct = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, ',', ''), '0'), ',');
 $balance = StatementService::balance($s);
-$canEdit = $draft && can('statements.manage');
+$preview ??= null;   // Kurşun: kaydedilmemiş önizleme (BillingController::preview)
+$canEdit = $draft && can('statements.manage') && !$preview;
 $groups = StatementService::groupLines($s['lines']);
 $cols = $canEdit ? 5 : 4;
 $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['issue', 'statement', 'invoice', 'payment', 'notice', 'split']));
 ?>
 <div class="page-head">
     <div>
-        <a href="/billing<?= $draft ? '?status=draft' : '' ?>" class="back-link">← <?= e(__('billing.title')) ?></a>
+        <?php if ($preview): ?>
+            <a href="<?= e($preview['back']) ?>" class="back-link">← <?= e(__('app.cancel')) ?></a>
+        <?php else: ?>
+            <a href="/billing<?= $draft ? '?status=draft' : '' ?>" class="back-link">← <?= e(__('billing.title')) ?></a>
+        <?php endif; ?>
         <div class="title-line">
-            <h1><?= e($s['number'] ?: __('billing.draft')) ?></h1>
-            <?= View::partial('Billing::_status', ['s' => $s]) ?>
+            <h1><?= e($preview ? __('billing.preview_title') : ($s['number'] ?: __('billing.draft'))) ?></h1>
+            <?php if (!$preview): ?><?= View::partial('Billing::_status', ['s' => $s]) ?><?php endif; ?>
         </div>
         <p class="muted">
             <a href="/clients/<?= $s['client_id'] ?>" class="link"><?= e($s['client_name']) ?></a>
@@ -32,6 +37,16 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
             <?php endif; ?>
         </p>
     </div>
+    <?php if ($preview): ?>
+        <div class="head-actions">
+            <a href="<?= e($preview['back']) ?>" class="btn btn-outline"><?= e(__('app.cancel')) ?></a>
+            <form method="post" action="/billing">
+                <?= csrf_field() ?>
+                <?php foreach ($preview['fields'] as $k => $v): ?><input type="hidden" name="<?= e($k) ?>" value="<?= e((string) $v) ?>"><?php endforeach; ?>
+                <button class="btn btn-primary"><?= e(__('billing.save_as_draft')) ?></button>
+            </form>
+        </div>
+    <?php else: ?>
     <div class="head-actions">
         <a href="/billing/<?= $s['id'] ?>/pdf" target="_blank" class="btn btn-outline"><?= e(__($draft ? 'billing.preview_pdf' : 'billing.view_pdf')) ?></a>
         <?php if (!$draft): ?>
@@ -44,12 +59,15 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
             </form>
         <?php endif; ?>
     </div>
+    <?php endif; ?>
 </div>
 
 <?php foreach ($generalErrors as $msg): ?>
     <div class="alert alert-error"><?= e($msg) ?></div>
 <?php endforeach; ?>
-<?php if ($draft): ?>
+<?php if ($preview): ?>
+    <div class="alert alert-warning-soft"><?= e(__('billing.preview_info')) ?></div>
+<?php elseif ($draft): ?>
     <div class="alert alert-info"><?= e(__('billing.draft_info')) ?></div>
 <?php endif; ?>
 

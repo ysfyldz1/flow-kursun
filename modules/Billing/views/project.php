@@ -13,7 +13,7 @@ $sum = fn (string $k) => array_sum(array_map(fn ($g) => (float) ($g[$k] ?? 0), $
 $stateLabel = fn (array $g) => __('billing.state_' . $g['state']);
 // Döküm oluşturma formu (gizli alanlarla)
 $draftForm = function (array $fields, string $label, string $class = 'btn btn-primary') use ($p, $back, $cur) {
-    $html = '<form method="post" action="/billing" class="inline-form">' . csrf_field()
+    $html = '<form method="get" action="/billing/preview" class="inline-form">'
         . '<input type="hidden" name="client_id" value="' . (int) $p['client_id'] . '">'
         . '<input type="hidden" name="currency" value="' . e($cur) . '">'
         . '<input type="hidden" name="project_id" value="' . (int) $p['id'] . '">'

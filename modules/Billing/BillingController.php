@@ -103,7 +103,7 @@ final class BillingController
             $id = StatementService::createDraft($_POST);
         } catch (ValidationException $e) {
             // Proje ekranından gelindiyse oraya, hata iletisiyle dön
-            if (preg_match('#^/billing/new/project/\d+(\?tab=[\w-]+)?$#', (string) ($_POST['back'] ?? ''))) {
+            if (preg_match('#^/billing/new(/project/\d+(\?tab=[\w-]+)?|\?client_id=\d+)?$#', (string) ($_POST['back'] ?? ''))) {
                 flash('error', implode(' ', $e->errors));
                 redirect((string) $_POST['back']);
             }
@@ -111,6 +111,45 @@ final class BillingController
         }
         flash('success', __(StatementService::$reusedDraft ? 'billing.draft_reused' : 'billing.draft_created'));
         redirect("/billing/$id");
+    }
+
+    /**
+     * Kurşun: kaydetmeden önizleme. Taslak bir işlem içinde oluşturulup ekran çizilir, sonra işlem geri alınır;
+     * kayıtlar kilitlenmez. "Taslak olarak kaydet" aynı alanlarla POST /billing yapar.
+     */
+    public function preview(): void
+    {
+        $fields = array_intersect_key($_GET, array_flip(['client_id', 'currency', 'project_id', 'phase_id', 'unphased', 'back']));
+        $back = preg_match('#^/billing/new(/project/\d+(\?tab=[\w-]+)?|\?client_id=\d+)?$#', (string) ($fields['back'] ?? '')) ? $fields['back'] : '/billing/new';
+        $pdo = DB::pdo();
+        $pdo->beginTransaction();
+        try {
+            $id = StatementService::createDraft($fields);
+            if (StatementService::$reusedDraft) {
+                $pdo->rollBack();
+                flash('success', __('billing.draft_reused'));
+                redirect("/billing/$id");
+            }
+            $s = StatementService::find($id);
+            $data = [
+                'title'         => __('billing.preview_title'),
+                's'             => $s,
+                'notices'       => [],
+                'projects'      => [],
+                'phaseGroups'   => StatementService::phaseGroups($id),
+                'projectPhases' => [],
+                'preview'       => ['fields' => $fields, 'back' => $back],
+            ];
+        } catch (ValidationException $e) {
+            $pdo->rollBack();
+            flash('error', implode(' ', $e->errors));
+            redirect($back);
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+        $pdo->rollBack();
+        View::render('Billing::show', $data);
     }
 
     public function show(string $id): void

@@ -1051,3 +1051,5 @@ textarea.autosize { overflow: hidden; box-sizing: border-box; }
 .prev-amount { margin-left: auto; font-weight: 600; }
 .bill-summary th.num { text-align: right; }
 .bill-summary td { vertical-align: middle; }
+.alert-warning-soft { background: var(--amber-bg); color: #92400e; }
+.st-lines .line-desc { padding: 0 9px; }
