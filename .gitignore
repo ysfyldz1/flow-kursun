@@ -10,4 +10,5 @@
 /storage/installed.lock
 /dist/
 /storage/cron.lock
-/storage/sessions/
+/storage/sessions/*
+!/storage/sessions/.gitkeep
