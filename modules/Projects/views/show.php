@@ -26,13 +26,51 @@ $billingValue = match ($p['billing_type']) {
             <?= $p['case_number'] ? ' · ' . e($p['case_number']) : '' ?>
         </p>
     </div>
-    <?php if (can('projects.edit')): ?>
-        <a href="/projects/<?= $p['id'] ?>/edit" class="btn btn-primary"><?= e(__('clients.edit')) ?></a>
-    <?php endif; ?>
+    <div class="head-actions">
+        <?php if ($phases || can('projects.edit')): ?>
+            <a href="/projects/<?= $p['id'] ?>/phases" class="btn btn-outline"><?= e(__('phases.title')) ?></a>
+        <?php endif; ?>
+        <?php if (can('projects.edit')): ?>
+            <a href="/projects/<?= $p['id'] ?>/edit" class="btn btn-primary"><?= e(__('clients.edit')) ?></a>
+        <?php endif; ?>
+    </div>
 </div>
 
 <div class="grid grid-3-1">
     <div class="stack">
+        <?php if ($phases): ?>
+            <section class="card widget widget-auto">
+                <header class="widget-head">
+                    <span class="widget-icon"><?= icon('sliders') ?></span>
+                    <h2><?= e(__('phases.title')) ?></h2>
+                    <a href="/projects/<?= $p['id'] ?>/phases" class="btn btn-sm btn-outline head-right"><?= e(__('phases.manage')) ?></a>
+                </header>
+                <div class="phase-mini">
+                    <?php $no = 0; foreach ($phases as $ph): ?>
+                        <a href="/projects/<?= $p['id'] ?>/phases#phase-<?= $ph['id'] ?>" class="phase-mini-row">
+                            <span class="cell-main">
+                                <strong><?= $ph['is_out_of_scope'] ? '' : ++$no . '. ' ?><?= e($ph['name']) ?></strong>
+                                <span class="muted small">
+                                    <?= TimeService::hours((int) $ph['minutes']) ?> <?= e(__('projects.hours')) ?>
+                                    <?php if ($ph['deadline']): ?> · <?= e(format_date($ph['deadline'])) ?><?php endif; ?>
+                                </span>
+                            </span>
+                            <span class="phase-title">
+                                <?php if ($ph['is_optional'] && !$ph['approved_at']): ?><span class="badge badge-amber"><?= e(__('phases.optional_pending')) ?></span><?php endif; ?>
+                                <?php if ($ph['completed_at']): ?><span class="badge badge-green"><?= e(__('phases.completed')) ?></span><?php endif; ?>
+                                <?php if ($ph['is_overdue']): ?><span class="badge badge-red"><?= e(__('phases.overdue')) ?></span><?php endif; ?>
+                                <?php if (can('rates.view') && $ph['budget_state']): ?>
+                                    <span class="cell-main align-right">
+                                        <strong class="<?= $ph['over'] ? 'text-red' : ($ph['budget_state'] === 'warn' ? 'text-warn' : '') ?>">%<?= (int) $ph['used_pct'] ?></strong>
+                                        <span class="meter"><span style="width: <?= min(100, (int) $ph['used_pct']) ?>%" class="<?= $ph['budget_state'] === 'ok' ? '' : ($ph['budget_state'] === 'over' ? 'meter-over' : 'meter-warn') ?>"></span></span>
+                                    </span>
+                                <?php endif; ?>
+                            </span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+        <?php endif; ?>
         <section class="card widget widget-auto">
             <header class="widget-head">
                 <span class="widget-icon"><?= icon('clock') ?></span>

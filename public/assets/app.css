@@ -908,3 +908,25 @@ button.pick-row { width: 100%; border: 0; background: none; font: inherit; text-
 .tf-file:hover { border-color: var(--primary); }
 .tf-file-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
 .od-send { position: sticky; top: 80px; }.field .input-group select { width: 90px; flex: 0 0 90px; }
+
+/* Kurşun: proje aşamaları */
+.text-red { color: var(--red); font-weight: 500; }
+.inline-form { display: inline; margin: 0; }
+.meter .meter-over { background: var(--red); }
+.phase-card { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+.phase-inactive { opacity: .7; border-style: dashed; }
+.phase-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.phase-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.phase-title h2 { font-size: 15px; margin: 0; }
+.phase-no { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 12px; font-weight: 700; flex: 0 0 auto; }
+.phase-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.phase-facts { display: flex; gap: 28px; flex-wrap: wrap; }
+.phase-facts > div { display: flex; flex-direction: column; gap: 2px; }
+.phase-facts > div > span:first-child { font-size: 12px; color: var(--muted); }
+.phase-note { margin: 0; }
+.phase-scope { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text); }
+.phase-mini { display: flex; flex-direction: column; }
+.phase-mini-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 18px; border-top: 1px solid var(--border); }
+.phase-mini-row:first-child { border-top: 0; }
+.phase-mini-row .cell-main { min-width: 0; }
+@media (max-width: 640px) { .phase-facts { gap: 14px 22px; } .phase-card { padding: 14px; } }

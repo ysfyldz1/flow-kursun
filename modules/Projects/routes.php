@@ -2,6 +2,7 @@
 
 use Modules\Projects\DocumentController;
 use Modules\Projects\EmailController;
+use Modules\Projects\PhaseController;
 use Modules\Projects\ProjectController;
 
 $router->get('/projects', [ProjectController::class, 'index'], ['can' => 'projects.view']);
@@ -23,3 +24,14 @@ $router->post('/projects/{id}/documents/{item}/share', [DocumentController::clas
 $router->get('/projects/{id}/emails/search', [EmailController::class, 'search'], ['can' => 'documents.manage']);
 $router->post('/projects/{id}/emails', [EmailController::class, 'store'], ['can' => 'documents.manage']);
 $router->post('/projects/{id}/emails/{email}/delete', [EmailController::class, 'delete'], ['can' => 'documents.manage']);
+
+// Kurşun: aşamalar
+
+$router->get('/projects/{id}/phases', [PhaseController::class, 'index'], ['can' => 'projects.view']);
+$router->post('/projects/{id}/phases', [PhaseController::class, 'store'], ['can' => 'projects.edit']);
+$router->post('/projects/{id}/phases/settings', [PhaseController::class, 'settings'], ['can' => 'projects.edit']);
+$router->post('/projects/{id}/phases/{phase}', [PhaseController::class, 'update'], ['can' => 'projects.edit']);
+$router->post('/projects/{id}/phases/{phase}/delete', [PhaseController::class, 'delete'], ['can' => 'projects.edit']);
+$router->post('/projects/{id}/phases/{phase}/move', [PhaseController::class, 'move'], ['can' => 'projects.edit']);
+$router->post('/projects/{id}/phases/{phase}/approve', [PhaseController::class, 'approve'], ['can' => 'projects.edit']);
+$router->post('/projects/{id}/phases/{phase}/complete', [PhaseController::class, 'complete'], ['can' => 'projects.edit']);
