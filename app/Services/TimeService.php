@@ -227,7 +227,7 @@ final class TimeService
     }
 
     /** Sayacı durdurur ve kayda çevirir; tarih sayacın başladığı gündür. */
-    public static function stopTimer(int $userId, string $description, bool $billable): int
+    public static function stopTimer(int $userId, string $description, bool $billable, ?int $phaseId = null): int
     {
         $timer = self::timer($userId) ?? throw new ValidationException(['timer' => __('time.no_timer')]);
         $minutes = max(1, (int) ceil((time() - strtotime($timer['started_at'])) / 60));
@@ -239,6 +239,7 @@ final class TimeService
             'duration'    => (string) $minutes . 'dk',
             'description' => $description,
             'is_billable' => $billable ? 1 : 0,
+            'phase_id'    => $phaseId,
         ]);
         DB::query('DELETE FROM timers WHERE user_id = ?', [$userId]);
         return $id;

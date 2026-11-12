@@ -117,12 +117,13 @@ final class TimeController
     public function stopTimer(): void
     {
         try {
-            TimeService::stopTimer(Auth::id(), (string) ($_POST['timer_description'] ?? ''), !empty($_POST['is_billable']));
+            $id = TimeService::stopTimer(Auth::id(), (string) ($_POST['timer_description'] ?? ''), !empty($_POST['is_billable']), (int) ($_POST['phase_id'] ?? 0) ?: null);
         } catch (ValidationException $e) {
             // Açıklama boşsa sayaç çalışmaya devam eder, hata gösterilir
-            fail(new ValidationException(['timer_description' => $e->errors['description'] ?? implode(' ', $e->errors)]), $this->back());
+            fail(new ValidationException(['timer_description' => $e->errors['description'] ?? $e->errors['phase_id'] ?? implode(' ', $e->errors)]), $this->back());
         }
         flash('success', __('time.saved'));
+        $this->phaseWarning(TimeService::find($id));
         redirect($this->back());
     }
 

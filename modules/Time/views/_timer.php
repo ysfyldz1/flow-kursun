@@ -15,6 +15,21 @@
                 <textarea name="timer_description" rows="2" placeholder="<?= e(__('time.description_hint')) ?>"><?= e(old('timer_description', (string) $timer['description'])) ?></textarea>
                 <?= error_for('timer_description') ?>
             </label>
+            <?php // Kurşun: projenin aşaması varsa durdururken seçilir
+            $timerPhases = \App\Services\PhaseService::optionsForProjects([(int) $timer['project_id']])[(int) $timer['project_id']] ?? [];
+            if ($timerPhases): $lastPhase = (int) old('phase_id', (string) ($_SESSION['_time_last']['phase_id'] ?? '')); ?>
+                <label class="field">
+                    <span><?= e(__('phases.field')) ?></span>
+                    <select name="phase_id">
+                        <option value=""><?= e(__('phases.choose_none')) ?></option>
+                        <?php foreach ($timerPhases as $tp): ?>
+                            <option value="<?= $tp['id'] ?>" <?= $tp['active'] ? '' : 'disabled' ?> <?= $tp['id'] === $lastPhase && $tp['active'] ? 'selected' : '' ?>>
+                                <?= e($tp['name'] . ($tp['active'] ? '' : ' (' . __('phases.not_approved_short') . ')') . ($tp['state'] === 'over' ? ' ⚠' : '')) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+            <?php endif; ?>
             <label class="check"><input type="checkbox" name="is_billable" value="1" checked><span><?= e(__('time.billable')) ?></span></label>
             <div class="timer-actions">
                 <button class="btn btn-primary"><?= e(__('time.stop_save')) ?></button>
