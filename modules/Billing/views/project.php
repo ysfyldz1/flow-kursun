@@ -11,6 +11,8 @@ $back = '/billing/new/project/' . $p['id'];
 $anyOpen = (bool) array_filter($groups, fn ($g) => $g['state'] === 'open' || ($g['active'] && ($g['remaining'] ?? 0) > 0 && $g['state'] !== 'done'));
 $sum = fn (string $k) => array_sum(array_map(fn ($g) => (float) ($g[$k] ?? 0), $groups));
 $stateLabel = fn (array $g) => __('billing.state_' . $g['state']);
+// Açık taslağı olan bölüm: sekme ve satır pastel sarı (kesinleşince yeşile döner)
+$hasDraft = fn (array $g) => (bool) array_filter($g['statements'], fn ($st) => $st['status'] === 'draft');
 // Döküm oluşturma formu (gizli alanlarla)
 $draftForm = function (array $fields, string $label, string $class = 'btn btn-primary') use ($p, $back, $cur) {
     $html = '<form method="get" action="/billing/preview" class="inline-form">'
@@ -58,7 +60,7 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
             </thead>
             <tbody>
                 <?php foreach ($groups as $g): ?>
-                    <tr class="sum-<?= e($g['state']) ?> <?= $g['key'] === $tab ? 'sum-current' : '' ?>">
+                    <tr class="sum-<?= e($g['state']) ?> <?= $hasDraft($g) ? 'sum-has-draft' : '' ?> <?= $g['key'] === $tab ? 'sum-current' : '' ?>">
                         <td class="m-title sum-name"><a href="?tab=<?= e($g['key']) ?>" class="link-plain"><strong><?= e($g['label']) ?></strong></a></td>
                         <?php if ($rates): ?>
                             <td class="num m-meta"><span class="m-label"><?= e(__('phases.fee')) ?></span><?= $g['fee'] !== null ? e($money($g['fee'])) : '<span class="muted">—</span>' ?></td>
@@ -91,7 +93,7 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
     <!-- Aşama sekmeleri -->
     <nav class="phase-tabs">
         <?php foreach ($groups as $g): ?>
-            <a href="?tab=<?= e($g['key']) ?>" class="phase-tab tab-<?= e($g['state']) ?> <?= $g['key'] === $tab ? 'active' : '' ?>">
+            <a href="?tab=<?= e($g['key']) ?>" class="phase-tab tab-<?= e($g['state']) ?> <?= $hasDraft($g) ? 'tab-has-draft' : '' ?> <?= $g['key'] === $tab ? 'active' : '' ?>">
                 <?= e($g['label']) ?>
                 <?php if ($g['unbilled_count']): ?><span class="tab-count"><?= (int) $g['unbilled_count'] ?></span><?php elseif ($g['state'] === 'done'): ?> ✓<?php endif; ?>
             </a>

@@ -1053,3 +1053,11 @@ textarea.autosize { overflow: hidden; box-sizing: border-box; }
 .bill-summary td { vertical-align: middle; }
 .alert-warning-soft { background: var(--amber-bg); color: #92400e; }
 .st-lines .line-desc { padding: 0 9px; }
+/* Sekme sayısı daire içinde; açık taslaklı sekme/satır pastel sarı */
+.phase-tab .tab-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; line-height: 1; }
+.phase-tab:not(.active) .tab-count { background: #cbd5e1; color: #334155; }
+.phase-tab.tab-has-draft { background: #fef6dc; color: #92400e; }
+.phase-tab.tab-has-draft.active { box-shadow: inset 0 3px 0 var(--amber); }
+.phase-tab.tab-has-draft .tab-count { background: var(--amber); color: #fff; }
+.bill-summary .sum-has-draft td { background: #fef6dc; }
+.state-draft { background: #fef6dc; color: #92400e; }
