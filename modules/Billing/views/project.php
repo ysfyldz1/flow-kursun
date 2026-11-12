@@ -124,13 +124,15 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
             </div>
             <?php $openDraft = current(array_filter($g['statements'], fn ($st) => $st['status'] === 'draft')); ?>
             <?php if ($openDraft): ?>
-                <a href="/billing/<?= $openDraft['id'] ?>" class="btn btn-primary"><?= e(__('billing.go_to_draft')) ?></a>
-                <?php if ($g['unbilled_count']): ?>
-                    <form method="post" action="/billing/<?= $openDraft['id'] ?>/pending" class="inline-form">
-                        <?= csrf_field() ?><input type="hidden" name="back" value="<?= e($back . '?tab=' . $g['key']) ?>">
-                        <button class="btn btn-outline"><?= e(__('billing.add_pending', ['count' => $g['unbilled_count']])) ?></button>
-                    </form>
-                <?php endif; ?>
+                <div class="head-actions">
+                    <?php if ($g['unbilled_count']): ?>
+                        <form method="post" action="/billing/<?= $openDraft['id'] ?>/pending" class="inline-form">
+                            <?= csrf_field() ?><input type="hidden" name="back" value="<?= e($back . '?tab=' . $g['key']) ?>">
+                            <button class="btn btn-outline"><?= e(__('billing.add_pending', ['count' => $g['unbilled_count']])) ?></button>
+                        </form>
+                    <?php endif; ?>
+                    <a href="/billing/<?= $openDraft['id'] ?>" class="btn btn-primary"><?= e(__('billing.go_to_draft')) ?></a>
+                </div>
             <?php elseif ($g['active'] && ($g['unbilled_count'] || ($g['remaining'] ?? 0) > 0)): ?>
                 <?php if (!$phased): ?>
                     <?= $draftForm([], __('billing.create_draft')) ?>
@@ -144,6 +146,9 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
 
         <?php if ($g['draft_count']): ?>
             <div class="alert alert-info"><?= e(__('billing.n_in_draft_hint', ['count' => $g['draft_count']])) ?></div>
+        <?php endif; ?>
+        <?php if ($openDraft && $g['unbilled_count']): ?>
+            <div class="alert alert-warning-soft"><?= e(__('billing.pending_tab_note', ['count' => $g['unbilled_count']])) ?></div>
         <?php endif; ?>
 
         <?php if ($entries): ?>

@@ -1622,6 +1622,7 @@ return [
     'phases.saved_over'          => '":name" aşamasının bedeli aşıldı; aşan kısım ayrıca faturalanır.',
     'app.toast_warning'          => 'Dikkat',
     'billing.project'            => 'Proje',
+    'billing.pending_tab_note' => 'Aşağıdaki :count kayıt açık taslağa eklenmemiş. Bu döküme girmeleri için "Taslağa ekle" deyin.',
     'billing.pending_note' => 'Bu taslağın kapsamında, taslak oluşturulduktan sonra girilen ya da taşınan :count kayıt var.',
     'billing.add_pending' => 'Taslağa ekle (:count)',
     'billing.pending_added' => ':count kayıt taslağa eklendi.',

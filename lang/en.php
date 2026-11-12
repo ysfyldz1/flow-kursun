@@ -1622,6 +1622,7 @@ return [
     'phases.saved_over'          => 'The fee for ":name" has been exceeded; the excess is billed separately.',
     'app.toast_warning'          => 'Heads up',
     'billing.project'            => 'Project',
+    'billing.pending_tab_note' => 'The :count entries below are not on the open draft. Choose "Add to draft" to include them.',
     'billing.pending_note' => ':count entries in the scope of this draft were added or moved after it was created.',
     'billing.add_pending' => 'Add to draft (:count)',
     'billing.pending_added' => ':count entries added to the draft.',
