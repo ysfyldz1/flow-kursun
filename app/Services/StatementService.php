@@ -118,6 +118,18 @@ final class StatementService
         );
     }
 
+    public static function tabCounts(): array
+    {
+        $r = DB::one("SELECT
+                SUM(status = 'issued' AND paid_amount < total)  AS open,
+                SUM(status = 'issued' AND paid_amount >= total) AS paid,
+                SUM(status = 'draft')     AS draft,
+                SUM(status = 'cancelled') AS cancelled,
+                COUNT(*) AS `all`
+            FROM statements") ?? [];
+        return array_map('intval', $r);
+    }
+
     public static function countOpen(): int
     {
         return (int) DB::value("SELECT COUNT(*) FROM statements WHERE status = 'issued' AND paid_amount < total");

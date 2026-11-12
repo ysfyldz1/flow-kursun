@@ -30,6 +30,7 @@ final class BillingController
             'title'      => __('billing.title'),
             'statements' => StatementService::list($filters),
             'filters'    => $filters,
+            'counts'     => StatementService::tabCounts(),
             'unbilled'   => can('statements.manage') ? StatementService::unbilledSummary() : [],
         ]);
     }

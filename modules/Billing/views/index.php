@@ -50,7 +50,7 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
     <form method="get" class="toolbar">
         <div class="tabs">
             <?php foreach ($tabs as $key => $label): ?>
-                <a href="<?= e($query(['status' => $key])) ?>" class="<?= $filters['status'] === $key ? 'active' : '' ?>"><?= e(__($label)) ?></a>
+                <a href="<?= e($query(['status' => $key])) ?>" class="<?= $filters['status'] === $key ? 'active' : '' ?>"><?= e(__($label)) ?><?php if (!empty($counts[$key])): ?> <span class="tab-count"><?= (int) $counts[$key] ?></span><?php endif; ?></a>
             <?php endforeach; ?>
         </div>
         <input type="hidden" name="status" value="<?= e($filters['status']) ?>">
