@@ -143,6 +143,9 @@ final class StatementService
 
     // --- Taslak ---
 
+    /** Son createDraft yeni taslak yerine mevcut açık taslağı döndürdüyse true. */
+    public static bool $reusedDraft = false;
+
     public static function createDraft(array $in, string $channel = 'web'): int
     {
         $clientId = (int) ($in['client_id'] ?? 0);
@@ -174,6 +177,19 @@ final class StatementService
         }
         if ($errors) {
             throw new ValidationException($errors);
+        }
+
+        // Aynı kapsam (müvekkil + para birimi + proje + aşama) için açık taslak varsa yenisi açılmaz, o döner
+        self::$reusedDraft = false;
+        if ($scopeProject && empty($in['unphased'])) {
+            $existing = DB::value(
+                "SELECT id FROM statements WHERE status = 'draft' AND client_id = ? AND currency = ? AND project_id = ? AND phase_id <=> ? ORDER BY id DESC LIMIT 1",
+                [$client['id'], $currency, $scopeProject, $scopePhase]
+            );
+            if ($existing) {
+                self::$reusedDraft = true;
+                return (int) $existing;
+            }
         }
 
         return DB::transaction(function () use ($client, $currency, $start, $end, $channel, $scopeProject, $scopePhase, $in) {
@@ -363,7 +379,13 @@ final class StatementService
         if (DB::value("SELECT 1 FROM statement_lines WHERE statement_id = ? AND phase_id = ? AND type = 'phase_fee'", [$id, $phaseId])) {
             return false;
         }
-        $remaining = round((float) $ph['fee'] - self::phaseBilled($phaseId, $id)['billed'], 2);
+        // Kesinleşmiş dökümlerde kesilen + başka açık taslaklarda bekleyen bedel düşülür (çift bedel olmasın)
+        $inOtherDrafts = (float) DB::value(
+            "SELECT COALESCE(SUM(l.amount), 0) FROM statement_lines l JOIN statements s ON s.id = l.statement_id
+             WHERE l.phase_id = ? AND l.type = 'phase_fee' AND s.status = 'draft' AND s.id <> ?",
+            [$phaseId, $id]
+        );
+        $remaining = round((float) $ph['fee'] - self::phaseBilled($phaseId, $id)['billed'] - $inOtherDrafts, 2);
         if ($remaining <= 0) {
             return false;
         }

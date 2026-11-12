@@ -109,7 +109,7 @@ final class BillingController
             }
             fail($e, '/billing/new/advanced');
         }
-        flash('success', __('billing.draft_created'));
+        flash('success', __(StatementService::$reusedDraft ? 'billing.draft_reused' : 'billing.draft_created'));
         redirect("/billing/$id");
     }
 

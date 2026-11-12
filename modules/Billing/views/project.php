@@ -115,7 +115,10 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
                     <span class="state-pill state-<?= e($g['state']) ?>"><?= e($stateLabel($g)) ?></span>
                 </div>
             </div>
-            <?php if ($g['active'] && ($g['unbilled_count'] || ($g['remaining'] ?? 0) > 0)): ?>
+            <?php $openDraft = current(array_filter($g['statements'], fn ($st) => $st['status'] === 'draft')); ?>
+            <?php if ($openDraft): ?>
+                <a href="/billing/<?= $openDraft['id'] ?>" class="btn btn-primary"><?= e(__('billing.go_to_draft')) ?></a>
+            <?php elseif ($g['active'] && ($g['unbilled_count'] || ($g['remaining'] ?? 0) > 0)): ?>
                 <?php if (!$phased): ?>
                     <?= $draftForm([], __('billing.create_draft')) ?>
                 <?php elseif ($g['key'] === 'none'): ?>

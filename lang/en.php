@@ -1622,6 +1622,8 @@ return [
     'phases.saved_over'          => 'The fee for ":name" has been exceeded; the excess is billed separately.',
     'app.toast_warning'          => 'Heads up',
     'billing.project'            => 'Project',
+    'billing.draft_reused' => 'There is already an open draft for this scope; it was opened.',
+    'billing.go_to_draft' => 'Go to open draft',
     'billing.start_hint' => 'Choose a client to see open projects and unbilled time, then open a project to create a statement.',
     'billing.n_unbilled' => ':count unbilled entries',
     'billing.all_projects_one' => 'One statement for all projects',

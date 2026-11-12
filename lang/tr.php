@@ -1622,6 +1622,8 @@ return [
     'phases.saved_over'          => '":name" aşamasının bedeli aşıldı; aşan kısım ayrıca faturalanır.',
     'app.toast_warning'          => 'Dikkat',
     'billing.project'            => 'Proje',
+    'billing.draft_reused' => 'Bu kapsam için zaten açık bir taslak var; o açıldı.',
+    'billing.go_to_draft' => 'Açık taslağa git',
     'billing.start_hint' => 'Müvekkili seçin; açık projeleri ve faturalanmamış zamanları görün, sonra projeye girip döküm oluşturun.',
     'billing.n_unbilled' => ':count faturalanmamış kayıt',
     'billing.all_projects_one' => 'Tüm projeler için tek döküm',
