@@ -381,6 +381,9 @@ final class StatementService
     {
         self::draftOrFail($id);
         $g = self::phaseGroups($id)[$phaseId] ?? throw new ValidationException(['statement' => __('validation.required')]);
+        if ($g['over'] <= 0 || $g['has_extra']) {
+            throw new ValidationException(['statement' => __('billing.no_extra_needed')]);
+        }
         $locale = (string) DB::value('SELECT locale FROM statements WHERE id = ?', [$id]);
         $previous = \App\Core\Lang::locale();
         \App\Core\Lang::set($locale);
@@ -414,7 +417,28 @@ final class StatementService
      * Aşamalı zaman satırlarını gruba göre ayarlar: grupta bedel satırı varsa bilgi amaçlı (dahil),
      * yoksa saat × ücret ile faturalanır. Kapsam dışı ve aşamasız satırlar her zaman faturalanır.
      */
-    public static function syncPhaseLines(int $id): void
+    public static function syncPhaseLines(int $id, bool $refreshExtras = false): void
+    {
+        self::syncPhaseInfo($id);
+        if (!$refreshExtras) {
+            return;
+        }
+        // Kayıt bölündü/taşındı/çıkarıldı: ek zaman bedeli yeni aşıma göre güncellenir, aşım kalmadıysa silinir
+        foreach (self::phaseGroups($id) as $g) {
+            if (!$g['has_extra']) {
+                continue;
+            }
+            $prev = self::phaseBilled($g['id'], $id);
+            $over = round($prev['time_value'] + $g['time_value'] - (float) $g['fee'] - $prev['extra'], 2);
+            if ($over <= 0) {
+                DB::query("DELETE FROM statement_lines WHERE statement_id = ? AND phase_id = ? AND type = 'phase_extra'", [$id, $g['id']]);
+            } else {
+                DB::update('statement_lines', ['amount' => $over], "statement_id = ? AND phase_id = ? AND type = 'phase_extra'", [$id, $g['id']]);
+            }
+        }
+    }
+
+    private static function syncPhaseInfo(int $id): void
     {
         $withFee = array_map('intval', array_column(DB::all("SELECT DISTINCT phase_id FROM statement_lines WHERE statement_id = ? AND type = 'phase_fee'", [$id]), 'phase_id'));
         $lines = DB::all("SELECT id, phase_id, hours, rate, amount, is_info FROM statement_lines WHERE statement_id = ? AND type = 'time' AND phase_id IS NOT NULL", [$id]);
@@ -616,7 +640,7 @@ final class StatementService
                 $t['user_name'] = $line['user_name'];
                 self::insertTimeLine($id, $t, false, $sort);
             }
-            self::syncPhaseLines($id);
+            self::syncPhaseLines($id, true);
             self::recalculate($id);
             Audit::log('statement.line_split', 'statement', $id, ['time_entry_id' => $entry['id'], 'parts' => count($clean)], $channel);
         });
@@ -701,6 +725,7 @@ final class StatementService
         }
 
         DB::transaction(function () use ($id, $s, $in, $vat, $wh, $due, $lines, $discountType, $discount, $channel) {
+            $moved = false;
             foreach ($lines as $lineId => $l) {
                 $line = DB::one('SELECT * FROM statement_lines WHERE id = ? AND statement_id = ?', [$lineId, $id]);
                 if (!$line) {
@@ -727,9 +752,10 @@ final class StatementService
                 // Kurşun: aşama değiştiyse kayıt o aşamaya taşınır
                 if ($line['type'] === 'time' && array_key_exists('phase_id', $l) && $l['phase_id'] !== ($line['phase_id'] === null ? null : (int) $line['phase_id'])) {
                     self::moveLine($id, $line, $l['phase_id']);
+                    $moved = true;
                 }
             }
-            self::syncPhaseLines($id);
+            self::syncPhaseLines($id, $moved);
             DB::update('statements', [
                 'vat_rate'         => $vat ?? 0,
                 'withholding_rate' => $wh ?? 0,
@@ -790,7 +816,7 @@ final class StatementService
                 DB::update('expenses', ['statement_id' => null], 'id = ? AND statement_id = ?', [$line['expense_id'], $id]);
             }
             DB::query('DELETE FROM statement_lines WHERE id = ?', [$line['id']]);
-            self::syncPhaseLines($id);
+            self::syncPhaseLines($id, true);
             self::recalculate($id);
             Audit::log('statement.line_removed', 'statement', $id, ['line' => $line['description']], $channel);
         });

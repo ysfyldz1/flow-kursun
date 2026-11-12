@@ -57,6 +57,8 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
     <div class="stack">
         <form method="post" action="/billing/<?= $s['id'] ?>" id="statement-form" class="card">
             <?= csrf_field() ?>
+            <?php // Enter her zaman "Kaydet ve hesapla" ile gönderilsin (ilk düğme bir satırın "Sil"i olmasın) ?>
+            <?php if ($canEdit): ?><button type="submit" class="sr-default-submit" tabindex="-1" aria-hidden="true"></button><?php endif; ?>
             <table class="table st-lines">
                 <thead>
                     <tr>
@@ -202,7 +204,7 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                     <?php endif; ?>
                 </div>
                 <table class="st-totals">
-                    <tr><td><?= e(__('billing.subtotal')) ?></td><td class="num"><?= e($money($s['subtotal'])) ?></td></tr>
+                    <tr><td><?= e(__('billing.subtotal')) ?></td><td class="num" data-t="subtotal"><?= e($money($s['subtotal'])) ?></td></tr>
                     <?php if ($canEdit || (float) $s['discount_amount'] > 0): ?>
                         <tr>
                             <td><?= e(__('billing.discount')) ?>
@@ -217,25 +219,25 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                                     <?= error_for('discount_value') ?>
                                 <?php elseif ($s['discount_type'] === 'percent'): ?>(%<?= e($pct($s['discount_value'])) ?>)<?php endif; ?>
                             </td>
-                            <td class="num">−<?= e($money($s['discount_amount'])) ?></td>
+                            <td class="num" data-t="discount">−<?= e($money($s['discount_amount'])) ?></td>
                         </tr>
                     <?php endif; ?>
                     <?php if ((float) $s['discount_amount'] > 0): ?>
-                        <tr><td><?= e(__('billing.after_discount')) ?></td><td class="num"><?= e($money((float) $s['subtotal'] - (float) $s['discount_amount'])) ?></td></tr>
+                        <tr><td><?= e(__('billing.after_discount')) ?></td><td class="num" data-t="net"><?= e($money((float) $s['subtotal'] - (float) $s['discount_amount'])) ?></td></tr>
                     <?php endif; ?>
                     <tr>
                         <td><?= e(__('billing.vat')) ?>
                             <?php if ($canEdit): ?><span class="pct-input">% <input name="vat_rate" value="<?= e($pct($s['vat_rate'])) ?>" inputmode="decimal"></span><?php else: ?>(%<?= e($pct($s['vat_rate'])) ?>)<?php endif; ?>
                         </td>
-                        <td class="num"><?= e($money($s['vat_amount'])) ?></td>
+                        <td class="num" data-t="vat"><?= e($money($s['vat_amount'])) ?></td>
                     </tr>
                     <tr>
                         <td><?= e(__('billing.withholding')) ?>
                             <?php if ($canEdit): ?><span class="pct-input">% <input name="withholding_rate" value="<?= e($pct($s['withholding_rate'])) ?>" inputmode="decimal"></span><?php else: ?>(%<?= e($pct($s['withholding_rate'])) ?>)<?php endif; ?>
                         </td>
-                        <td class="num">−<?= e($money($s['withholding_amount'])) ?></td>
+                        <td class="num" data-t="wh">−<?= e($money($s['withholding_amount'])) ?></td>
                     </tr>
-                    <tr class="grand"><td><?= e(__('billing.total_due')) ?></td><td class="num"><?= e($money($s['total'])) ?></td></tr>
+                    <tr class="grand"><td><?= e(__('billing.total_due')) ?></td><td class="num" data-t="total"><?= e($money($s['total'])) ?></td></tr>
                     <?php if ($issued): ?>
                         <tr><td class="muted"><?= e(__('billing.paid')) ?></td><td class="num muted">−<?= e($money($s['paid_amount'])) ?></td></tr>
                         <tr class="balance"><td><?= e(__('billing.balance')) ?></td><td class="num"><?= e($money($balance)) ?></td></tr>
@@ -504,6 +506,34 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
 </script>
 <?php endif; ?>
 
+<?php if ($canEdit): ?>
+<script>
+// Toplamlar yazarken güncellensin (kaydedince sunucu aynı hesabı yapar): ara toplam → iskonto → KDV/stopaj
+(() => {
+    const form = document.getElementById('statement-form');
+    const cell = k => form.querySelector(`[data-t="${k}"]`);
+    const sample = cell('total')?.textContent || '';
+    const nf = new Intl.NumberFormat(<?= json_encode(\App\Core\Lang::locale() === 'tr' ? 'tr-TR' : 'en-US') ?>, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const money = v => sample.replace(/[\d.,]+/, nf.format(Math.round(v * 100) / 100));
+    const num = v => { v = (v || '').trim().replace(/\s/g, ''); if (!v) return 0;
+        if (v.includes(',')) v = v.replace(/\./g, '').replace(',', '.'); else if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, '');
+        const n = Number(v); return isNaN(n) ? 0 : n; };
+    const recalc = () => {
+        let sub = 0;
+        form.querySelectorAll('.st-lines input[name$="[amount]"]').forEach(i => sub += num(i.value));
+        const dType = form.querySelector('[name="discount_type"]')?.value, dVal = num(form.querySelector('[name="discount_value"]')?.value);
+        const disc = dType === 'amount' ? Math.min(dVal, sub) : Math.round(sub * dVal) / 100;
+        const net = sub - disc;
+        const vat = Math.round(net * num(form.querySelector('[name="vat_rate"]')?.value)) / 100;
+        const wh = Math.round(net * num(form.querySelector('[name="withholding_rate"]')?.value)) / 100;
+        const set = (k, v, minus) => { const c = cell(k); if (c) c.textContent = (minus ? '−' : '') + money(v); };
+        set('subtotal', sub); set('discount', disc, true); set('net', net); set('vat', vat); set('wh', wh, true); set('total', net + vat - wh);
+    };
+    form.addEventListener('input', e => { if (e.target.matches('input, select')) recalc(); });
+    form.addEventListener('change', e => { if (e.target.matches('select')) recalc(); });
+})();
+</script>
+<?php endif; ?>
 <script>
 // Satır menüsü: aynı anda bir menü açık, dışarı tıklayınca kapanır; "taşı" gizli alanı doldurup formu kaydeder
 document.addEventListener('click', e => {

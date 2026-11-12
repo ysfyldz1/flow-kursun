@@ -1622,6 +1622,7 @@ return [
     'phases.saved_over'          => '":name" aşamasının bedeli aşıldı; aşan kısım ayrıca faturalanır.',
     'app.toast_warning'          => 'Dikkat',
     'billing.project'            => 'Proje',
+    'billing.no_extra_needed'    => 'Bu aşamada bedeli aşan zaman yok ya da ek bedel zaten eklenmiş.',
     'billing.tag_phase_fee'      => 'Bedel',
     'billing.tag_phase_extra'    => 'Ek zaman',
     'billing.tag_expense'        => 'Masraf',

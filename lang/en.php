@@ -1622,6 +1622,7 @@ return [
     'phases.saved_over'          => 'The fee for ":name" has been exceeded; the excess is billed separately.',
     'app.toast_warning'          => 'Heads up',
     'billing.project'            => 'Project',
+    'billing.no_extra_needed'    => 'There is no time over the fee on this phase, or additional time is already added.',
     'billing.tag_phase_fee'      => 'Fee',
     'billing.tag_phase_extra'    => 'Extra time',
     'billing.tag_expense'        => 'Expense',
