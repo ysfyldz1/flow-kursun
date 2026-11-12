@@ -1604,4 +1604,9 @@ return [
     'phases.saved_warn'          => ':pct% of the fee for ":name" has been used.',
     'phases.saved_over'          => 'The fee for ":name" has been exceeded; the excess is billed separately.',
     'app.toast_warning'          => 'Heads up',
+    'discount.field'             => 'Discount (%)',
+    'discount.client_hint'       => 'Applied by default to this client\'s statements; a project discount takes precedence.',
+    'discount.project_hint'      => 'If empty, the client discount is used. Can be changed on the statement.',
+    'discount.from_project'      => 'Project discount',
+    'discount.from_client'       => 'Client discount',
 ];

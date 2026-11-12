@@ -199,6 +199,7 @@ $row = fn (string $label, ?string $value) => $value
                 <?= $row('clients.locale', __('lang.' . $c['locale'])) ?>
                 <?php if (can('rates.view')): ?>
                     <?= $row('clients.hourly_rate', $c['hourly_rate'] !== null ? format_money((float) $c['hourly_rate'], $c['currency']) : __('clients.rate_default_used')) ?>
+                    <?= $row('discount.field', $c['discount_pct'] !== null ? '%' . rtrim(rtrim((string) $c['discount_pct'], '0'), '.') : null) ?>
                     <?php foreach ($c['user_rates'] as $r): ?>
                         <div class="dl-row"><dt><?= e($r['name']) ?></dt><dd><?= e(format_money((float) $r['hourly_rate'], $c['currency'])) ?></dd></div>
                     <?php endforeach; ?>

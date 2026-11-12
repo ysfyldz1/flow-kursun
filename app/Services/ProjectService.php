@@ -160,6 +160,7 @@ final class ProjectService
             'hourly_rate'         => parse_money($in['hourly_rate'] ?? ''),
             'fixed_fee'           => parse_money($in['fixed_fee'] ?? ''),
             'retainer_amount'     => parse_money($in['retainer_amount'] ?? ''),
+            'discount_pct'        => parse_money($in['discount_pct'] ?? ''),
             'budget_hours'        => parse_money($in['budget_hours'] ?? ''),
             'court'               => $str('court'),
             'case_number'         => $str('case_number'),
@@ -182,10 +183,13 @@ final class ProjectService
         if ($data['responsible_user_id'] && !DB::value('SELECT id FROM users WHERE id = ? AND is_active = 1', [$data['responsible_user_id']])) {
             $errors['responsible_user_id'] = __('validation.required');
         }
-        foreach (['hourly_rate', 'fixed_fee', 'retainer_amount', 'budget_hours'] as $k) {
+        foreach (['hourly_rate', 'fixed_fee', 'retainer_amount', 'budget_hours', 'discount_pct'] as $k) {
             if ($data[$k] === false) {
                 $errors[$k] = __('validation.number');
             }
+        }
+        if (is_float($data['discount_pct']) && ($data['discount_pct'] < 0 || $data['discount_pct'] > 100)) {
+            $errors['discount_pct'] = __('validation.number');
         }
         $d = \DateTime::createFromFormat('Y-m-d', $data['opened_at']);
         if (!$d || $d->format('Y-m-d') !== $data['opened_at']) {
@@ -218,7 +222,7 @@ final class ProjectService
 
         // Ücret yetkisi olmayan ücret alanlarını değiştiremez; para birimi de ücretlere bağlı olduğu için kilitli
         if (!$canRates) {
-            unset($data['hourly_rate'], $data['fixed_fee'], $data['retainer_amount'], $data['billing_type'], $data['currency']);
+            unset($data['hourly_rate'], $data['fixed_fee'], $data['retainer_amount'], $data['discount_pct'], $data['billing_type'], $data['currency']);
             if (!$current) {
                 $data['currency'] = $client['currency'];
             }

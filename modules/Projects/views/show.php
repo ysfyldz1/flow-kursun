@@ -337,6 +337,7 @@ $billingValue = match ($p['billing_type']) {
                     <?= $row('projects.billing_type', __('projects.billing_' . $p['billing_type'])) ?>
                     <?= $row('clients.currency', $p['currency']) ?>
                     <?= $row('projects.fee', $billingValue) ?>
+                    <?= $row('discount.field', $p['discount_pct'] !== null ? '%' . rtrim(rtrim((string) $p['discount_pct'], '0'), '.') : null) ?>
                 <?php endif; ?>
             </dl>
         </section>

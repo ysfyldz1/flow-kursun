@@ -123,6 +123,15 @@ $type = $v('type', 'company');
                 <small class="muted"><?= e(__('clients.hourly_rate_hint')) ?></small>
                 <?= error_for('hourly_rate') ?>
             </label>
+            <label class="field">
+                <span><?= e(__('discount.field')) ?></span>
+                <div class="input-group">
+                    <input name="discount_pct" inputmode="decimal" value="<?= e(money_input($v('discount_pct'))) ?>">
+                    <span class="input-addon">%</span>
+                </div>
+                <small class="muted"><?= e(__('discount.client_hint')) ?></small>
+                <?= error_for('discount_pct') ?>
+            </label>
             <?php endif; ?>
         </div>
 

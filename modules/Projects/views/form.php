@@ -136,6 +136,15 @@ $back = $p ? '/projects/' . $p['id'] : ($clientId ? '/clients/' . $clientId : '/
                     <small class="muted"><?= e(__('projects.hourly_rate_hint')) ?></small>
                     <?= error_for('hourly_rate') ?>
                 </label>
+                <label class="field">
+                    <span><?= e(__('discount.field')) ?></span>
+                    <div class="input-group">
+                        <input name="discount_pct" inputmode="decimal" value="<?= e(money_input($v('discount_pct'))) ?>">
+                        <span class="input-addon">%</span>
+                    </div>
+                    <small class="muted"><?= e(__('discount.project_hint')) ?></small>
+                    <?= error_for('discount_pct') ?>
+                </label>
                 <label class="field" data-billing="fixed">
                     <span><?= e(__('projects.fixed_fee')) ?> *</span>
                     <div class="input-group">

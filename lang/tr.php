@@ -1604,4 +1604,9 @@ return [
     'phases.saved_warn'          => '":name" aşamasının bedelinin %:pct kadarı kullanıldı.',
     'phases.saved_over'          => '":name" aşamasının bedeli aşıldı; aşan kısım ayrıca faturalanır.',
     'app.toast_warning'          => 'Dikkat',
+    'discount.field'             => 'İskonto (%)',
+    'discount.client_hint'       => 'Bu müvekkilin dökümlerine varsayılan olarak uygulanır; projede ayrı iskonto varsa o geçerlidir.',
+    'discount.project_hint'      => 'Boşsa müvekkilin iskontosu kullanılır. Dökümde değiştirilebilir.',
+    'discount.from_project'      => 'Proje iskontosu',
+    'discount.from_client'       => 'Müvekkil iskontosu',
 ];

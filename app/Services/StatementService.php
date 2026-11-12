@@ -267,10 +267,28 @@ final class StatementService
             if (!DB::value('SELECT COUNT(*) FROM statement_lines WHERE statement_id = ?', [$id])) {
                 throw new ValidationException(['client_id' => __('billing.nothing_to_bill')]);
             }
+            self::applyDefaultDiscount($id, $client);
             self::recalculate($id);
             Audit::log('statement.drafted', 'statement', $id, ['client_id' => $client['id'], 'currency' => $currency], $channel);
             return $id;
         });
+    }
+
+    /**
+     * Kurşun: varsayılan iskonto. Döküm tek projeden oluşuyorsa ve projenin iskontosu varsa o,
+     * yoksa müvekkilin iskontosu (toplanmaz). Taslakta elle değiştirilebilir.
+     */
+    public static function applyDefaultDiscount(int $id, array $client): void
+    {
+        $projectIds = array_column(DB::all('SELECT DISTINCT project_id FROM statement_lines WHERE statement_id = ? AND project_id IS NOT NULL', [$id]), 'project_id');
+        $pct = null;
+        if (count($projectIds) === 1) {
+            $pct = DB::value('SELECT discount_pct FROM projects WHERE id = ?', [$projectIds[0]]);
+        }
+        $pct ??= $client['discount_pct'] ?? null;
+        if ($pct !== null && (float) $pct > 0) {
+            DB::update('statements', ['discount_type' => 'percent', 'discount_value' => (float) $pct], 'id = ?', [$id]);
+        }
     }
 
     public static function updateDraft(int $id, array $in, string $channel = 'web'): void

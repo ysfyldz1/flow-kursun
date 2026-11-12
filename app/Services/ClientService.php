@@ -132,8 +132,12 @@ final class ClientService
             'currency'    => (string) ($in['currency'] ?? 'TRY'),
             'locale'      => (string) ($in['locale'] ?? 'tr'),
             'hourly_rate' => parse_money($in['hourly_rate'] ?? ''),
+            'discount_pct' => parse_money($in['discount_pct'] ?? ''),
             'notes'       => $str('notes'),
         ];
+        if ($data['discount_pct'] === false || ($data['discount_pct'] !== null && ($data['discount_pct'] < 0 || $data['discount_pct'] > 100))) {
+            $errors['discount_pct'] = __('validation.number');
+        }
 
         if ($data['name'] === '') {
             $errors['name'] = __('validation.required');
@@ -199,7 +203,7 @@ final class ClientService
             throw new ValidationException($errors);
         }
         if (!Auth::can('rates.view')) {
-            unset($data['hourly_rate']);
+            unset($data['hourly_rate'], $data['discount_pct']);
             $rates = null;
         }
         return [$data, $contacts, $rates];
