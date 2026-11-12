@@ -7,6 +7,8 @@ $p = ['can' => 'payments.manage'];
 
 $router->get('/billing', [BillingController::class, 'index']);
 $router->get('/billing/new', [BillingController::class, 'create'], $s);
+$router->get('/billing/new/advanced', [BillingController::class, 'createAdvanced'], $s);
+$router->get('/billing/new/project/{id}', [BillingController::class, 'project'], $s);
 $router->post('/billing', [BillingController::class, 'store'], $s);
 $router->get('/billing/{id}', [BillingController::class, 'show']);
 $router->post('/billing/{id}', [BillingController::class, 'update'], $s);

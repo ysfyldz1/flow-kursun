@@ -1000,3 +1000,54 @@ textarea.autosize { overflow: hidden; box-sizing: border-box; }
 .grp-phase-only { font-size: 14px; }
 .grp-phase-only::before { display: none; }
 .sr-default-submit { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
+
+/* Kurşun: yeni döküm — müvekkil → proje kartları → aşama sekmeleri */
+.start-client { margin-bottom: 20px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 12px; flex-wrap: wrap; }
+.section-head h2 { font-size: 16px; margin: 0; }
+.bill-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 16px; }
+.bill-card { display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: inherit; text-decoration: none; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.bill-card:hover { border-color: var(--primary); box-shadow: 0 8px 24px rgba(15, 23, 42, .08); transform: translateY(-1px); }
+.bill-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.bill-card-title { font-size: 15px; line-height: 1.3; }
+.bill-card-big { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; background: var(--amber-bg); }
+.bill-card-big span { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--amber); }
+.bill-card-big b { font-size: 18px; }
+.bill-card-big em { font-style: normal; color: var(--muted); font-size: 13px; }
+.bill-card-note { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--green); }
+.bill-card-draft { color: var(--blue); font-weight: 500; }
+.bill-card-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+.bill-done { background: var(--green-bg); border-color: color-mix(in srgb, var(--green) 25%, transparent); }
+.bill-none .bill-card-note { color: var(--muted); }
+.bill-draft .bill-card-big { background: var(--blue-bg); }
+.bill-draft .bill-card-big span { color: var(--blue); }
+.bill-summary { margin-bottom: 16px; }
+.bill-summary tfoot td { border-top: 2px solid var(--border); }
+.bill-summary .sum-done td { background: var(--green-bg); }
+.bill-summary .sum-current td:first-child { box-shadow: inset 3px 0 0 var(--primary); }
+.link-plain { color: inherit; text-decoration: none; }
+.link-plain:hover { color: var(--primary); }
+.state-pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.state-open { background: var(--amber-bg); color: var(--amber); }
+.state-draft { background: var(--blue-bg); color: var(--blue); }
+.state-done { background: var(--green-bg); color: var(--green); }
+.state-none { background: #f1f5f9; color: var(--muted); }
+.phase-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; margin-bottom: -1px; position: relative; z-index: 1; }
+.phase-tab { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border: 1px solid var(--border); border-bottom: 0; border-radius: 10px 10px 0 0; background: var(--bg); color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: none; }
+.phase-tab:hover { color: var(--text); }
+.phase-tab.active { background: var(--surface); color: var(--text); }
+.phase-tab.tab-done { background: var(--green-bg); color: var(--green); }
+.phase-tab.tab-done.active { box-shadow: inset 0 3px 0 var(--green); }
+.phase-tab.active:not(.tab-done) { box-shadow: inset 0 3px 0 var(--primary); }
+.phase-panel { border-top-left-radius: 0; }
+.panel-done { background: color-mix(in srgb, var(--green-bg) 55%, var(--surface)); }
+.phase-panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; padding: 16px 18px; border-bottom: 1px solid var(--border); }
+.phase-panel-head h2 { font-size: 16px; margin: 0 0 8px; }
+.phase-panel .alert { margin: 12px 18px 0; }
+.prev-statements { padding: 14px 18px 18px; border-top: 1px solid var(--border); }
+.prev-statements h3 { font-size: 13px; margin: 0 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+.prev-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px dashed var(--border); flex-wrap: wrap; }
+.prev-row:first-of-type { border-top: 0; }
+.prev-amount { margin-left: auto; font-weight: 600; }
+.bill-summary th.num { text-align: right; }
+.bill-summary td { vertical-align: middle; }

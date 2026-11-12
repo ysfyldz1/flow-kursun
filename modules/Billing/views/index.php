@@ -16,35 +16,6 @@ $query = fn (array $over) => '?' . http_build_query(array_filter($over + $filter
     <?php endif; ?>
 </div>
 
-<?php if ($unbilled): ?>
-    <section class="card widget widget-auto" style="margin-bottom:16px">
-        <header class="widget-head">
-            <span class="widget-icon"><?= icon('clock') ?></span>
-            <h2><?= e(__('billing.unbilled_title')) ?></h2>
-        </header>
-        <table class="table table-m">
-            <?php foreach ($unbilled as $u): ?>
-                <tr>
-                    <td class="cell-main m-title"><strong><?= e($u['name']) ?></strong><span><?= e($u['code']) ?> · <?= e(format_date($u['first_date'])) ?> – <?= e(format_date($u['last_date'])) ?></span></td>
-                    <td class="m-meta">
-                        <?= (int) $u['entries'] ?> <?= e(__('billing.entries')) ?> · <?= TimeService::hours((int) $u['minutes']) ?> <?= e(__('projects.hours')) ?>
-                        <?php if ($u['expenses']): ?> · <?= (int) $u['expenses'] ?> <?= e(__('expenses.count_label')) ?><?php endif; ?>
-                    </td>
-                    <td class="num m-value"><strong><?= e(format_money((float) $u['amount'], $u['currency'])) ?></strong></td>
-                    <td class="cell-actions m-actions">
-                        <form method="post" action="/billing">
-                            <?= csrf_field() ?>
-                            <input type="hidden" name="client_id" value="<?= $u['client_id'] ?>">
-                            <input type="hidden" name="currency" value="<?= e($u['currency']) ?>">
-                            <input type="hidden" name="period_end" value="<?= date('Y-m-d') ?>">
-                            <button class="btn btn-sm btn-outline"><?= e(__('billing.create_draft')) ?></button>
-                        </form>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </table>
-    </section>
-<?php endif; ?>
 
 <div class="card">
     <form method="get" class="toolbar">

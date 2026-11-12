@@ -35,7 +35,57 @@ final class BillingController
         ]);
     }
 
+    /** Kurşun: yeni döküm — müvekkil seç, açık projeleri kart olarak gör. */
     public function create(): void
+    {
+        $clientId = (int) ($_GET['client_id'] ?? 0);
+        $client = $clientId ? DB::one('SELECT id, code, name, currency FROM clients WHERE id = ?', [$clientId]) : null;
+        View::render('Billing::start', [
+            'title'    => __('billing.new'),
+            'clients'  => DB::all(
+                "SELECT c.id, c.code, c.name, c.currency,
+                        (SELECT COUNT(*) FROM time_entries t WHERE t.client_id = c.id AND t.statement_id IS NULL AND t.is_billable = 1) AS unbilled
+                 FROM clients c WHERE c.is_active = 1 ORDER BY c.name"
+            ),
+            'client'   => $client,
+            'projects' => $client ? \App\Services\BillingOverviewService::clientProjects((int) $client['id']) : [],
+        ]);
+    }
+
+    /** Kurşun: proje faturalama — aşama özeti ve aşama sekmeleri. */
+    public function project(string $id): void
+    {
+        $project = DB::one(
+            'SELECT p.*, c.name AS client_name, c.code AS client_code FROM projects p JOIN clients c ON c.id = p.client_id WHERE p.id = ?',
+            [(int) $id]
+        ) ?? abort(404);
+        $groups = \App\Services\BillingOverviewService::project((int) $project['id']);
+        $tab = (string) ($_GET['tab'] ?? '');
+        $keys = array_column($groups, 'key');
+        if (!in_array($tab, $keys, true)) {
+            // Varsayılan: faturalanmamış kaydı olan ilk sekme
+            $open = array_values(array_filter($groups, fn ($g) => $g['state'] === 'open'));
+            $tab = ($open[0]['key'] ?? null) ?? ($keys[0] ?? 'none');
+        }
+        $current = null;
+        foreach ($groups as $g) {
+            if ($g['key'] === $tab) {
+                $current = $g;
+            }
+        }
+        View::render('Billing::project', [
+            'title'   => $project['name'],
+            'project' => $project,
+            'groups'  => $groups,
+            'tab'     => $tab,
+            'current' => $current,
+            'entries' => $current ? \App\Services\BillingOverviewService::unbilledEntries((int) $project['id'], $current['phase_id'], $current['key'] === 'none') : [],
+            'phased'  => (bool) array_filter($groups, fn ($g) => $g['phase_id'] !== null),
+        ]);
+    }
+
+    /** Eski ayrıntılı form (tarih aralığı, müvekkil geneli) — gerekirse. */
+    public function createAdvanced(): void
     {
         View::render('Billing::create', [
             'title'    => __('billing.new'),
@@ -52,7 +102,12 @@ final class BillingController
         try {
             $id = StatementService::createDraft($_POST);
         } catch (ValidationException $e) {
-            fail($e, '/billing/new');
+            // Proje ekranından gelindiyse oraya, hata iletisiyle dön
+            if (preg_match('#^/billing/new/project/\d+(\?tab=[\w-]+)?$#', (string) ($_POST['back'] ?? ''))) {
+                flash('error', implode(' ', $e->errors));
+                redirect((string) $_POST['back']);
+            }
+            fail($e, '/billing/new/advanced');
         }
         flash('success', __('billing.draft_created'));
         redirect("/billing/$id");

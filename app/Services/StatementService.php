@@ -176,7 +176,7 @@ final class StatementService
             throw new ValidationException($errors);
         }
 
-        return DB::transaction(function () use ($client, $currency, $start, $end, $channel, $scopeProject, $scopePhase) {
+        return DB::transaction(function () use ($client, $currency, $start, $end, $channel, $scopeProject, $scopePhase, $in) {
             $isCompany = $client['type'] === 'company';
             $id = DB::insert('statements', [
                 'client_id'        => $client['id'],
@@ -203,11 +203,12 @@ final class StatementService
                 if ($scopePhase) {
                     $params[] = $scopePhase;
                 }
+                $unphased = !$scopePhase && $scopeProject && !empty($in['unphased']);
                 $entries = DB::all(
                     'SELECT t.*, u.name AS user_name FROM time_entries t JOIN users u ON u.id = t.user_id
                      WHERE t.project_id = ? AND t.statement_id IS NULL AND t.is_billable = 1
                        AND t.work_date <= ? ' . ($start ? 'AND t.work_date >= ?' : '') . '
-                       ' . ($scopePhase ? 'AND t.phase_id = ?' : '') . '
+                       ' . ($scopePhase ? 'AND t.phase_id = ?' : ($unphased ? 'AND t.phase_id IS NULL' : '')) . '
                      ORDER BY t.work_date, t.id',
                     $params
                 );
@@ -286,6 +287,13 @@ final class StatementService
                 throw new ValidationException(['client_id' => __('billing.nothing_to_bill')]);
             }
             self::applyDefaultDiscount($id, $client);
+            // Başlangıç verilmediyse dönem, dökümdeki en eski kayıttan başlar
+            if (!$start) {
+                $first = DB::value('SELECT MIN(work_date) FROM statement_lines WHERE statement_id = ?', [$id]);
+                if ($first) {
+                    DB::update('statements', ['period_start' => $first], 'id = ?', [$id]);
+                }
+            }
             self::recalculate($id);
             Audit::log('statement.drafted', 'statement', $id, ['client_id' => $client['id'], 'currency' => $currency], $channel);
             return $id;
