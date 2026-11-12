@@ -19,7 +19,7 @@
     const rounded = <?= json_encode(__(\App\Services\TimeService::decimal() ? 'time.rounded_to_decimal' : 'time.rounded_to')) ?>;
 
     document.querySelectorAll('[data-duration]').forEach(input => {
-        const preview = input.parentElement.querySelector('[data-duration-preview]');
+        const preview = (input.closest('.field') || input.parentElement).querySelector('[data-duration-preview]');
         const update = () => {
             const v = parse(input.value);
             if (!input.value.trim()) { preview.textContent = hint; preview.classList.remove('text-warn'); return; }
@@ -30,6 +30,29 @@
         };
         input.addEventListener('input', update);
         update();
+
+        // ▲▼: 6 dakikalık adımlar; kutudan çıkınca 6 dakikanın katına yukarı yuvarlanıp yazılır
+        const write = min => {
+            input.value = decimal ? (min / 60).toFixed(1).replace('.', sep) : fmt(min);
+            update();
+        };
+        input.closest('.dur-wrap')?.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+            const cur = parse(input.value);
+            const base = cur && cur > 0 ? Math.ceil(cur / 6) * 6 : 0;
+            write(Math.max(6, base + +b.dataset.step));
+            input.focus();
+        }));
+        input.addEventListener('keydown', e => {
+            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+            e.preventDefault();
+            const cur = parse(input.value);
+            const base = cur && cur > 0 ? Math.ceil(cur / 6) * 6 : 0;
+            write(Math.max(6, base + (e.key === 'ArrowUp' ? 6 : -6)));
+        });
+        input.addEventListener('blur', () => {
+            const v = parse(input.value);
+            if (v && v > 0) write(Math.ceil(v / 6) * 6);
+        });
     });
 
     // Faturalanmaz projede "faturalanabilir" kutusu gizlenir

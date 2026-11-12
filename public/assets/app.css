@@ -1097,3 +1097,9 @@ textarea.autosize { overflow: hidden; box-sizing: border-box; }
 .sel-cell input { width: 16px; height: 16px; }
 .bill-entries tr.row-off td { opacity: .45; }
 .bill-entries tr.row-off td.sel-cell { opacity: 1; }
+/* Süre: 6 dakikalık ▲▼ */
+.dur-wrap { position: relative; display: flex; }
+.dur-wrap input { flex: 1; min-width: 0; padding-right: 36px; }
+.dur-step { position: absolute; right: 4px; top: 4px; bottom: 4px; display: flex; flex-direction: column; width: 26px; border-left: 1px solid var(--border); }
+.dur-step button { flex: 1; border: 0; background: transparent; color: var(--muted); font-size: 9px; line-height: 1; cursor: pointer; padding: 0; }
+.dur-step button:hover { color: var(--primary); background: var(--bg); }
