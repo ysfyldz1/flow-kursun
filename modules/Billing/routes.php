@@ -19,6 +19,7 @@ $router->post('/billing/{id}/lines', [BillingController::class, 'addLine'], $s);
 $router->post('/billing/{id}/lines/{line}/delete', [BillingController::class, 'removeLine'], $s);
 $router->post('/billing/{id}/phases/{phase}/fee', [BillingController::class, 'phaseFee'], $s);
 $router->post('/billing/{id}/phases/{phase}/extra', [BillingController::class, 'phaseExtra'], $s);
+$router->post('/billing/{id}/pending', [BillingController::class, 'addPending'], $s);
 $router->post('/billing/{id}/lines/{line}/split', [BillingController::class, 'split'], $s);
 $router->post('/billing/{id}/issue', [BillingController::class, 'issue'], $s);
 $router->post('/billing/{id}/cancel', [BillingController::class, 'cancel'], $s);

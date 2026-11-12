@@ -534,6 +534,68 @@ final class StatementService
     }
 
     /**
+     * Taslağın kapsamına giren ama taslağa girmemiş (sonradan girilen/taşınan) faturalanmamış zaman kayıtları.
+     * Kapsam: aşama dökümü → o aşama; proje dökümü → o proje (yalnız aşamasız kayıt içeren taslakta yalnız aşamasızlar);
+     * müvekkil dökümü → müvekkilin o para birimindeki faturalanabilir projeleri.
+     */
+    public static function pendingForDraft(int $id): array
+    {
+        $s = DB::one('SELECT * FROM statements WHERE id = ?', [$id]);
+        if (!$s || $s['status'] !== 'draft') {
+            return [];
+        }
+        $where = "t.statement_id IS NULL AND t.is_billable = 1 AND t.client_id = ? AND t.currency = ? AND p.billing_type <> 'non_billable'";
+        $params = [$s['client_id'], $s['currency']];
+        if ($s['phase_id']) {
+            $where .= ' AND t.phase_id = ?';
+            $params[] = $s['phase_id'];
+        } elseif ($s['project_id']) {
+            $where .= ' AND t.project_id = ?';
+            $params[] = $s['project_id'];
+            // "Aşamasız kayıtlar" dökümü: taslaktaki satırların hiçbiri aşamalı değilse yalnız aşamasızlar
+            $phasedLines = (int) DB::value('SELECT COUNT(*) FROM statement_lines WHERE statement_id = ? AND phase_id IS NOT NULL', [$id]);
+            if ($phasedLines === 0 && PhaseService::hasPhases((int) $s['project_id'])) {
+                $where .= ' AND t.phase_id IS NULL';
+            }
+        }
+        return DB::all(
+            "SELECT t.*, u.name AS user_name FROM time_entries t
+             JOIN projects p ON p.id = t.project_id JOIN users u ON u.id = t.user_id
+             WHERE $where ORDER BY t.work_date, t.id",
+            $params
+        );
+    }
+
+    /** Kapsamdaki yeni kayıtları taslağa ekler; aşama bedeli ve ek zaman hesapları güncellenir. */
+    public static function addPendingToDraft(int $id, string $channel = 'web'): int
+    {
+        self::draftOrFail($id);
+        $entries = self::pendingForDraft($id);
+        if (!$entries) {
+            return 0;
+        }
+        DB::transaction(function () use ($id, $entries, $channel) {
+            $sort = (int) DB::value('SELECT COALESCE(MAX(sort), 0) + 1 FROM statement_lines WHERE statement_id = ?', [$id]);
+            $phases = [];
+            foreach ($entries as $t) {
+                $billing = (string) DB::value('SELECT billing_type FROM projects WHERE id = ?', [$t['project_id']]);
+                self::insertTimeLine($id, $t, $billing !== 'hourly', $sort);
+                if ($t['phase_id'] !== null && $billing === 'hourly') {
+                    $phases[(int) $t['phase_id']] = true;
+                }
+            }
+            // Bedel satırı olmayan aşamaya kalan bedel eklenir (varsa dokunulmaz)
+            foreach (array_keys($phases) as $phaseId) {
+                self::addPhaseFee($id, $phaseId);
+            }
+            self::syncPhaseLines($id, true);
+            self::recalculate($id);
+            Audit::log('statement.entries_added', 'statement', $id, ['count' => count($entries)], $channel);
+        });
+        return count($entries);
+    }
+
+    /**
      * Satırları proje ve (aşamalı projede) aşamaya göre gruplar. Ekran ve PDF aynısını kullanır.
      * @return list<array{title: string, phase: ?string, phase_id: ?int, project_id: ?int, lines: list<array>, total: float}>
      */

@@ -1078,3 +1078,6 @@ textarea.autosize { overflow: hidden; box-sizing: border-box; }
 .client-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 16px 18px; margin-bottom: 18px; }
 .client-banner h2 { margin: 4px 0 0; font-size: 18px; }
 .empty-lg .icon { vertical-align: -3px; color: var(--green); }
+.pending-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.phase-panel-head { align-items: center; }
+.phase-panel-head > form, .phase-panel-head > a.btn { flex: 0 0 auto; }

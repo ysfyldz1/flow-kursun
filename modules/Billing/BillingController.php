@@ -192,6 +192,7 @@ final class BillingController
             'projects' => DB::all('SELECT id, number, name FROM projects WHERE client_id = ? AND currency = ? ORDER BY number', [$s['client_id'], $s['currency']]),
             'phaseGroups'   => StatementService::phaseGroups((int) $id),
             'projectPhases' => StatementService::projectPhases((int) $id),
+            'pending'       => $s['status'] === 'draft' ? StatementService::pendingForDraft((int) $id) : [],
         ]);
     }
 
@@ -225,6 +226,19 @@ final class BillingController
             StatementService::updateDraft((int) $id, $_POST);
             StatementService::addPhaseExtra((int) $id, (int) $phase);
         }, $id, __('app.saved'));
+    }
+
+    /** Kapsama sonradan giren kayıtları taslağa ekle (taslak ya da proje ekranından). */
+    public function addPending(string $id): void
+    {
+        try {
+            $n = StatementService::addPendingToDraft((int) $id);
+            flash('success', __('billing.pending_added', ['count' => $n]));
+        } catch (ValidationException $e) {
+            flash('error', implode(' ', $e->errors));
+        }
+        $back = (string) ($_POST['back'] ?? '');
+        redirect(preg_match('#^/billing/new/project/\d+(\?tab=[\w-]+)?$#', $back) ? $back : "/billing/$id");
     }
 
     public function split(string $id, string $line): void

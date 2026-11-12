@@ -70,6 +70,13 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
 <?php elseif ($draft): ?>
     <div class="alert alert-info"><?= e(__('billing.draft_info')) ?></div>
 <?php endif; ?>
+<?php if (!empty($pending) && $canEdit): ?>
+    <form method="post" action="/billing/<?= $s['id'] ?>/pending" class="alert alert-warning-soft pending-strip">
+        <?= csrf_field() ?>
+        <span><?= e(__('billing.pending_note', ['count' => count($pending)])) ?></span>
+        <button class="btn btn-sm btn-primary"><?= e(__('billing.add_pending', ['count' => count($pending)])) ?></button>
+    </form>
+<?php endif; ?>
 
 <div class="grid grid-3-1">
     <div class="stack">
