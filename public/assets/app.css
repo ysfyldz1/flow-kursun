@@ -1062,3 +1062,19 @@ textarea.autosize { overflow: hidden; box-sizing: border-box; }
 .bill-summary .sum-has-draft td { background: #fef6dc; }
 .state-draft { background: #fef6dc; color: #92400e; }
 .row-menu-list form { display: flex; flex-direction: column; margin: 0; }
+/* Yeni döküm: müvekkil arama + bekleyenler */
+.client-finder { padding: 18px; margin-bottom: 26px; position: relative; }
+.finder-input { display: flex; align-items: center; gap: 12px; height: 54px; padding: 0 18px; border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface); transition: border-color .15s, box-shadow .15s; }
+.finder-input:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+.finder-input .icon { color: var(--muted); width: 20px; height: 20px; }
+.finder-input input { flex: 1; border: 0; outline: 0; font: inherit; font-size: 16px; background: transparent; min-width: 0; }
+.finder-results { margin-top: 10px; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.finder-item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; color: inherit; text-decoration: none; border-top: 1px solid var(--border); }
+.finder-item:first-child { border-top: 0; }
+.finder-item:hover, .finder-item:focus { background: var(--bg); }
+.finder-item strong { flex: 1; min-width: 0; }
+.finder-empty { padding: 14px 16px; }
+.bill-card-go { color: var(--primary); font-weight: 600; }
+.client-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 16px 18px; margin-bottom: 18px; }
+.client-banner h2 { margin: 4px 0 0; font-size: 18px; }
+.empty-lg .icon { vertical-align: -3px; color: var(--green); }

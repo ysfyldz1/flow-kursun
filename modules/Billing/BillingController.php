@@ -49,6 +49,12 @@ final class BillingController
             ),
             'client'   => $client,
             'projects' => $client ? \App\Services\BillingOverviewService::clientProjects((int) $client['id']) : [],
+            // Faturalanmamış hizmeti olan müvekkiller (tutara göre çoktan aza)
+            'waiting'  => $client ? [] : (function () {
+                $rows = StatementService::unbilledSummary();
+                usort($rows, fn ($a, $b) => [(float) $b['amount'], (int) $b['minutes']] <=> [(float) $a['amount'], (int) $a['minutes']]);
+                return $rows;
+            })(),
         ]);
     }
 
