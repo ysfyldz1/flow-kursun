@@ -84,6 +84,30 @@ final class BillingController
         ]);
     }
 
+    // Kurşun: proje faturalama ekranında faturalanmamış kaydı aşamaya taşı / böl
+    public function moveEntry(string $id, string $entry): void
+    {
+        $this->entryAction($id, fn () => \App\Services\PhaseService::moveEntry((int) $id, (int) $entry, (int) ($_POST['phase_id'] ?? 0) ?: null), __('billing.entry_moved'));
+    }
+
+    public function splitEntry(string $id, string $entry): void
+    {
+        $this->entryAction($id, fn () => \App\Services\PhaseService::splitEntry((int) $id, (int) $entry, (array) ($_POST['parts'] ?? [])), __('billing.split_done'));
+    }
+
+    private function entryAction(string $id, callable $fn, string $message): never
+    {
+        $tab = preg_match('/^[\w-]+$/', (string) ($_POST['tab'] ?? '')) ? (string) $_POST['tab'] : '';
+        $to = "/billing/new/project/$id" . ($tab !== '' ? "?tab=$tab" : '');
+        try {
+            $fn();
+            flash('success', $message);
+        } catch (ValidationException $e) {
+            flash('error', implode(' ', $e->errors));
+        }
+        redirect($to);
+    }
+
     /** Eski ayrıntılı form (tarih aralığı, müvekkil geneli) — gerekirse. */
     public function createAdvanced(): void
     {

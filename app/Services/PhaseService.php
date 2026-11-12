@@ -241,6 +241,83 @@ final class PhaseService
         DB::update('projects', ['phase_warn_pct' => $pct], 'id = ?', [$projectId]);
     }
 
+    // --- Faturalanmamış zaman kaydını taşıma / bölme (dökümden önce, proje faturalama ekranında) ---
+
+    private static function unbilledEntry(int $projectId, int $entryId): array
+    {
+        $e = DB::one('SELECT * FROM time_entries WHERE id = ? AND project_id = ?', [$entryId, $projectId]);
+        if (!$e || $e['statement_id'] !== null) {
+            throw new ValidationException(['entry' => __('phases.entry_locked')]);
+        }
+        return $e;
+    }
+
+    private static function assertPhase(int $projectId, ?int $phaseId): void
+    {
+        if ($phaseId !== null && !DB::value('SELECT 1 FROM project_phases WHERE id = ? AND project_id = ? AND (is_optional = 0 OR approved_at IS NOT NULL)', [$phaseId, $projectId])) {
+            throw new ValidationException(['entry' => __('phases.invalid_choice')]);
+        }
+    }
+
+    public static function moveEntry(int $projectId, int $entryId, ?int $phaseId): void
+    {
+        $e = self::unbilledEntry($projectId, $entryId);
+        self::assertPhase($projectId, $phaseId);
+        DB::update('time_entries', ['phase_id' => $phaseId], 'id = ?', [$entryId]);
+        Audit::log('time.phase_moved', 'project', $projectId, ['time_entry_id' => $entryId, 'from' => $e['phase_id'], 'to' => $phaseId]);
+    }
+
+    /**
+     * Kaydı parçalara böler; her parça (süre, aşama, açıklama) ayrı kayıt olur. İlk parça mevcut kaydı günceller.
+     * Parçaların toplamı kaydın süresine eşit olmalı.
+     */
+    public static function splitEntry(int $projectId, int $entryId, array $parts): void
+    {
+        $e = self::unbilledEntry($projectId, $entryId);
+        $clean = [];
+        $total = 0;
+        foreach ($parts as $p) {
+            $raw = trim((string) ($p['hours'] ?? ''));
+            if ($raw === '') {
+                continue;
+            }
+            $minutes = TimeService::parseDuration($raw);
+            $desc = trim((string) ($p['description'] ?? ''));
+            if ($minutes === null || $minutes <= 0 || $desc === '') {
+                throw new ValidationException(['entry' => __('billing.split_invalid')]);
+            }
+            $phaseId = (int) ($p['phase_id'] ?? 0) ?: null;
+            self::assertPhase($projectId, $phaseId);
+            $clean[] = ['minutes' => $minutes, 'description' => $desc, 'phase_id' => $phaseId];
+            $total += $minutes;
+        }
+        if (count($clean) < 2) {
+            throw new ValidationException(['entry' => __('billing.split_two')]);
+        }
+        if (abs($total - (int) $e['minutes']) > 1) {
+            throw new ValidationException(['entry' => __('billing.split_sum', ['total' => TimeService::formatMinutes((int) $e['minutes'])])]);
+        }
+        DB::transaction(function () use ($projectId, $e, $clean) {
+            $rate = $e['rate'] !== null ? (float) $e['rate'] : null;
+            foreach ($clean as $i => $part) {
+                $data = [
+                    'minutes'     => $part['minutes'],
+                    'raw_minutes' => $part['minutes'],
+                    'description' => $part['description'],
+                    'phase_id'    => $part['phase_id'],
+                    'amount'      => ($e['amount'] !== null && $rate !== null) ? round($rate * $part['minutes'] / 60, 2) : null,
+                ];
+                if ($i === 0) {
+                    DB::update('time_entries', $data, 'id = ?', [$e['id']]);
+                } else {
+                    $copy = array_diff_key($e, array_flip(['id', 'created_at', 'updated_at', 'statement_id']));
+                    DB::insert('time_entries', array_merge($copy, $data, ['created_by' => Auth::id()]));
+                }
+            }
+            Audit::log('time.split', 'project', $projectId, ['time_entry_id' => $e['id'], 'parts' => count($clean)]);
+        });
+    }
+
     /** Projede kapsam dışı grubu yoksa açar, kimliğini döner. */
     public static function ensureOutOfScope(int $projectId): int
     {

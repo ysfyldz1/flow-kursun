@@ -1622,6 +1622,8 @@ return [
     'phases.saved_over'          => '":name" aşamasının bedeli aşıldı; aşan kısım ayrıca faturalanır.',
     'app.toast_warning'          => 'Dikkat',
     'billing.project'            => 'Proje',
+    'billing.entry_moved' => 'Kayıt taşındı.',
+    'phases.entry_locked' => 'Bu kayıt bir dökümde; taşımak ya da bölmek için taslağı açın.',
     'billing.preview_title' => 'Döküm önizlemesi',
     'billing.preview_info' => 'Bu bir önizleme; henüz hiçbir şey kaydedilmedi ve kayıtlar kilitlenmedi. Uygunsa "Taslak olarak kaydet" deyin; kaydettikten sonra satırları düzenleyebilir, bölebilir ve taşıyabilirsiniz.',
     'billing.save_as_draft' => 'Taslak olarak kaydet',

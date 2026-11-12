@@ -1622,6 +1622,8 @@ return [
     'phases.saved_over'          => 'The fee for ":name" has been exceeded; the excess is billed separately.',
     'app.toast_warning'          => 'Heads up',
     'billing.project'            => 'Project',
+    'billing.entry_moved' => 'Entry moved.',
+    'phases.entry_locked' => 'This entry is on a statement; open the draft to move or split it.',
     'billing.preview_title' => 'Statement preview',
     'billing.preview_info' => 'This is a preview; nothing has been saved and no entries are locked. Choose "Save as draft" to keep it; after saving you can edit, split and move lines.',
     'billing.save_as_draft' => 'Save as draft',

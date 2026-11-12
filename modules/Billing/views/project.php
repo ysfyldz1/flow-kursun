@@ -11,6 +11,11 @@ $back = '/billing/new/project/' . $p['id'];
 $anyOpen = (bool) array_filter($groups, fn ($g) => $g['state'] === 'open' || ($g['active'] && ($g['remaining'] ?? 0) > 0 && $g['state'] !== 'done'));
 $sum = fn (string $k) => array_sum(array_map(fn ($g) => (float) ($g[$k] ?? 0), $groups));
 $stateLabel = fn (array $g) => __('billing.state_' . $g['state']);
+// Taşıma/bölme hedefleri: aşamalar + Kapsam dışı + Aşamasız (sekmesi olmasa da)
+$phaseTargets = array_map(fn ($g) => ['key' => $g['key'], 'phase_id' => $g['phase_id'], 'label' => $g['label'], 'active' => $g['active']], $groups);
+if (!in_array('none', array_column($phaseTargets, 'key'), true)) {
+    $phaseTargets[] = ['key' => 'none', 'phase_id' => null, 'label' => __('phases.no_phase'), 'active' => true];
+}
 // Açık taslağı olan bölüm: sekme ve satır pastel sarı (kesinleşince yeşile döner)
 $hasDraft = fn (array $g) => (bool) array_filter($g['statements'], fn ($st) => $st['status'] === 'draft');
 // Döküm oluşturma formu (gizli alanlarla)
@@ -142,6 +147,26 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
                         <td class="muted nowrap m-meta"><?= e(format_date($t['work_date'])) ?></td>
                         <td class="cell-main m-title"><strong><?= e($t['user_name']) ?></strong><span><?= e($t['description']) ?></span></td>
                         <td class="num m-value"><?= TimeService::formatMinutes((int) $t['minutes']) ?><?php if ($rates && $t['amount'] !== null): ?><br><span class="muted small"><?= e($money($t['amount'])) ?></span><?php endif; ?></td>
+                        <?php if ($phased): $base = '/billing/new/project/' . $p['id'] . '/entries/' . $t['id']; ?>
+                            <td class="row-menu-cell m-actions">
+                                <details class="row-menu">
+                                    <summary class="icon-btn icon-btn-sm" title="<?= e(__('billing.line_actions')) ?>">⋯</summary>
+                                    <div class="row-menu-list">
+                                        <div class="row-menu-label"><?= e(__('billing.move_to')) ?></div>
+                                        <form method="post" action="<?= $base ?>/move">
+                                            <?= csrf_field() ?><input type="hidden" name="tab" value="<?= e($tab) ?>">
+                                            <?php foreach ($phaseTargets as $opt): if ((string) $opt['key'] === (string) $g['key']) continue; ?>
+                                                <button class="row-menu-item" name="phase_id" value="<?= $opt['phase_id'] ?? '' ?>" <?= $opt['active'] ? '' : 'disabled' ?>><?= e($opt['label']) ?></button>
+                                            <?php endforeach; ?>
+                                        </form>
+                                        <div class="row-menu-sep"></div>
+                                        <button type="button" class="row-menu-item" data-split="<?= $base ?>/split"
+                                                data-hours="<?= e(TimeService::formatMinutes((int) $t['minutes'])) ?>" data-phase="<?= (int) $t['phase_id'] ?>"
+                                                data-desc="<?= e($t['description']) ?>"><?= e(__('billing.split')) ?>…</button>
+                                    </div>
+                                </details>
+                            </td>
+                        <?php endif; ?>
                     </tr>
                 <?php endforeach; ?>
             </table>
@@ -164,4 +189,75 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
             </div>
         <?php endif; ?>
     </section>
+<?php endif; ?>
+
+<?php if ($phased): ?>
+<dialog class="modal" id="split-dialog">
+    <form method="post" class="split-form">
+        <?= csrf_field() ?>
+        <input type="hidden" name="tab" value="<?= e($tab) ?>">
+        <div class="modal-head">
+            <h3><?= e(__('billing.split_title')) ?></h3>
+            <button type="button" class="icon-btn" data-close aria-label="×">✕</button>
+        </div>
+        <div class="split-body">
+            <p class="muted small"><?= e(__('billing.split_help')) ?> <strong data-split-total></strong></p>
+            <div class="split-rows" data-rows></div>
+            <button type="button" class="btn btn-sm btn-outline" data-add-row><?= icon('plus', 'icon icon-sm') ?><?= e(__('billing.split_add')) ?></button>
+            <p class="small" data-split-sum></p>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-outline" data-close><?= e(__('app.cancel')) ?></button>
+            <button class="btn btn-primary" data-split-save><?= e(__('billing.split_save')) ?></button>
+        </div>
+    </form>
+</dialog>
+<script>
+(() => {
+    const dlg = document.getElementById('split-dialog'), form = dlg.querySelector('form'), rows = dlg.querySelector('[data-rows]'),
+          sumEl = dlg.querySelector('[data-split-sum]'), save = dlg.querySelector('[data-split-save]');
+    const targets = <?= json_encode(array_map(fn ($o) => ['id' => $o['phase_id'], 'name' => $o['label'], 'active' => $o['active']], $phaseTargets), JSON_UNESCAPED_UNICODE) ?>;
+    const t = <?= json_encode(['hours' => __('billing.hours'), 'desc' => __('time.description'), 'sum' => __('billing.split_sum_live')], JSON_UNESCAPED_UNICODE) ?>;
+    const toMin = v => { v = v.trim().replace(',', '.'); let m;
+        if ((m = v.match(/^(\d{1,2}):([0-5]\d)$/))) return +m[1] * 60 + +m[2];
+        if (/^\d*\.?\d+$/.test(v)) return +v <= 24 ? Math.round(+v * 60) : +v;
+        return NaN; };
+    const fmt = m => `${Math.floor(m / 60)}:${String(Math.round(m % 60)).padStart(2, '0')}`;
+    let total = 0, n = 0;
+    const check = () => {
+        let s = 0;
+        rows.querySelectorAll('[data-h]').forEach(i => { const m = toMin(i.value); if (!isNaN(m)) s += m; });
+        const ok = Math.abs(s - total) <= 1;
+        sumEl.textContent = t.sum.replace(':sum', fmt(s)).replace(':total', fmt(total));
+        sumEl.className = 'small ' + (ok ? 'muted' : 'text-red');
+        save.disabled = !ok;
+    };
+    const addRow = (phase = '', desc = '') => {
+        const i = n++, row = document.createElement('div');
+        row.className = 'split-row';
+        row.innerHTML = `<input name="parts[${i}][hours]" placeholder="${t.hours}" inputmode="decimal" data-h>
+            <select name="parts[${i}][phase_id]">${targets.map(o => `<option value="${o.id ?? ''}" ${o.active ? '' : 'disabled'}>${o.name.replace(/</g, '&lt;')}</option>`).join('')}</select>
+            <textarea name="parts[${i}][description]" rows="2" placeholder="${t.desc}"></textarea>`;
+        row.querySelector('select').value = phase;
+        row.querySelector('textarea').value = desc;
+        rows.append(row);
+        row.querySelector('[data-h]').addEventListener('input', check);
+    };
+    document.querySelectorAll('[data-split]').forEach(b => b.addEventListener('click', () => {
+        b.closest('details')?.removeAttribute('open');
+        form.action = b.dataset.split;
+        total = toMin(b.dataset.hours);
+        dlg.querySelector('[data-split-total]').textContent = b.dataset.hours;
+        rows.innerHTML = ''; n = 0;
+        const phase = b.dataset.phase === '0' ? '' : b.dataset.phase;
+        addRow(phase, b.dataset.desc); addRow(phase, b.dataset.desc);
+        check();
+        dlg.showModal();
+    }));
+    dlg.querySelector('[data-add-row]').addEventListener('click', () => { addRow(); check(); });
+    dlg.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => dlg.close()));
+    // Açık menüyü dışarı tıklayınca kapat
+    document.addEventListener('click', e => document.querySelectorAll('details.row-menu[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; }));
+})();
+</script>
 <?php endif; ?>

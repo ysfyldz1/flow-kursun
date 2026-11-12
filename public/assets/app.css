@@ -1061,3 +1061,4 @@ textarea.autosize { overflow: hidden; box-sizing: border-box; }
 .phase-tab.tab-has-draft .tab-count { background: var(--amber); color: #fff; }
 .bill-summary .sum-has-draft td { background: #fef6dc; }
 .state-draft { background: #fef6dc; color: #92400e; }
+.row-menu-list form { display: flex; flex-direction: column; margin: 0; }
