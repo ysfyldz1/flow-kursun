@@ -4,7 +4,8 @@
     "type": "project",
     "require": {
         "php": ">=8.2",
-        "dompdf/dompdf": "^3.0"
+        "dompdf/dompdf": "^3.0",
+        "smalot/pdfparser": "^2.11"
     },
     "config": {
         "optimize-autoloader": true,

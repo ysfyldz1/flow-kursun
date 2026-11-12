@@ -29,6 +29,10 @@ $router->post('/projects/{id}/emails/{email}/delete', [EmailController::class, '
 
 $router->get('/projects/{id}/phases', [PhaseController::class, 'index'], ['can' => 'projects.view']);
 $router->post('/projects/{id}/phases', [PhaseController::class, 'store'], ['can' => 'projects.edit']);
+$router->post('/projects/{id}/phases/import', [PhaseController::class, 'importUpload'], ['can' => 'projects.edit']);
+$router->get('/projects/{id}/phases/import', [PhaseController::class, 'importPreview'], ['can' => 'projects.edit']);
+$router->post('/projects/{id}/phases/import/save', [PhaseController::class, 'importSave'], ['can' => 'projects.edit']);
+$router->post('/projects/{id}/phases/import/cancel', [PhaseController::class, 'importCancel'], ['can' => 'projects.edit']);
 $router->post('/projects/{id}/phases/settings', [PhaseController::class, 'settings'], ['can' => 'projects.edit']);
 $router->post('/projects/{id}/phases/{phase}', [PhaseController::class, 'update'], ['can' => 'projects.edit']);
 $router->post('/projects/{id}/phases/{phase}/delete', [PhaseController::class, 'delete'], ['can' => 'projects.edit']);

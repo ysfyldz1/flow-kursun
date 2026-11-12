@@ -946,3 +946,4 @@ button.pick-row { width: 100%; border: 0; background: none; font: inherit; text-
 .split-row textarea { grid-column: 1 / -1; }
 .split-row input, .split-row select, .split-row textarea { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font: inherit; min-width: 0; }
 #split-dialog { width: min(560px, calc(100vw - 32px)); }
+.import-row-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; }

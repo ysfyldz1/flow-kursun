@@ -166,6 +166,14 @@ $regular = array_values(array_filter($phases, fn ($ph) => !$ph['is_out_of_scope'
                 </div>
             </form>
 
+            <form method="post" action="/projects/<?= $p['id'] ?>/phases/import" enctype="multipart/form-data" class="card form-card">
+                <?= $csrf ?>
+                <h3 class="card-title"><?= e(__('phases.import_title')) ?></h3>
+                <p class="muted small" style="margin-top:0"><?= e(__('phases.import_help')) ?></p>
+                <input type="file" name="file" accept=".docx,.pdf" required>
+                <div class="form-actions"><button class="btn btn-outline"><?= e(__('phases.import_read')) ?></button></div>
+            </form>
+
             <?php if ($canRates): ?>
                 <form method="post" action="/projects/<?= $p['id'] ?>/phases/settings" class="card form-card">
                     <?= $csrf ?>
