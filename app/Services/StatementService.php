@@ -56,6 +56,8 @@ final class StatementService
     {
         $s = DB::one(
             'SELECT s.*, c.name AS client_name, c.code AS client_code, c.type AS client_type,
+                    (SELECT name FROM project_phases WHERE id = s.phase_id) AS scope_phase_name,
+                    (SELECT CONCAT(number, \' · \', name) FROM projects WHERE id = s.project_id) AS scope_project_name,
                     c.tax_id AS client_tax_id, c.tax_office AS client_tax_office,
                     c.address AS client_address, c.city AS client_city, c.country AS client_country
              FROM statements s JOIN clients c ON c.id = s.client_id WHERE s.id = ?',
@@ -63,9 +65,13 @@ final class StatementService
         );
         if ($s) {
             $s['lines'] = DB::all(
-                'SELECT l.*, p.number AS project_number, p.name AS project_name
+                'SELECT l.*, p.number AS project_number, p.name AS project_name,
+                        ph.name AS phase_name, ph.is_out_of_scope AS phase_oos, ph.position AS phase_position,
+                        (SELECT 1 FROM project_phases x WHERE x.project_id = l.project_id LIMIT 1) AS project_phased
                  FROM statement_lines l LEFT JOIN projects p ON p.id = l.project_id
-                 WHERE l.statement_id = ? ORDER BY l.project_id, l.is_info, l.sort, l.work_date, l.id',
+                 LEFT JOIN project_phases ph ON ph.id = l.phase_id
+                 WHERE l.statement_id = ?
+                 ORDER BY l.project_id, l.phase_id IS NULL, ph.is_out_of_scope, ph.position, l.sort < 0 DESC, l.is_info, l.sort, l.work_date, l.id',
                 [$id]
             );
             $s['payments'] = DB::all(
@@ -157,14 +163,25 @@ final class StatementService
                 $errors[$k] = __('validation.date');
             }
         }
+        // Kurşun: kapsam — tek proje ya da tek aşama
+        $scopeProject = (int) ($in['project_id'] ?? 0) ?: null;
+        $scopePhase = (int) ($in['phase_id'] ?? 0) ?: null;
+        if ($scopeProject && $client && !DB::value('SELECT 1 FROM projects WHERE id = ? AND client_id = ? AND currency = ?', [$scopeProject, $client['id'], $currency])) {
+            $errors['project_id'] = __('validation.required');
+        }
+        if ($scopePhase && (!$scopeProject || !DB::value('SELECT 1 FROM project_phases WHERE id = ? AND project_id = ?', [$scopePhase, $scopeProject]))) {
+            $errors['phase_id'] = __('validation.required');
+        }
         if ($errors) {
             throw new ValidationException($errors);
         }
 
-        return DB::transaction(function () use ($client, $currency, $start, $end, $channel) {
+        return DB::transaction(function () use ($client, $currency, $start, $end, $channel, $scopeProject, $scopePhase) {
             $isCompany = $client['type'] === 'company';
             $id = DB::insert('statements', [
                 'client_id'        => $client['id'],
+                'project_id'       => $scopeProject,
+                'phase_id'         => $scopePhase,
                 'currency'         => $currency,
                 'locale'           => $client['locale'],
                 'period_start'     => $start,
@@ -176,18 +193,40 @@ final class StatementService
             ]);
 
             $projects = DB::all(
-                "SELECT * FROM projects WHERE client_id = ? AND currency = ? AND billing_type <> 'non_billable' ORDER BY number",
+                "SELECT * FROM projects WHERE client_id = ? AND currency = ? AND billing_type <> 'non_billable'"
+                . ($scopeProject ? ' AND id = ' . (int) $scopeProject : '') . ' ORDER BY number',
                 [$client['id'], $currency]
             );
             $sort = 0;
             foreach ($projects as $p) {
+                $params = $start ? [$p['id'], $end, $start] : [$p['id'], $end];
+                if ($scopePhase) {
+                    $params[] = $scopePhase;
+                }
                 $entries = DB::all(
                     'SELECT t.*, u.name AS user_name FROM time_entries t JOIN users u ON u.id = t.user_id
                      WHERE t.project_id = ? AND t.statement_id IS NULL AND t.is_billable = 1
                        AND t.work_date <= ? ' . ($start ? 'AND t.work_date >= ?' : '') . '
+                       ' . ($scopePhase ? 'AND t.phase_id = ?' : '') . '
                      ORDER BY t.work_date, t.id',
-                    $start ? [$p['id'], $end, $start] : [$p['id'], $end]
+                    $params
                 );
+
+                // Kurşun: aşamalı saatlik proje ayrı yoldan dökülür
+                if ($p['billing_type'] === 'hourly' && PhaseService::hasPhases((int) $p['id'])) {
+                    foreach ($entries as $t) {
+                        self::insertTimeLine($id, $t, false, $sort);
+                    }
+                    // Kayıt giren aşamalara (aşama dökümünde o aşamaya her durumda) kalan bedel satırı
+                    $phaseIds = array_unique(array_filter(array_map(fn ($t) => (int) $t['phase_id'], $entries)));
+                    if ($scopePhase) {
+                        $phaseIds = [$scopePhase];
+                    }
+                    foreach ($phaseIds as $phaseId) {
+                        self::addPhaseFee($id, (int) $phaseId);
+                    }
+                    continue;
+                }
 
                 $flat = null;
                 if ($p['billing_type'] === 'retainer' && $p['retainer_amount'] !== null) {
@@ -211,38 +250,17 @@ final class StatementService
                 }
                 $isInfo = $p['billing_type'] !== 'hourly';
                 foreach ($entries as $t) {
-                    // Kayıt girildiğinde ücret tanımlı değildiyse şimdi bulunur (kayda da yazılır)
-                    if (!$isInfo && $t['rate'] === null) {
-                        $r = RateService::resolve((int) $p['id'], (int) $t['user_id']);
-                        if ($r['rate'] !== null) {
-                            $t['rate'] = $r['rate'];
-                            $t['amount'] = round($r['rate'] * $t['minutes'] / 60, 2);
-                            DB::update('time_entries', ['rate' => $t['rate'], 'amount' => $t['amount'], 'rate_source' => $r['source']], 'id = ?', [$t['id']]);
-                        }
-                    }
-                    DB::insert('statement_lines', [
-                        'statement_id'  => $id,
-                        'type'          => 'time',
-                        'project_id'    => $p['id'],
-                        'time_entry_id' => $t['id'],
-                        'work_date'     => $t['work_date'],
-                        'user_name'     => $t['user_name'],
-                        'description'   => $t['description'],
-                        'hours'         => round($t['minutes'] / 60, 2),
-                        'rate'          => $isInfo ? null : $t['rate'],
-                        'amount'        => $isInfo ? null : $t['amount'],
-                        'is_info'       => (int) $isInfo,
-                        'sort'          => $sort++,
-                    ]);
-                    DB::update('time_entries', ['statement_id' => $id], 'id = ?', [$t['id']]);
+                    self::insertTimeLine($id, $t, $isInfo, $sort);
                 }
             }
+            self::syncPhaseLines($id);
 
             // Yansıtılacak masraflar (faturalanmaz projelerin masrafları da dahil)
             $expenses = DB::all(
                 'SELECT e.*, u.name AS user_name FROM expenses e JOIN users u ON u.id = e.user_id
                  WHERE e.client_id = ? AND e.currency = ? AND e.statement_id IS NULL AND e.is_billable = 1 AND e.from_advance = 0
                    AND e.expense_date <= ? ' . ($start ? 'AND e.expense_date >= ?' : '') . '
+                   ' . ($scopePhase ? 'AND 1 = 0' : ($scopeProject ? 'AND e.project_id = ' . (int) $scopeProject : '')) . '
                  ORDER BY e.project_id, e.expense_date, e.id',
                 $start ? [$client['id'], $currency, $end, $start] : [$client['id'], $currency, $end]
             );
@@ -271,6 +289,335 @@ final class StatementService
             self::recalculate($id);
             Audit::log('statement.drafted', 'statement', $id, ['client_id' => $client['id'], 'currency' => $currency], $channel);
             return $id;
+        });
+    }
+
+    /** Zaman kaydını döküme satır olarak ekler ve kaydı dökümle kilitler. */
+    private static function insertTimeLine(int $id, array $t, bool $isInfo, int &$sort): int
+    {
+        // Kayıt girildiğinde ücret tanımlı değildiyse şimdi bulunur (kayda da yazılır)
+        if ($t['rate'] === null) {
+            $r = RateService::resolve((int) $t['project_id'], (int) $t['user_id']);
+            if ($r['rate'] !== null) {
+                $t['rate'] = $r['rate'];
+                $t['amount'] = round($r['rate'] * $t['minutes'] / 60, 2);
+                DB::update('time_entries', ['rate' => $t['rate'], 'amount' => $t['amount'], 'rate_source' => $r['source']], 'id = ?', [$t['id']]);
+            }
+        }
+        $phased = $t['phase_id'] !== null;
+        $lineId = DB::insert('statement_lines', [
+            'statement_id'  => $id,
+            'type'          => 'time',
+            'project_id'    => $t['project_id'],
+            'phase_id'      => $t['phase_id'],
+            'time_entry_id' => $t['id'],
+            'work_date'     => $t['work_date'],
+            'user_name'     => $t['user_name'] ?? DB::value('SELECT name FROM users WHERE id = ?', [$t['user_id']]),
+            'description'   => $t['description'],
+            'hours'         => round($t['minutes'] / 60, 2),
+            'rate'          => $isInfo && !$phased ? null : $t['rate'],
+            'amount'        => $isInfo ? null : $t['amount'],
+            'is_info'       => (int) $isInfo,
+            'sort'          => $sort++,
+        ]);
+        DB::update('time_entries', ['statement_id' => $id], 'id = ?', [$t['id']]);
+        return $lineId;
+    }
+
+    // --- Kurşun: aşamalı döküm ---
+
+    /**
+     * Aşamanın faturalanma durumu (iptal edilmemiş dökümlerde; $exclude dökümü hariç):
+     * billed = bedele sayılan tutar (bedel satırları + zamana göre faturalanan zaman), extra = ek zaman bedelleri,
+     * statements = aşamaya satır giren döküm sayısı.
+     */
+    public static function phaseBilled(int $phaseId, ?int $exclude = null): array
+    {
+        $r = DB::one(
+            "SELECT COALESCE(SUM(CASE WHEN l.type IN ('phase_fee', 'time') AND l.is_info = 0 THEN l.amount END), 0) AS billed,
+                    COALESCE(SUM(CASE WHEN l.type = 'phase_extra' THEN l.amount END), 0) AS extra,
+                    COALESCE(SUM(CASE WHEN l.type = 'time' THEN l.hours * COALESCE(l.rate, 0) END), 0) AS time_value,
+                    COUNT(DISTINCT CASE WHEN l.is_info = 0 THEN s.id END) AS statements
+             FROM statement_lines l JOIN statements s ON s.id = l.statement_id
+             WHERE l.phase_id = ? AND s.status = 'issued' AND s.id <> ?",
+            [$phaseId, (int) $exclude]
+        );
+        return ['billed' => (float) $r['billed'], 'extra' => (float) $r['extra'], 'time_value' => (float) $r['time_value'], 'statements' => (int) $r['statements']];
+    }
+
+    /** Aşama bedeli satırı ekler (kalan bedel kadar). Bedelsiz/kapsam dışı/onaysız aşamada ya da zaten varsa bir şey yapmaz. */
+    public static function addPhaseFee(int $id, int $phaseId): bool
+    {
+        $ph = DB::one('SELECT * FROM project_phases WHERE id = ?', [$phaseId]);
+        if (!$ph || $ph['is_out_of_scope'] || $ph['fee'] === null || ($ph['is_optional'] && !$ph['approved_at'])) {
+            return false;
+        }
+        if (DB::value("SELECT 1 FROM statement_lines WHERE statement_id = ? AND phase_id = ? AND type = 'phase_fee'", [$id, $phaseId])) {
+            return false;
+        }
+        $remaining = round((float) $ph['fee'] - self::phaseBilled($phaseId, $id)['billed'], 2);
+        if ($remaining <= 0) {
+            return false;
+        }
+        $locale = (string) DB::value('SELECT locale FROM statements WHERE id = ?', [$id]);
+        $previous = \App\Core\Lang::locale();
+        \App\Core\Lang::set($locale);
+        $desc = __('billing.phase_fee_desc', ['name' => $ph['name']]);
+        \App\Core\Lang::set($previous);
+        DB::insert('statement_lines', [
+            'statement_id' => $id,
+            'type'         => 'phase_fee',
+            'project_id'   => $ph['project_id'],
+            'phase_id'     => $phaseId,
+            'description'  => $desc,
+            'amount'       => $remaining,
+            'sort'         => -2,
+        ]);
+        return true;
+    }
+
+    /** Ek zaman bedeli: bu dökümdeki zaman değeri − bedel satırı (pozitifse). */
+    public static function addPhaseExtra(int $id, int $phaseId, string $channel = 'web'): void
+    {
+        self::draftOrFail($id);
+        $g = self::phaseGroups($id)[$phaseId] ?? throw new ValidationException(['statement' => __('validation.required')]);
+        $locale = (string) DB::value('SELECT locale FROM statements WHERE id = ?', [$id]);
+        $previous = \App\Core\Lang::locale();
+        \App\Core\Lang::set($locale);
+        $desc = __('billing.phase_extra_desc', ['name' => $g['name']]);
+        \App\Core\Lang::set($previous);
+        DB::insert('statement_lines', [
+            'statement_id' => $id,
+            'type'         => 'phase_extra',
+            'project_id'   => $g['project_id'],
+            'phase_id'     => $phaseId,
+            'description'  => $desc,
+            'amount'       => max(0, $g['over']),
+            'sort'         => -1,
+        ]);
+        self::recalculate($id);
+        Audit::log('statement.phase_extra', 'statement', $id, ['phase_id' => $phaseId], $channel);
+    }
+
+    public static function addPhaseFeeLine(int $id, int $phaseId, string $channel = 'web'): void
+    {
+        self::draftOrFail($id);
+        if (!self::addPhaseFee($id, $phaseId)) {
+            throw new ValidationException(['statement' => __('billing.phase_fee_none_left')]);
+        }
+        self::syncPhaseLines($id);
+        self::recalculate($id);
+        Audit::log('statement.phase_fee', 'statement', $id, ['phase_id' => $phaseId], $channel);
+    }
+
+    /**
+     * Aşamalı zaman satırlarını gruba göre ayarlar: grupta bedel satırı varsa bilgi amaçlı (dahil),
+     * yoksa saat × ücret ile faturalanır. Kapsam dışı ve aşamasız satırlar her zaman faturalanır.
+     */
+    public static function syncPhaseLines(int $id): void
+    {
+        $withFee = array_map('intval', array_column(DB::all("SELECT DISTINCT phase_id FROM statement_lines WHERE statement_id = ? AND type = 'phase_fee'", [$id]), 'phase_id'));
+        $lines = DB::all("SELECT id, phase_id, hours, rate, amount, is_info FROM statement_lines WHERE statement_id = ? AND type = 'time' AND phase_id IS NOT NULL", [$id]);
+        foreach ($lines as $l) {
+            $info = in_array((int) $l['phase_id'], $withFee, true);
+            if ($info === (bool) $l['is_info']) {
+                continue;
+            }
+            DB::update('statement_lines', [
+                'is_info' => (int) $info,
+                'amount'  => $info ? null : ($l['rate'] !== null ? round((float) $l['hours'] * (float) $l['rate'], 2) : null),
+            ], 'id = ?', [$l['id']]);
+        }
+        // Bedel satırı kalmayan aşamanın ek zaman bedeli de anlamını yitirir
+        DB::query("DELETE x FROM statement_lines x WHERE x.statement_id = ? AND x.type = 'phase_extra'
+                   AND NOT EXISTS (SELECT 1 FROM (SELECT phase_id FROM statement_lines WHERE statement_id = ? AND type = 'phase_fee') f WHERE f.phase_id = x.phase_id)", [$id, $id]);
+    }
+
+    /**
+     * Taslak ekranı için aşama grubu bilgisi: phase_id => bedel, önceki dökümler, bu dökümdeki zaman değeri, aşım.
+     */
+    public static function phaseGroups(int $id): array
+    {
+        $rows = DB::all(
+            "SELECT ph.id, ph.name, ph.project_id, ph.fee, ph.is_out_of_scope, ph.is_optional, ph.approved_at,
+                    SUM(CASE WHEN l.type = 'time' THEN l.hours * COALESCE(l.rate, 0) ELSE 0 END) AS time_value,
+                    SUM(CASE WHEN l.type = 'time' THEN l.hours ELSE 0 END) AS hours,
+                    SUM(CASE WHEN l.type = 'phase_fee' THEN l.amount ELSE 0 END) AS fee_line,
+                    SUM(l.type = 'phase_fee') AS has_fee,
+                    SUM(l.type = 'phase_extra') AS has_extra
+             FROM statement_lines l JOIN project_phases ph ON ph.id = l.phase_id
+             WHERE l.statement_id = ?
+             GROUP BY ph.id",
+            [$id]
+        );
+        $out = [];
+        foreach ($rows as $r) {
+            $prev = self::phaseBilled((int) $r['id'], $id);
+            $fee = $r['fee'] !== null ? (float) $r['fee'] : null;
+            $out[(int) $r['id']] = [
+                'id'           => (int) $r['id'],
+                'name'         => $r['is_out_of_scope'] ? __('phases.out_of_scope') : $r['name'],
+                'project_id'   => (int) $r['project_id'],
+                'oos'          => (bool) $r['is_out_of_scope'],
+                'fee'          => $fee,
+                'billed_before'=> $prev['billed'],
+                'statements_before' => $prev['statements'],
+                'remaining'    => $fee !== null ? round($fee - $prev['billed'], 2) : null,
+                'time_value'   => round((float) $r['time_value'], 2),
+                'hours'        => (float) $r['hours'],
+                'fee_line'     => (float) $r['fee_line'],
+                'has_fee'      => (bool) $r['has_fee'],
+                'has_extra'    => (bool) $r['has_extra'],
+                // Bedel satırı varken aşamanın toplam zaman değeri (önceki dökümler + bu döküm) bedeli
+                // geçtiyse, daha önce ek bedel olarak kesilmemiş fark
+                'over'         => $r['has_fee'] && $fee !== null
+                    ? max(0.0, round($prev['time_value'] + (float) $r['time_value'] - $fee - $prev['extra'], 2))
+                    : 0.0,
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Satırları proje ve (aşamalı projede) aşamaya göre gruplar. Ekran ve PDF aynısını kullanır.
+     * @return list<array{title: string, phase: ?string, phase_id: ?int, project_id: ?int, lines: list<array>, total: float}>
+     */
+    public static function groupLines(array $lines): array
+    {
+        $groups = [];
+        foreach ($lines as $l) {
+            $phased = $l['project_id'] && $l['project_phased'];
+            $key = ($l['project_id'] ?: 0) . ':' . ($phased ? ($l['phase_id'] ?: 'none') : '');
+            if (!isset($groups[$key])) {
+                $groups[$key] = [
+                    'title'      => $l['project_id'] ? $l['project_number'] . ' · ' . $l['project_name'] : __('billing.other_items'),
+                    'phase'      => !$phased ? null : ($l['phase_id'] ? ($l['phase_oos'] ? __('phases.out_of_scope') : $l['phase_name']) : null),
+                    'phase_id'   => $phased && $l['phase_id'] ? (int) $l['phase_id'] : null,
+                    'project_id' => $l['project_id'] ? (int) $l['project_id'] : null,
+                    'lines'      => [],
+                    'total'      => 0.0,
+                ];
+            }
+            // Aşamalı projede aşamasız zaman kaydı varsa grup "Aşamasız" diye adlandırılır
+            if ($phased && !$l['phase_id'] && $l['type'] === 'time') {
+                $groups[$key]['phase'] = __('phases.no_phase');
+            }
+            $groups[$key]['lines'][] = $l;
+            $groups[$key]['total'] += $l['is_info'] ? 0 : (float) $l['amount'];
+        }
+        return array_values($groups);
+    }
+
+    /** Projede seçilebilecek aşamalar (taşıma/bölme için). */
+    public static function projectPhases(int $id): array
+    {
+        $out = [];
+        $projects = array_column(DB::all('SELECT DISTINCT project_id FROM statement_lines WHERE statement_id = ? AND project_id IS NOT NULL', [$id]), 'project_id');
+        foreach ($projects as $pid) {
+            $no = 0;
+            foreach (PhaseService::forProject((int) $pid) as $ph) {
+                $out[(int) $pid][] = [
+                    'id'     => (int) $ph['id'],
+                    'name'   => ($ph['is_out_of_scope'] ? '' : ++$no . '. ') . $ph['name'],
+                    'active' => $ph['is_active'],
+                ];
+            }
+        }
+        return array_filter($out);
+    }
+
+    /**
+     * Satırın aşamasını değiştirir (zaman kaydı da taşınır). Aşama dökümündeyken başka aşamaya
+     * taşınan kayıt dökümden çıkar ve serbest kalır.
+     */
+    private static function moveLine(int $id, array $line, ?int $phaseId): void
+    {
+        if ($phaseId !== null) {
+            $ok = DB::one('SELECT is_optional, approved_at FROM project_phases WHERE id = ? AND project_id = ?', [$phaseId, $line['project_id']]);
+            if (!$ok || ($ok['is_optional'] && !$ok['approved_at'])) {
+                return;
+            }
+        }
+        DB::update('time_entries', ['phase_id' => $phaseId], 'id = ?', [$line['time_entry_id']]);
+        $scope = DB::value('SELECT phase_id FROM statements WHERE id = ?', [$id]);
+        if ($scope !== null && (int) $scope !== $phaseId) {
+            DB::update('time_entries', ['statement_id' => null], 'id = ? AND statement_id = ?', [$line['time_entry_id'], $id]);
+            DB::query('DELETE FROM statement_lines WHERE id = ?', [$line['id']]);
+            return;
+        }
+        DB::update('statement_lines', ['phase_id' => $phaseId], 'id = ?', [$line['id']]);
+    }
+
+    /**
+     * Zaman satırını parçalara böler: her parça (süre, aşama, açıklama) ayrı zaman kaydı olur.
+     * Parçaların toplamı satırdaki süreye eşit olmalı. İlk parça mevcut kaydı günceller.
+     */
+    public static function splitLine(int $id, int $lineId, array $parts, string $channel = 'web'): void
+    {
+        self::draftOrFail($id);
+        $line = DB::one("SELECT * FROM statement_lines WHERE id = ? AND statement_id = ? AND type = 'time'", [$lineId, $id]) ?? throw new ValidationException(['split' => __('validation.required')]);
+        $entry = DB::one('SELECT * FROM time_entries WHERE id = ?', [$line['time_entry_id']]) ?? throw new ValidationException(['split' => __('validation.required')]);
+
+        $clean = [];
+        $total = 0;
+        foreach ($parts as $p) {
+            $raw = trim((string) ($p['hours'] ?? ''));
+            if ($raw === '') {
+                continue;
+            }
+            $minutes = TimeService::parseDuration($raw);
+            $desc = trim((string) ($p['description'] ?? ''));
+            if ($minutes === null || $minutes <= 0 || $desc === '') {
+                throw new ValidationException(['split' => __('billing.split_invalid')]);
+            }
+            $phaseId = (int) ($p['phase_id'] ?? 0) ?: null;
+            if ($phaseId !== null && !DB::value('SELECT 1 FROM project_phases WHERE id = ? AND project_id = ? AND (is_optional = 0 OR approved_at IS NOT NULL)', [$phaseId, $entry['project_id']])) {
+                throw new ValidationException(['split' => __('phases.invalid_choice')]);
+            }
+            $clean[] = ['minutes' => $minutes, 'description' => $desc, 'phase_id' => $phaseId];
+            $total += $minutes;
+        }
+        $lineMinutes = (int) round((float) $line['hours'] * 60);
+        if (count($clean) < 2) {
+            throw new ValidationException(['split' => __('billing.split_two')]);
+        }
+        if (abs($total - $lineMinutes) > 1) {
+            throw new ValidationException(['split' => __('billing.split_sum', ['total' => TimeService::formatMinutes($lineMinutes)])]);
+        }
+
+        DB::transaction(function () use ($id, $line, $entry, $clean, $channel) {
+            $rate = $entry['rate'] !== null ? (float) $entry['rate'] : null;
+            $amountFor = fn (int $m) => ($entry['is_billable'] && $entry['amount'] !== null && $rate !== null) ? round($rate * $m / 60, 2) : null;
+            $scopePhase = DB::value('SELECT phase_id FROM statements WHERE id = ?', [$id]);
+            DB::query('DELETE FROM statement_lines WHERE id = ?', [$line['id']]);
+            $sort = (int) $line['sort'];
+            foreach ($clean as $i => $part) {
+                $data = [
+                    'minutes'     => $part['minutes'],
+                    'raw_minutes' => $part['minutes'],
+                    'description' => $part['description'],
+                    'phase_id'    => $part['phase_id'],
+                    'amount'      => $amountFor($part['minutes']),
+                ];
+                if ($i === 0) {
+                    DB::update('time_entries', $data, 'id = ?', [$entry['id']]);
+                    $tid = (int) $entry['id'];
+                } else {
+                    $copy = array_diff_key($entry, array_flip(['id', 'created_at', 'updated_at', 'statement_id']));
+                    $tid = DB::insert('time_entries', array_merge($copy, $data, ['created_by' => Auth::id()]));
+                }
+                $t = DB::one('SELECT * FROM time_entries WHERE id = ?', [$tid]);
+                // Aşama dökümünde başka aşamaya ayrılan parça dökümden çıkar, serbest kalır
+                if ($scopePhase !== null && (int) $scopePhase !== $part['phase_id']) {
+                    DB::update('time_entries', ['statement_id' => null], 'id = ?', [$tid]);
+                    continue;
+                }
+                $t['user_name'] = $line['user_name'];
+                self::insertTimeLine($id, $t, false, $sort);
+            }
+            self::syncPhaseLines($id);
+            self::recalculate($id);
+            Audit::log('statement.line_split', 'statement', $id, ['time_entry_id' => $entry['id'], 'parts' => count($clean)], $channel);
         });
     }
 
@@ -343,6 +690,9 @@ final class StatementService
                     $row['rate'] = $rate;
                 }
             }
+            if (array_key_exists('phase_id', $l)) {
+                $row['phase_id'] = (int) $l['phase_id'] ?: null;
+            }
             $lines[$lineId] = $row;
         }
         if ($errors) {
@@ -373,7 +723,12 @@ final class StatementService
                     }
                 }
                 DB::update('statement_lines', $data, 'id = ?', [$lineId]);
+                // Kurşun: aşama değiştiyse kayıt o aşamaya taşınır
+                if ($line['type'] === 'time' && array_key_exists('phase_id', $l) && $l['phase_id'] !== ($line['phase_id'] === null ? null : (int) $line['phase_id'])) {
+                    self::moveLine($id, $line, $l['phase_id']);
+                }
             }
+            self::syncPhaseLines($id);
             DB::update('statements', [
                 'vat_rate'         => $vat ?? 0,
                 'withholding_rate' => $wh ?? 0,
@@ -434,6 +789,7 @@ final class StatementService
                 DB::update('expenses', ['statement_id' => null], 'id = ? AND statement_id = ?', [$line['expense_id'], $id]);
             }
             DB::query('DELETE FROM statement_lines WHERE id = ?', [$line['id']]);
+            self::syncPhaseLines($id);
             self::recalculate($id);
             Audit::log('statement.line_removed', 'statement', $id, ['line' => $line['description']], $channel);
         });

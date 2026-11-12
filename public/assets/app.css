@@ -932,3 +932,17 @@ button.pick-row { width: 100%; border: 0; background: none; font: inherit; text-
 @media (max-width: 640px) { .phase-facts { gap: 14px 22px; } .phase-card { padding: 14px; } }
 .toast-warning .toast-icon, .toast-warning .toast-bar { background: var(--amber); }
 .toast-warning .toast-bar { animation-duration: 8s; }
+/* Kurşun: aşamalı döküm */
+.group-phase { font-weight: 600; }
+.phase-info-row td { background: var(--bg); padding: 8px 12px !important; }
+.phase-info { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.phase-info strong { color: var(--text); }
+.phase-info-actions { margin-left: auto; display: flex; gap: 6px; }
+.line-phase { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+.line-phase select { max-width: 260px; height: 30px; font-size: 12px; }
+.split-body { padding: 0 20px 8px; display: flex; flex-direction: column; gap: 10px; }
+.split-rows { display: flex; flex-direction: column; gap: 10px; }
+.split-row { display: grid; grid-template-columns: 90px 1fr; gap: 8px; }
+.split-row textarea { grid-column: 1 / -1; }
+.split-row input, .split-row select, .split-row textarea { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font: inherit; min-width: 0; }
+#split-dialog { width: min(560px, calc(100vw - 32px)); }

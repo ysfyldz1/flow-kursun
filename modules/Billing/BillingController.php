@@ -41,6 +41,9 @@ final class BillingController
             'title'    => __('billing.new'),
             'clients'  => DB::all('SELECT id, code, name, currency FROM clients WHERE is_active = 1 ORDER BY name'),
             'unbilled' => StatementService::unbilledSummary(),
+            // Kurşun: kapsam seçimi için projeler ve aşamaları
+            'scopeProjects' => DB::all("SELECT id, client_id, currency, number, name FROM projects WHERE status <> 'closed' AND billing_type <> 'non_billable' ORDER BY number"),
+            'scopePhases'   => DB::all('SELECT id, project_id, name, is_out_of_scope, is_optional, approved_at FROM project_phases ORDER BY project_id, is_out_of_scope, position, id'),
         ]);
     }
 
@@ -63,6 +66,8 @@ final class BillingController
             's'        => $s,
             'notices'  => \App\Services\PortalService::notices((int) $id),
             'projects' => DB::all('SELECT id, number, name FROM projects WHERE client_id = ? AND currency = ? ORDER BY number', [$s['client_id'], $s['currency']]),
+            'phaseGroups'   => StatementService::phaseGroups((int) $id),
+            'projectPhases' => StatementService::projectPhases((int) $id),
         ]);
     }
 
@@ -79,6 +84,28 @@ final class BillingController
     public function removeLine(string $id, string $line): void
     {
         $this->run(fn () => StatementService::removeLine((int) $id, (int) $line), $id, __('app.deleted'));
+    }
+
+    // Kurşun: aşama bedeli / ek zaman bedeli düğmeleri ana formun içinde; önce formdaki düzenlemeler kaydedilir
+    public function phaseFee(string $id, string $phase): void
+    {
+        $this->run(function () use ($id, $phase) {
+            StatementService::updateDraft((int) $id, $_POST);
+            StatementService::addPhaseFeeLine((int) $id, (int) $phase);
+        }, $id, __('app.saved'));
+    }
+
+    public function phaseExtra(string $id, string $phase): void
+    {
+        $this->run(function () use ($id, $phase) {
+            StatementService::updateDraft((int) $id, $_POST);
+            StatementService::addPhaseExtra((int) $id, (int) $phase);
+        }, $id, __('app.saved'));
+    }
+
+    public function split(string $id, string $line): void
+    {
+        $this->run(fn () => StatementService::splitLine((int) $id, (int) $line, (array) ($_POST['parts'] ?? [])), $id, __('billing.split_done'));
     }
 
     public function issue(string $id): void

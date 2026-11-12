@@ -30,6 +30,28 @@
             <small class="muted"><?= e(__('billing.currency_hint')) ?></small>
         </label>
         <div></div>
+        <?php // Kurşun: kapsam — müvekkilin tamamı, tek proje ya da tek aşama ?>
+        <label class="field field-wide">
+            <span><?= e(__('billing.scope_project')) ?></span>
+            <select name="project_id" id="st-project">
+                <option value=""><?= e(__('billing.scope_all_projects')) ?></option>
+                <?php foreach ($scopeProjects as $sp): ?>
+                    <option value="<?= $sp['id'] ?>" data-client="<?= $sp['client_id'] ?>" data-currency="<?= $sp['currency'] ?>" <?= old('project_id', (string) ($_GET['project_id'] ?? '')) == $sp['id'] ? 'selected' : '' ?>><?= e($sp['number'] . ' · ' . $sp['name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?= error_for('project_id') ?>
+        </label>
+        <label class="field field-wide" id="st-phase-field" hidden>
+            <span><?= e(__('phases.field')) ?></span>
+            <select name="phase_id" id="st-phase">
+                <option value=""><?= e(__('billing.scope_all_phases')) ?></option>
+                <?php foreach ($scopePhases as $sph): if ($sph['is_optional'] && !$sph['approved_at']) continue; ?>
+                    <option value="<?= $sph['id'] ?>" data-project="<?= $sph['project_id'] ?>" <?= old('phase_id', (string) ($_GET['phase_id'] ?? '')) == $sph['id'] ? 'selected' : '' ?>><?= e($sph['is_out_of_scope'] ? __('phases.out_of_scope') : $sph['name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <small class="muted"><?= e(__('billing.scope_phase_hint')) ?></small>
+            <?= error_for('phase_id') ?>
+        </label>
         <label class="field">
             <span><?= e(__('billing.period_start')) ?></span>
             <input type="date" name="period_start" value="<?= e(old('period_start')) ?>">
@@ -49,8 +71,29 @@
 </form>
 
 <script>
-document.getElementById('st-client').addEventListener('change', e => {
-    const cur = e.target.selectedOptions[0]?.dataset.currency;
-    if (cur) document.getElementById('st-currency').value = cur;
-});
+(() => {
+    const client = document.getElementById('st-client'), currency = document.getElementById('st-currency'),
+          project = document.getElementById('st-project'), phase = document.getElementById('st-phase'),
+          phaseField = document.getElementById('st-phase-field');
+    // Proje listesi seçili müvekkil ve para birimine göre, aşama listesi seçili projeye göre süzülür
+    const filter = () => {
+        [...project.options].forEach(o => { if (o.value) o.hidden = o.dataset.client !== client.value || o.dataset.currency !== currency.value; });
+        if (project.selectedOptions[0]?.hidden) project.value = '';
+        let any = false;
+        [...phase.options].forEach(o => { if (o.value) { o.hidden = o.dataset.project !== project.value; any ||= !o.hidden; } });
+        if (phase.selectedOptions[0]?.hidden) phase.value = '';
+        phaseField.hidden = !any;
+    };
+    client.addEventListener('change', () => {
+        const cur = client.selectedOptions[0]?.dataset.currency;
+        if (cur) currency.value = cur;
+        filter();
+    });
+    currency.addEventListener('change', filter);
+    project.addEventListener('change', filter);
+    // Projeden gelindiyse müvekkil ve para birimi projeden alınır
+    const pre = project.selectedOptions[0];
+    if (pre?.value && !client.value) { client.value = pre.dataset.client; currency.value = pre.dataset.currency; }
+    filter();
+})();
 </script>

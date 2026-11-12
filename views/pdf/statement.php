@@ -4,14 +4,8 @@ use App\Services\TimeService;
 
 $cur = $s['currency'];
 $money = fn ($v) => $v === null ? '—' : format_money((float) $v, $cur);
-// Satırları projeye göre grupla
-$groups = [];
-foreach ($s['lines'] as $l) {
-    $key = $l['project_id'] ?: 0;
-    $groups[$key]['title'] ??= $l['project_id'] ? $l['project_number'] . ' · ' . $l['project_name'] : __('billing.other_items');
-    $groups[$key]['lines'][] = $l;
-    $groups[$key]['total'] = ($groups[$key]['total'] ?? 0) + ($l['is_info'] ? 0 : (float) $l['amount']);
-}
+// Satırları projeye ve (aşamalı projede) aşamaya göre grupla
+$groups = \App\Services\StatementService::groupLines($s['lines']);
 $orgName = (string) Settings::get('org.name');
 $hex = (string) Settings::get('org.primary_color', '#1e3a8a');
 $primary = e($hex);
@@ -119,6 +113,8 @@ $line = '#cbd5e1';
                 <tr><td class="k"><?= e(__('billing.number')) ?></td><td class="accent"><?= e($number) ?></td></tr>
                 <tr><td class="k"><?= e(__('billing.issue_date')) ?></td><td><?= e(format_date($s['issue_date'] ?? date('Y-m-d'))) ?></td></tr>
                 <?php if ($s['due_date']): ?><tr><td class="k"><?= e(__('billing.due_date')) ?></td><td><?= e(format_date($s['due_date'])) ?></td></tr><?php endif; ?>
+                <?php if ($s['project_id']): ?><tr><td class="k"><?= e(__('billing.project')) ?></td><td><?= e($s['scope_project_name']) ?></td></tr><?php endif; ?>
+                <?php if ($s['phase_id']): ?><tr><td class="k"><?= e(__('phases.field')) ?></td><td class="accent"><?= e($s['scope_phase_name']) ?></td></tr><?php endif; ?>
                 <tr><td class="k"><?= e(__('billing.period')) ?></td><td><?= $s['period_start'] ? e(format_date($s['period_start'])) . ' – ' : '' ?><?= e(format_date($s['period_end'])) ?></td></tr>
             </table>
         </td>
@@ -128,7 +124,7 @@ $line = '#cbd5e1';
 <?php foreach ($groups as $g): ?>
 <table class="lines">
     <thead>
-        <tr class="group"><td colspan="5"><?= e($g['title']) ?></td><td class="num"><?= $money($g['total']) ?></td></tr>
+        <tr class="group"><td colspan="5"><?= e($g['title']) ?><?= $g['phase'] ? ' — ' . e($g['phase']) : '' ?></td><td class="num"><?= $money($g['total']) ?></td></tr>
         <tr>
             <th style="width:18mm"><?= e(__('time.date')) ?></th>
             <th><?= e(__('time.description')) ?></th>

@@ -47,6 +47,9 @@ $regular = array_values(array_filter($phases, fn ($ph) => !$ph['is_out_of_scope'
                     </div>
                     <?php if ($canEdit): ?>
                         <div class="phase-actions">
+                            <?php if (can('statements.manage') && $ph['is_active'] && $ph['entry_count'] + (int) ($ph['fee'] !== null) > 0): ?>
+                                <a href="/billing/new?project_id=<?= $p['id'] ?>&phase_id=<?= $ph['id'] ?>" class="btn btn-sm btn-outline"><?= e(__('phases.make_statement')) ?></a>
+                            <?php endif; ?>
                             <?php if (!$ph['is_out_of_scope']): ?>
                                 <a href="?edit=<?= $ph['id'] ?>#phase-form" class="btn btn-sm btn-outline"><?= e(__('clients.edit')) ?></a>
                                 <?php if ($n > 0): ?><?= $post($ph['id'] . '/move', '↑', ['dir' => 'up'], 'btn btn-sm btn-outline', '') ?><?php endif; ?>
