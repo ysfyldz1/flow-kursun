@@ -68,68 +68,68 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                     </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($groups as $g): $pg = $g['phase_id'] ? ($phaseGroups[$g['phase_id']] ?? null) : null; ?>
-                    <tr class="group-row"><td colspan="<?= $cols ?>"><?= e($g['title']) ?><?php if ($g['phase']): ?> <span class="group-phase">— <?= e($g['phase']) ?></span><?php endif; ?></td></tr>
-                    <?php if ($pg && !$pg['oos'] && $pg['fee'] !== null): ?>
-                        <tr class="phase-info-row"><td colspan="<?= $cols ?>">
-                            <div class="phase-info">
-                                <span><?= e(__('phases.fee')) ?> <strong><?= e($money($pg['fee'])) ?></strong></span>
-                                <?php if ($pg['statements_before']): ?>
-                                    <span><?= e(__('billing.phase_billed_before', ['count' => $pg['statements_before']])) ?> <strong><?= e($money($pg['billed_before'])) ?></strong></span>
-                                <?php endif; ?>
-                                <span><?= e(__('phases.remaining')) ?> <strong class="<?= $pg['remaining'] <= 0 ? 'text-red' : '' ?>"><?= e($money($pg['remaining'])) ?></strong></span>
-                                <span><?= e(__('billing.phase_time_value')) ?> <strong><?= e($money($pg['time_value'])) ?></strong></span>
-                                <?php if ($canEdit): ?>
-                                    <span class="phase-info-actions">
-                                        <?php if (!$pg['has_fee'] && $pg['remaining'] > 0): ?>
-                                            <button class="btn btn-sm btn-outline" formaction="/billing/<?= $s['id'] ?>/phases/<?= $pg['id'] ?>/fee"><?= e(__('billing.add_phase_fee')) ?></button>
-                                        <?php endif; ?>
-                                        <?php if ($pg['has_fee'] && $pg['over'] > 0 && !$pg['has_extra']): ?>
-                                            <button class="btn btn-sm btn-outline" formaction="/billing/<?= $s['id'] ?>/phases/<?= $pg['id'] ?>/extra"><?= e(__('billing.add_phase_extra', ['amount' => $money($pg['over'])])) ?></button>
-                                        <?php endif; ?>
-                                    </span>
-                                <?php endif; ?>
+                <?php foreach ($groups as $g): $pg = $g['phase_id'] ? ($phaseGroups[$g['phase_id']] ?? null) : null; $hasFeeInfo = $pg && !$pg['oos'] && $pg['fee'] !== null; ?>
+                    <tr class="group-row"><td colspan="<?= $cols ?>">
+                        <div class="grp">
+                            <div class="grp-title">
+                                <?php // Tek projelik dökümde proje adı başta zaten yazıyor; grupta yalnız aşama
+                                if (!($s['project_id'] && $g['phase'])): ?><span><?= e($g['title']) ?></span><?php endif; ?>
+                                <?php if ($g['phase']): ?><span class="grp-phase <?= $s['project_id'] ? 'grp-phase-only' : '' ?>"><?= e($g['phase']) ?></span><?php endif; ?>
                             </div>
-                            <?php if (!$canEdit): ?>
-                            <?php elseif ($pg['has_fee'] && $pg['over'] > 0): ?>
-                                <div class="text-red small"><?= e(__('billing.phase_over_note', ['amount' => $money($pg['over'])])) ?></div>
-                            <?php elseif ($pg['has_fee']): ?>
-                                <div class="muted small"><?= e(__('billing.phase_fee_mode')) ?></div>
-                            <?php else: ?>
-                                <div class="muted small"><?= e(__('billing.phase_time_mode')) ?></div>
-                            <?php endif; ?>
+                            <div class="grp-meta">
+                                <?php if ($hasFeeInfo): ?>
+                                    <span class="chip"><?= e(__('billing.tag_phase_fee')) ?> <b><?= e($money($pg['fee'])) ?></b></span>
+                                    <?php if ($pg['statements_before']): ?>
+                                        <span class="chip" title="<?= e($money($pg['billed_before'])) ?>"><?= e(__('billing.phase_billed_before', ['count' => $pg['statements_before']])) ?> <b><?= e($money($pg['billed_before'])) ?></b></span>
+                                    <?php endif; ?>
+                                    <span class="chip <?= $pg['remaining'] <= 0 ? 'chip-red' : '' ?>"><?= e(__('phases.remaining')) ?> <b><?= e($money($pg['remaining'])) ?></b></span>
+                                    <?php if ($canEdit && !$pg['has_fee'] && $pg['remaining'] > 0): ?>
+                                        <button class="chip chip-btn" formaction="/billing/<?= $s['id'] ?>/phases/<?= $pg['id'] ?>/fee">+ <?= e(__('billing.type_phase_fee')) ?></button>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                <span class="grp-total"><?= e($money($g['total'])) ?></span>
+                            </div>
+                        </div>
+                    </td></tr>
+                    <?php if ($canEdit && $hasFeeInfo && $pg['has_fee'] && $pg['over'] > 0): ?>
+                        <tr class="grp-alert-row"><td colspan="<?= $cols ?>">
+                            <div class="grp-alert">
+                                <span><?= icon('alert', 'icon icon-sm') ?> <?= e(__('billing.phase_over_short', ['amount' => $money($pg['over'])])) ?></span>
+                                <span class="grp-alert-actions">
+                                    <?php if (!$pg['has_extra']): ?>
+                                        <button class="btn btn-sm btn-outline" formaction="/billing/<?= $s['id'] ?>/phases/<?= $pg['id'] ?>/extra"><?= e(__('billing.add_extra_short')) ?></button>
+                                    <?php endif; ?>
+                                    <span class="muted small"><?= e(__('billing.or_move_hint')) ?></span>
+                                </span>
+                            </div>
                         </td></tr>
                     <?php endif; ?>
-                    <?php foreach ($g['lines'] as $l): ?>
-                        <tr class="<?= $l['is_info'] ? 'info-row' : '' ?>">
-                            <td class="muted nowrap"><?= e(format_date($l['work_date'])) ?></td>
+                    <?php foreach ($g['lines'] as $l): $isTime = $l['type'] === 'time'; $phaseOpts = $isTime ? ($projectPhases[(int) $l['project_id']] ?? []) : []; ?>
+                        <tr class="<?= $l['is_info'] ? 'info-row' : '' ?> <?= $isTime ? '' : 'flat-row' ?>">
+                            <td class="muted nowrap">
+                                <?php if ($isTime): ?><?= e(format_date($l['work_date'])) ?>
+                                <?php else: ?><span class="line-tag line-tag-<?= e($l['type']) ?>"><?= e(__('billing.tag_' . $l['type'])) ?></span><?php endif; ?>
+                            </td>
                             <td>
-                                <?php if ($l['type'] !== 'time'): ?><span class="badge badge-blue"><?= e(__('billing.type_' . $l['type'])) ?></span><?php endif; ?>
                                 <?php if ($canEdit): ?>
                                     <textarea name="lines[<?= $l['id'] ?>][description]" rows="1" class="cell-input autosize"><?= e(old("lines.{$l['id']}.description", $l['description'])) ?></textarea>
                                     <?= error_for("lines.{$l['id']}.description") ?>
                                 <?php else: ?>
-                                    <?= nl2br(e($l['description'])) ?>
+                                    <div class="line-desc"><?= nl2br(e($l['description'])) ?></div>
                                 <?php endif; ?>
-                                <?php if ($canEdit && $l['type'] === 'time' && !$l['is_info']): ?>
-                                    <div class="muted small line-rate"><?= e($l['user_name']) ?> ·
-                                        <input name="lines[<?= $l['id'] ?>][rate]" value="<?= e(old("lines.{$l['id']}.rate", money_input($l['rate']))) ?>" inputmode="decimal" class="cell-input num rate-input <?= $l['rate'] === null ? 'cell-missing' : '' ?>" placeholder="<?= e(__('billing.rate')) ?>">/<?= e(__('projects.hour')) ?>
+                                <?php if ($l['user_name']): ?>
+                                    <div class="line-who">
+                                        <?= e($l['user_name']) ?>
+                                        <?php if ($canEdit && $isTime && !$l['is_info']): ?>
+                                            · <input name="lines[<?= $l['id'] ?>][rate]" value="<?= e(old("lines.{$l['id']}.rate", money_input($l['rate']))) ?>" inputmode="decimal" class="cell-input num rate-input <?= $l['rate'] === null ? 'cell-missing' : '' ?>" placeholder="<?= e(__('billing.rate')) ?>">/<?= e(__('projects.hour')) ?>
+                                        <?php elseif ($l['rate'] !== null): ?>
+                                            · <?= e($money($l['rate'])) ?>/<?= e(__('projects.hour')) ?>
+                                        <?php endif; ?>
                                     </div>
                                     <?= error_for("lines.{$l['id']}.rate") ?>
-                                <?php elseif ($l['user_name']): ?><div class="muted small"><?= e($l['user_name']) ?><?= $l['rate'] !== null ? ' · ' . e($money($l['rate'])) . '/' . e(__('projects.hour')) : '' ?></div><?php endif; ?>
-                                <?php // Kurşun: aşamalı projede kaydın aşaması değiştirilir ya da bölünür
-                                if ($canEdit && $l['type'] === 'time' && !empty($projectPhases[(int) $l['project_id']])): ?>
-                                    <div class="line-phase">
-                                        <select name="lines[<?= $l['id'] ?>][phase_id]" class="cell-input" title="<?= e(__('billing.move_hint')) ?>">
-                                            <option value=""><?= e(__('phases.choose_none')) ?></option>
-                                            <?php foreach ($projectPhases[(int) $l['project_id']] as $opt): ?>
-                                                <option value="<?= $opt['id'] ?>" <?= (int) $l['phase_id'] === $opt['id'] ? 'selected' : '' ?> <?= $opt['active'] ? '' : 'disabled' ?>><?= e($opt['name']) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <button type="button" class="btn btn-sm btn-outline" data-split="<?= $l['id'] ?>" data-project="<?= (int) $l['project_id'] ?>"
-                                                data-hours="<?= e(TimeService::formatMinutes((int) round($l['hours'] * 60))) ?>" data-phase="<?= (int) $l['phase_id'] ?>"
-                                                data-desc="<?= e($l['description']) ?>"><?= e(__('billing.split')) ?></button>
-                                    </div>
+                                <?php endif; ?>
+                                <?php if ($canEdit && $phaseOpts): ?>
+                                    <input type="hidden" name="lines[<?= $l['id'] ?>][phase_id]" value="<?= (int) $l['phase_id'] ?: '' ?>" data-phase-input>
                                 <?php endif; ?>
                             </td>
                             <td class="num st-hours">
@@ -144,7 +144,7 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                             <td class="num st-amount">
                                 <span class="m-label"><?= e(__('time.amount')) ?></span>
                                 <?php if ($l['is_info']): ?>
-                                    <span class="muted small"><?= e(__('billing.included')) ?></span>
+                                    <span class="included-pill"><?= e(__('billing.included')) ?></span>
                                 <?php elseif ($canEdit): ?>
                                     <input name="lines[<?= $l['id'] ?>][amount]" value="<?= e(money_input($l['amount'])) ?>" inputmode="decimal" class="cell-input num <?= $l['amount'] === null ? 'cell-missing' : '' ?>">
                                     <?= error_for("lines.{$l['id']}.amount") ?>
@@ -153,7 +153,24 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
                                 <?php endif; ?>
                             </td>
                             <?php if ($canEdit): ?>
-                                <td><button class="icon-btn icon-btn-sm" formaction="/billing/<?= $s['id'] ?>/lines/<?= $l['id'] ?>/delete" formnovalidate title="<?= e(__('billing.remove_line')) ?>">✕</button></td>
+                                <td class="row-menu-cell">
+                                    <details class="row-menu">
+                                        <summary class="icon-btn icon-btn-sm" title="<?= e(__('billing.line_actions')) ?>">⋯</summary>
+                                        <div class="row-menu-list">
+                                            <?php if ($phaseOpts): ?>
+                                                <div class="row-menu-label"><?= e(__('billing.move_to')) ?></div>
+                                                <?php foreach (array_merge([['id' => 0, 'name' => __('phases.no_phase'), 'active' => true]], $phaseOpts) as $opt): if ((int) $l['phase_id'] === $opt['id']) continue; ?>
+                                                    <button type="button" class="row-menu-item" data-move="<?= $opt['id'] ?: '' ?>" <?= $opt['active'] ? '' : 'disabled' ?>><?= e($opt['name']) ?></button>
+                                                <?php endforeach; ?>
+                                                <div class="row-menu-sep"></div>
+                                                <button type="button" class="row-menu-item" data-split="<?= $l['id'] ?>" data-project="<?= (int) $l['project_id'] ?>"
+                                                        data-hours="<?= e(TimeService::formatMinutes((int) round($l['hours'] * 60))) ?>" data-phase="<?= (int) $l['phase_id'] ?>"
+                                                        data-desc="<?= e($l['description']) ?>"><?= e(__('billing.split')) ?>…</button>
+                                            <?php endif; ?>
+                                            <button class="row-menu-item row-menu-danger" formaction="/billing/<?= $s['id'] ?>/lines/<?= $l['id'] ?>/delete" formnovalidate><?= e(__($isTime ? 'billing.remove_line' : 'app.delete')) ?></button>
+                                        </div>
+                                    </details>
+                                </td>
                             <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
@@ -488,9 +505,20 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
 <?php endif; ?>
 
 <script>
+// Satır menüsü: aynı anda bir menü açık, dışarı tıklayınca kapanır; "taşı" gizli alanı doldurup formu kaydeder
+document.addEventListener('click', e => {
+    document.querySelectorAll('details.row-menu[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; });
+    const mv = e.target.closest('[data-move]');
+    if (mv && !mv.disabled) {
+        const row = mv.closest('tr');
+        row.querySelector('[data-phase-input]').value = mv.dataset.move;
+        document.getElementById('statement-form').requestSubmit();
+    }
+    if (e.target.closest('[data-split]')) e.target.closest('details')?.removeAttribute('open');
+});
 // Açıklama alanları içeriğe göre uzasın
 document.querySelectorAll('textarea.autosize').forEach(t => {
-    const fit = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; };
+    const fit = () => { t.style.height = 'auto'; t.style.height = (t.scrollHeight + t.offsetHeight - t.clientHeight) + 'px'; };
     t.addEventListener('input', fit); fit();
 });
 // Saat ya da ücret değişince tutar anında hesaplansın (kaydedince sunucu da aynısını yapar)

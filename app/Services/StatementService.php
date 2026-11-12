@@ -444,7 +444,8 @@ final class StatementService
                     SUM(CASE WHEN l.type = 'time' THEN l.hours ELSE 0 END) AS hours,
                     SUM(CASE WHEN l.type = 'phase_fee' THEN l.amount ELSE 0 END) AS fee_line,
                     SUM(l.type = 'phase_fee') AS has_fee,
-                    SUM(l.type = 'phase_extra') AS has_extra
+                    SUM(l.type = 'phase_extra') AS has_extra,
+                    SUM(CASE WHEN l.type = 'phase_extra' THEN COALESCE(l.amount, 0) ELSE 0 END) AS extra_line
              FROM statement_lines l JOIN project_phases ph ON ph.id = l.phase_id
              WHERE l.statement_id = ?
              GROUP BY ph.id",
@@ -471,7 +472,7 @@ final class StatementService
                 // Bedel satırı varken aşamanın toplam zaman değeri (önceki dökümler + bu döküm) bedeli
                 // geçtiyse, daha önce ek bedel olarak kesilmemiş fark
                 'over'         => $r['has_fee'] && $fee !== null
-                    ? max(0.0, round($prev['time_value'] + (float) $r['time_value'] - $fee - $prev['extra'], 2))
+                    ? max(0.0, round($prev['time_value'] + (float) $r['time_value'] - $fee - $prev['extra'] - (float) $r['extra_line'], 2))
                     : 0.0,
             ];
         }
