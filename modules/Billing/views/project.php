@@ -19,12 +19,14 @@ if (!in_array('none', array_column($phaseTargets, 'key'), true)) {
 // Açık taslağı olan bölüm: sekme ve satır pastel sarı (kesinleşince yeşile döner)
 $hasDraft = fn (array $g) => (bool) array_filter($g['statements'], fn ($st) => $st['status'] === 'draft');
 // Döküm oluşturma formu (gizli alanlarla)
-$draftForm = function (array $fields, string $label, string $class = 'btn btn-primary') use ($p, $back, $cur) {
-    $html = '<form method="get" action="/billing/preview" class="inline-form">'
+$draftForm = function (array $fields, string $label, string $class = 'btn btn-primary') use ($p, $back, $cur, $from, $to) {
+    $html = '<form method="get" action="/billing/preview" class="inline-form draft-form">'
         . '<input type="hidden" name="client_id" value="' . (int) $p['client_id'] . '">'
         . '<input type="hidden" name="currency" value="' . e($cur) . '">'
         . '<input type="hidden" name="project_id" value="' . (int) $p['id'] . '">'
-        . '<input type="hidden" name="back" value="' . e($back . (isset($fields['_tab']) ? '?tab=' . $fields['_tab'] : '')) . '">';
+        . '<input type="hidden" name="back" value="' . e($back . (isset($fields['_tab']) ? '?tab=' . $fields['_tab'] : '')) . '">'
+        . ($from ? '<input type="hidden" name="period_start" value="' . e($from) . '">' : '')
+        . ($to ? '<input type="hidden" name="period_end" value="' . e($to) . '">' : '');
     unset($fields['_tab']);
     foreach ($fields as $k => $v) {
         $html .= '<input type="hidden" name="' . e($k) . '" value="' . e((string) $v) . '">';
@@ -40,7 +42,7 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
             <span class="code code-lg"><?= e($p['number']) ?></span>
         </div>
     </div>
-    <?php if ($anyOpen): ?>
+    <?php if ($anyOpen && $phased): // aşamasız projede düğme panelde zaten var ?>
         <div class="head-actions">
             <?= $draftForm([], __($phased ? 'billing.whole_project' : 'billing.create_draft'), $phased ? 'btn btn-outline' : 'btn btn-primary') ?>
         </div>
@@ -122,13 +124,13 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
                     <span class="state-pill state-<?= e($g['state']) ?>"><?= e($stateLabel($g)) ?></span>
                 </div>
             </div>
-            <?php $openDraft = current(array_filter($g['statements'], fn ($st) => $st['status'] === 'draft')); ?>
+            <?php $openDraft = current(array_filter($g['statements'], fn ($st) => $st['status'] === 'draft')); $pendingN = $openDraft ? count(\App\Services\StatementService::pendingForDraft((int) $openDraft['id'])) : 0; ?>
             <?php if ($openDraft): ?>
                 <div class="head-actions">
-                    <?php if ($g['unbilled_count']): ?>
+                    <?php if ($pendingN): ?>
                         <form method="post" action="/billing/<?= $openDraft['id'] ?>/pending" class="inline-form">
                             <?= csrf_field() ?><input type="hidden" name="back" value="<?= e($back . '?tab=' . $g['key']) ?>">
-                            <button class="btn btn-outline"><?= e(__('billing.add_pending', ['count' => $g['unbilled_count']])) ?></button>
+                            <button class="btn btn-outline"><?= e(__('billing.add_pending', ['count' => $pendingN])) ?></button>
                         </form>
                     <?php endif; ?>
                     <a href="/billing/<?= $openDraft['id'] ?>" class="btn btn-primary"><?= e(__('billing.go_to_draft')) ?></a>
@@ -147,14 +149,39 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
         <?php if ($g['draft_count']): ?>
             <div class="alert alert-info"><?= e(__('billing.n_in_draft_hint', ['count' => $g['draft_count']])) ?></div>
         <?php endif; ?>
-        <?php if ($openDraft && $g['unbilled_count']): ?>
-            <div class="alert alert-warning-soft"><?= e(__('billing.pending_tab_note', ['count' => $g['unbilled_count']])) ?></div>
+        <?php if ($pendingN): ?>
+            <div class="alert alert-warning-soft"><?= e(__('billing.pending_tab_note', ['count' => $pendingN])) ?></div>
+        <?php endif; ?>
+
+        <?php if ($g['unbilled_count']): $q = fn (array $o) => '?' . http_build_query(['tab' => $tab] + $o); ?>
+            <!-- Hızlı tarih filtreleri -->
+            <form method="get" class="entry-filter">
+                <input type="hidden" name="tab" value="<?= e($tab) ?>">
+                <div class="seg">
+                    <a href="<?= e($q([])) ?>" class="<?= $range === 'all' ? 'on' : '' ?>"><?= e(__('app.all')) ?></a>
+                    <a href="<?= e($q(['range' => 'this'])) ?>" class="<?= $range === 'this' ? 'on' : '' ?>"><?= e(__('billing.range_this')) ?></a>
+                    <a href="<?= e($q(['range' => 'last'])) ?>" class="<?= $range === 'last' ? 'on' : '' ?>"><?= e(__('billing.range_last')) ?></a>
+                </div>
+                <div class="range-dates <?= $range === 'custom' ? 'on' : '' ?>">
+                    <input type="hidden" name="range" value="custom">
+                    <input type="date" name="from" value="<?= e($range === 'custom' ? (string) $from : '') ?>">
+                    <span>–</span>
+                    <input type="date" name="to" value="<?= e($range === 'custom' ? (string) $to : '') ?>">
+                    <button class="btn btn-sm btn-outline"><?= e(__('billing.range_apply')) ?></button>
+                </div>
+                <?php if ($from || $to): ?><span class="muted small"><?= e($from ? format_date($from) : '…') ?> – <?= e($to ? format_date($to) : '…') ?></span><?php endif; ?>
+            </form>
         <?php endif; ?>
 
         <?php if ($entries): ?>
+            <div class="select-bar">
+                <label class="check"><input type="checkbox" data-select-all checked><span><?= e(__('billing.select_all')) ?></span></label>
+                <span class="muted small" data-selected-sum></span>
+            </div>
             <table class="table table-m bill-entries">
                 <?php foreach ($entries as $t): ?>
                     <tr>
+                        <td class="sel-cell"><input type="checkbox" class="entry-check" value="<?= $t['id'] ?>" data-min="<?= (int) $t['minutes'] ?>" data-amt="<?= (float) $t['amount'] ?>" checked></td>
                         <td class="muted nowrap m-meta"><?= e(format_date($t['work_date'])) ?></td>
                         <td class="cell-main m-title"><strong><?= e($t['user_name']) ?></strong><span><?= e($t['description']) ?></span></td>
                         <td class="num m-value"><?= TimeService::formatMinutes((int) $t['minutes']) ?><?php if ($rates && $t['amount'] !== null): ?><br><span class="muted small"><?= e($money($t['amount'])) ?></span><?php endif; ?></td>
@@ -272,3 +299,33 @@ $draftForm = function (array $fields, string $label, string $class = 'btn btn-pr
 })();
 </script>
 <?php endif; ?>
+
+<script>
+// Kayıt seçimi: hepsi seçili gelir; seçili sayı/saat/tutar anında; döküm yalnız seçililerle
+(() => {
+    const checks = [...document.querySelectorAll('.entry-check')];
+    if (!checks.length) return;
+    const all = document.querySelector('[data-select-all]'), sum = document.querySelector('[data-selected-sum]');
+    const t = <?= json_encode(['sel' => __('billing.selected_sum'), 'none' => __('billing.none_selected')], JSON_UNESCAPED_UNICODE) ?>;
+    const rates = <?= json_encode($rates) ?>;
+    const nf = new Intl.NumberFormat(<?= json_encode(\App\Core\Lang::locale() === 'tr' ? 'tr-TR' : 'en-US') ?>, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const hf = new Intl.NumberFormat(<?= json_encode(\App\Core\Lang::locale() === 'tr' ? 'tr-TR' : 'en-US') ?>, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const update = () => {
+        const on = checks.filter(c => c.checked);
+        const min = on.reduce((s, c) => s + +c.dataset.min, 0), amt = on.reduce((s, c) => s + +c.dataset.amt, 0);
+        sum.textContent = on.length ? t.sel.replace(':n', on.length).replace(':total', checks.length).replace(':h', hf.format(min / 60)) + (rates && amt ? ' · ' + nf.format(amt) + ' <?= e($cur) ?>' : '') : t.none;
+        all.checked = on.length === checks.length;
+        all.indeterminate = on.length > 0 && on.length < checks.length;
+        checks.forEach(c => c.closest('tr').classList.toggle('row-off', !c.checked));
+    };
+    all.addEventListener('change', () => { checks.forEach(c => c.checked = all.checked); update(); });
+    checks.forEach(c => c.addEventListener('change', update));
+    update();
+    // Panelin döküm düğmesi: seçili kayıtların kimlikleri eklenir (hiçbiri seçili değilse -1: yalnız aşama bedeli)
+    document.querySelectorAll('.phase-panel .draft-form').forEach(f => f.addEventListener('submit', () => {
+        f.querySelectorAll('input[name="entry_ids[]"]').forEach(i => i.remove());
+        const ids = checks.filter(c => c.checked).map(c => c.value);
+        (ids.length ? ids : ['-1']).forEach(id => { const i = document.createElement('input'); i.type = 'hidden'; i.name = 'entry_ids[]'; i.value = id; f.append(i); });
+    }));
+})();
+</script>

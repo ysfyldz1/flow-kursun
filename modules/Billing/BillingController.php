@@ -79,13 +79,25 @@ final class BillingController
                 $current = $g;
             }
         }
+        // Hızlı tarih filtresi: all | this | last | custom (from/to)
+        $range = in_array($_GET['range'] ?? '', ['this', 'last', 'custom'], true) ? $_GET['range'] : 'all';
+        $valid = fn ($d) => is_string($d) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $d) ? $d : null;
+        [$from, $to] = match ($range) {
+            'this'   => [date('Y-m-01'), date('Y-m-t')],
+            'last'   => [date('Y-m-01', strtotime('first day of last month')), date('Y-m-t', strtotime('last day of last month'))],
+            'custom' => [$valid($_GET['from'] ?? null), $valid($_GET['to'] ?? null)],
+            default  => [null, null],
+        };
         View::render('Billing::project', [
             'title'   => $project['name'],
             'project' => $project,
             'groups'  => $groups,
             'tab'     => $tab,
             'current' => $current,
-            'entries' => $current ? \App\Services\BillingOverviewService::unbilledEntries((int) $project['id'], $current['phase_id'], $current['key'] === 'none') : [],
+            'range'   => $range,
+            'from'    => $from,
+            'to'      => $to,
+            'entries' => $current ? \App\Services\BillingOverviewService::unbilledEntries((int) $project['id'], $current['phase_id'], $current['key'] === 'none', $from, $to) : [],
             'phased'  => (bool) array_filter($groups, fn ($g) => $g['phase_id'] !== null),
         ]);
     }
@@ -149,7 +161,10 @@ final class BillingController
      */
     public function preview(): void
     {
-        $fields = array_intersect_key($_GET, array_flip(['client_id', 'currency', 'project_id', 'phase_id', 'unphased', 'back']));
+        $fields = array_intersect_key($_GET, array_flip(['client_id', 'currency', 'project_id', 'phase_id', 'unphased', 'back', 'entry_ids', 'period_start', 'period_end']));
+        if (isset($fields['entry_ids'])) {
+            $fields['entry_ids'] = array_values(array_filter(array_map('intval', (array) $fields['entry_ids'])));
+        }
         $back = preg_match('#^/billing/new(/project/\d+(\?tab=[\w-]+)?|\?client_id=\d+)?$#', (string) ($fields['back'] ?? '')) ? $fields['back'] : '/billing/new';
         $pdo = DB::pdo();
         $pdo->beginTransaction();

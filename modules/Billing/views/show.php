@@ -42,7 +42,7 @@ $generalErrors = array_intersect_key($GLOBALS['__errors'] ?? [], array_flip(['is
             <a href="<?= e($preview['back']) ?>" class="btn btn-outline"><?= e(__('app.cancel')) ?></a>
             <form method="post" action="/billing">
                 <?= csrf_field() ?>
-                <?php foreach ($preview['fields'] as $k => $v): ?><input type="hidden" name="<?= e($k) ?>" value="<?= e((string) $v) ?>"><?php endforeach; ?>
+                <?php foreach ($preview['fields'] as $k => $v): foreach ((array) $v as $item): ?><input type="hidden" name="<?= e($k) . (is_array($v) ? '[]' : '') ?>" value="<?= e((string) $item) ?>"><?php endforeach; endforeach; ?>
                 <button class="btn btn-primary"><?= e(__('billing.save_as_draft')) ?></button>
             </form>
         </div>

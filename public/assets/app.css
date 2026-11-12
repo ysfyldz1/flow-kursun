@@ -1081,3 +1081,19 @@ textarea.autosize { overflow: hidden; box-sizing: border-box; }
 .pending-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .phase-panel-head { align-items: center; }
 .phase-panel-head > form, .phase-panel-head > a.btn { flex: 0 0 auto; }
+/* Proje faturalama: hızlı tarih filtresi + kayıt seçimi */
+.entry-filter { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 12px 18px; border-bottom: 1px solid var(--border); }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.seg a { padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; border-left: 1px solid var(--border); }
+.seg a:first-child { border-left: 0; }
+.seg a.on { background: var(--primary); color: #fff; }
+.seg a:not(.on):hover { background: var(--bg); color: var(--text); }
+.range-dates { display: inline-flex; align-items: center; gap: 6px; }
+.range-dates input[type=date] { height: 32px; border: 1px solid var(--border); border-radius: 8px; padding: 0 8px; font: inherit; font-size: 13px; }
+.range-dates.on input[type=date] { border-color: var(--primary); }
+.select-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 18px; background: var(--bg); border-bottom: 1px solid var(--border); }
+.select-bar .check { margin: 0; }
+.sel-cell { width: 36px; padding-right: 0 !important; }
+.sel-cell input { width: 16px; height: 16px; }
+.bill-entries tr.row-off td { opacity: .45; }
+.bill-entries tr.row-off td.sel-cell { opacity: 1; }

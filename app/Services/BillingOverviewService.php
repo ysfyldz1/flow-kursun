@@ -109,10 +109,18 @@ final class BillingOverviewService
     }
 
     /** Faturalanmamış (dökümde olmayan) zaman kayıtları. */
-    public static function unbilledEntries(int $projectId, ?int $phaseId, bool $unphasedOnly): array
+    public static function unbilledEntries(int $projectId, ?int $phaseId, bool $unphasedOnly, ?string $from = null, ?string $to = null): array
     {
         $where = 't.project_id = ? AND t.statement_id IS NULL AND t.is_billable = 1';
         $params = [$projectId];
+        if ($from) {
+            $where .= ' AND t.work_date >= ?';
+            $params[] = $from;
+        }
+        if ($to) {
+            $where .= ' AND t.work_date <= ?';
+            $params[] = $to;
+        }
         if ($phaseId) {
             $where .= ' AND t.phase_id = ?';
             $params[] = $phaseId;

@@ -220,11 +220,14 @@ final class StatementService
                     $params[] = $scopePhase;
                 }
                 $unphased = !$scopePhase && $scopeProject && !empty($in['unphased']);
+                // Kurşun: proje ekranında işaretlenen kayıtlar (verildiyse yalnız onlar)
+                $onlyIds = array_values(array_filter(array_map('intval', (array) ($in['entry_ids'] ?? []))));
                 $entries = DB::all(
                     'SELECT t.*, u.name AS user_name FROM time_entries t JOIN users u ON u.id = t.user_id
                      WHERE t.project_id = ? AND t.statement_id IS NULL AND t.is_billable = 1
                        AND t.work_date <= ? ' . ($start ? 'AND t.work_date >= ?' : '') . '
                        ' . ($scopePhase ? 'AND t.phase_id = ?' : ($unphased ? 'AND t.phase_id IS NULL' : '')) . '
+                       ' . ($onlyIds ? 'AND t.id IN (' . implode(',', $onlyIds) . ')' : '') . '
                      ORDER BY t.work_date, t.id',
                     $params
                 );
@@ -544,8 +547,10 @@ final class StatementService
         if (!$s || $s['status'] !== 'draft') {
             return [];
         }
-        $where = "t.statement_id IS NULL AND t.is_billable = 1 AND t.client_id = ? AND t.currency = ? AND p.billing_type <> 'non_billable'";
-        $params = [$s['client_id'], $s['currency']];
+        // Yalnız taslaktan SONRA girilen ya da değiştirilen (taşınan/bölünen) kayıtlar; taslağa bilerek alınmayanlar sayılmaz
+        $where = "t.statement_id IS NULL AND t.is_billable = 1 AND t.client_id = ? AND t.currency = ? AND p.billing_type <> 'non_billable'
+                  AND (t.created_at >= ? OR t.updated_at >= ?)";
+        $params = [$s['client_id'], $s['currency'], $s['created_at'], $s['created_at']];
         if ($s['phase_id']) {
             $where .= ' AND t.phase_id = ?';
             $params[] = $s['phase_id'];
